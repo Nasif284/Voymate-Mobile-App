@@ -30,10 +30,19 @@ export const homeService = {
     return res.data?.data || res.data;
   },
 
-  updateTravelingStatus: async (isTraveling: boolean) => {
-    const res = await apiClient.patch(ENDPOINTS.PROFILE.UPDATE, {
+  updateTravelingStatus: async (isTraveling: boolean, currentProfile?: any) => {
+    const payload: any = {
       isTraveling,
-    });
-    return res.data;
+    };
+    if (currentProfile?.fullName) payload.fullName = currentProfile.fullName;
+    if (currentProfile?.bio !== undefined) payload.bio = currentProfile.bio;
+    if (Array.isArray(currentProfile?.interests)) payload.interests = currentProfile.interests;
+    if (Array.isArray(currentProfile?.languages)) payload.languages = currentProfile.languages;
+    if (Array.isArray(currentProfile?.skills)) payload.skills = currentProfile.skills;
+    if (currentProfile?.travelPersonality) {
+      payload.travelPersonalityCode = currentProfile.travelPersonality;
+    }
+    const res = await apiClient.patch(ENDPOINTS.PROFILE.UPDATE, payload);
+    return res.data?.data || res.data;
   },
 };

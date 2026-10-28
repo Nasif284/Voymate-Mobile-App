@@ -24,16 +24,17 @@ import { HomeSkeleton } from '../components/HomeSkeleton';
 import { CreateTripModal } from '../../trips/components/CreateTripModal';
 import { tripService } from '../../trips/services/trip.service';
 import { Users, Compass, Sparkles } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
+import * as Haptics from 'expo-haptics';
 
 const PAGE_SIZE = 8;
 
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user: authUser } = useAuthStore();
+  const { user: authUser, setUser } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -158,6 +159,30 @@ export const HomeScreen: React.FC = () => {
     loadInitialData();
   }, []);
 
+  // Re-sync traveling status & profile whenever HomeScreen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      homeService
+        .getMyProfile()
+        .then((profile) => {
+          if (isMounted && profile) {
+            setCurrentUserProfile(profile);
+            const traveling = Boolean(profile.isTraveling);
+            setIsTraveling(traveling);
+            if (authUser && authUser.isTraveling !== traveling) {
+              setUser({ ...authUser, isTraveling: traveling });
+            }
+          }
+        })
+        .catch(() => {});
+
+      return () => {
+        isMounted = false;
+      };
+    }, [authUser, setUser])
+  );
+
   // Pull-to-refresh
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -207,18 +232,37 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
-  // Toggle traveling status
+  // Toggle traveling status from Header
   const handleToggleTraveling = async () => {
+    if (isUpdatingStatus) return;
     const nextState = !isTraveling;
+    const prevState = isTraveling;
+
+    // Optimistic UI updates
     setIsTraveling(nextState);
+    if (authUser) {
+      setUser({ ...authUser, isTraveling: nextState });
+    }
+    setCurrentUserProfile((prev: any) => (prev ? { ...prev, isTraveling: nextState } : prev));
     setIsUpdatingStatus(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      await homeService.updateTravelingStatus(nextState);
-      await fetchInitialTravelers(nextState);
-    } catch {
-      setIsTraveling(!nextState);
-      Alert.alert('Status Error', 'Could not update traveling status right now.');
+      await homeService.updateTravelingStatus(nextState, currentUserProfile);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Refresh travelers feed in background without blocking or reverting status on feed error
+      fetchInitialTravelers(nextState).catch(() => {});
+    } catch (err: any) {
+      // Revert on failure
+      setIsTraveling(prevState);
+      if (authUser) {
+        setUser({ ...authUser, isTraveling: prevState });
+      }
+      setCurrentUserProfile((prev: any) => (prev ? { ...prev, isTraveling: prevState } : prev));
+      Alert.alert(
+        'Status Error',
+        err?.response?.data?.message || 'Could not update traveling status right now. Please try again.'
+      );
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -305,6 +349,7 @@ export const HomeScreen: React.FC = () => {
         isTraveling={isTraveling}
         onToggleTraveling={handleToggleTraveling}
         isUpdatingStatus={isUpdatingStatus}
+        onAvatarPress={() => navigation.navigate('Main', { screen: 'ProfileTab' } as any)}
       />
 
       {/* 2. Plan Trip Banner if user has no active trip */}
@@ -398,7 +443,7 @@ export const HomeScreen: React.FC = () => {
             />
           </View>
         )}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={renderHeader()}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={[

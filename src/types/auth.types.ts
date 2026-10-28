@@ -7,6 +7,7 @@ export interface User {
   isEmailVerified?: boolean;
   isPhoneVerified?: boolean;
   isIdentityVerified?: boolean;
+  isTraveling?: boolean;
 }
 
 export interface AuthTokens {

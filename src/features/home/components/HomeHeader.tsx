@@ -18,6 +18,7 @@ interface HomeHeaderProps {
   isTraveling: boolean;
   onToggleTraveling: () => void;
   isUpdatingStatus?: boolean;
+  onAvatarPress?: () => void;
 }
 
 const getTimeGreeting = () => {
@@ -34,6 +35,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   isTraveling,
   onToggleTraveling,
   isUpdatingStatus,
+  onAvatarPress,
 }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Traveler';
   const greeting = getTimeGreeting();
@@ -73,8 +75,12 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               isTraveling ? styles.travelPillActive : styles.travelPillInactive,
             ]}
             onPress={handleToggle}
-            activeOpacity={0.75}
+            activeOpacity={0.7}
             disabled={isUpdatingStatus}
+            hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: isTraveling, busy: isUpdatingStatus }}
+            accessibilityLabel={`Traveling status: currently ${isTraveling ? 'traveling' : 'at home'}. Tap to toggle.`}
           >
             {isUpdatingStatus ? (
               <ActivityIndicator
@@ -107,7 +113,12 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           </TouchableOpacity>
 
           {/* User Avatar */}
-          <View style={styles.avatarWrapper}>
+          <TouchableOpacity
+            style={styles.avatarWrapper}
+            onPress={onAvatarPress}
+            activeOpacity={onAvatarPress ? 0.8 : 1}
+            disabled={!onAvatarPress}
+          >
             {avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={styles.avatar} />
             ) : (
@@ -118,7 +129,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               </View>
             )}
             {isTraveling && <View style={styles.onlineBadge} />}
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

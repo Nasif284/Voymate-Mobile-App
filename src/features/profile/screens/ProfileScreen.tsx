@@ -46,7 +46,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user: authUser, logout } = useAuthStore();
+  const { user: authUser, logout, setUser } = useAuthStore();
 
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [upcomingTrips, setUpcomingTrips] = useState<ProfileUpcomingTrip[]>([]);
@@ -155,6 +155,9 @@ export const ProfileScreen: React.FC = () => {
     const prevVal = profile.isTraveling;
     // Optimistic update
     setProfile((prev) => (prev ? { ...prev, isTraveling: newVal } : null));
+    if (authUser) {
+      setUser({ ...authUser, isTraveling: newVal });
+    }
     setIsUpdatingTraveling(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
@@ -172,6 +175,9 @@ export const ProfileScreen: React.FC = () => {
     } catch {
       // Revert on error
       setProfile((prev) => (prev ? { ...prev, isTraveling: prevVal } : null));
+      if (authUser) {
+        setUser({ ...authUser, isTraveling: prevVal });
+      }
       Alert.alert('Update Failed', 'Could not update traveling status.');
     } finally {
       setIsUpdatingTraveling(false);
