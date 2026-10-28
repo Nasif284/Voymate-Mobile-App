@@ -239,18 +239,6 @@ export const ProfileScreen: React.FC = () => {
           )}
           <View style={styles.coverDarkGradient} />
 
-          {/* Top Right Header: Log Out Only */}
-          <View style={[styles.coverTopRight, { top: insets.top + (Platform.OS === 'ios' ? 8 : 12) }]}>
-            <TouchableOpacity
-              style={styles.logoutTopBtn}
-              onPress={handleLogout}
-              activeOpacity={0.8}
-            >
-              <LogOut size={14} color="#DC2626" />
-              <Text style={styles.logoutTopBtnText}>Log Out</Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Bottom Right: Change Cover */}
           <TouchableOpacity
             style={styles.changeCoverBtn}
@@ -451,6 +439,20 @@ export const ProfileScreen: React.FC = () => {
           onTripPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
           onSeeAll={() => navigation.navigate('Trips', { initialTab: 'active' })}
         />
+
+        {/* Log Out Button at Very Bottom */}
+        <View style={styles.logoutSection}>
+          <TouchableOpacity
+            style={styles.bottomLogoutBtn}
+            onPress={handleLogout}
+            activeOpacity={0.8}
+          >
+            <View style={styles.bottomLogoutIconCircle}>
+              <LogOut size={16} color="#DC2626" />
+            </View>
+            <Text style={styles.bottomLogoutText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -504,32 +506,6 @@ const styles = StyleSheet.create({
   coverDarkGradient: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.28)',
-  },
-  coverTopRight: {
-    position: 'absolute',
-    right: 20,
-    zIndex: 10,
-  },
-  logoutTopBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.7)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  logoutTopBtnText: {
-    color: '#DC2626',
-    fontSize: 12,
-    fontWeight: '800',
   },
   changeCoverBtn: {
     position: 'absolute',
@@ -759,5 +735,38 @@ const styles = StyleSheet.create({
     color: '#5C6B64',
     lineHeight: 15,
     marginTop: 2,
+  },
+  logoutSection: {
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  bottomLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FEE2E2',
+    paddingVertical: 14,
+    borderRadius: 20,
+    shadowColor: '#DC2626',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  bottomLogoutIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFF1F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomLogoutText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#DC2626',
   },
 });
