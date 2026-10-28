@@ -151,14 +151,27 @@ export const ProfileScreen: React.FC = () => {
 
   // Toggle Traveling State
   const handleToggleTraveling = async (newVal: boolean) => {
-    if (!profile) return;
+    if (!profile || isUpdatingTraveling) return;
+    const prevVal = profile.isTraveling;
+    // Optimistic update
+    setProfile((prev) => (prev ? { ...prev, isTraveling: newVal } : null));
     setIsUpdatingTraveling(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     try {
-      await profileService.updateProfile({ isTraveling: newVal });
-      setProfile((prev) => (prev ? { ...prev, isTraveling: newVal } : null));
+      await profileService.updateProfile({
+        fullName: profile.fullName,
+        bio: profile.bio || '',
+        isTraveling: newVal,
+        travelPersonalityCode: profile.travelPersonality || undefined,
+        interests: profile.interests || [],
+        languages: profile.languages || [],
+        skills: profile.skills || [],
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
+      // Revert on error
+      setProfile((prev) => (prev ? { ...prev, isTraveling: prevVal } : null));
       Alert.alert('Update Failed', 'Could not update traveling status.');
     } finally {
       setIsUpdatingTraveling(false);
@@ -360,7 +373,9 @@ export const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Traveling Mode Toggle Card */}
-        <View
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => handleToggleTraveling(!profile?.isTraveling)}
           style={[
             styles.travelingCard,
             profile?.isTraveling ? styles.travelingCardActive : styles.travelingCardInactive,
@@ -392,15 +407,19 @@ export const ProfileScreen: React.FC = () => {
               </Text>
             </View>
 
-            <Switch
-              value={Boolean(profile?.isTraveling)}
-              onValueChange={handleToggleTraveling}
-              disabled={isUpdatingTraveling}
-              trackColor={{ false: '#E2EBE5', true: '#005440' }}
-              thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
-            />
+            {isUpdatingTraveling ? (
+              <ActivityIndicator size="small" color="#005440" />
+            ) : (
+              <Switch
+                value={Boolean(profile?.isTraveling)}
+                onValueChange={handleToggleTraveling}
+                disabled={isUpdatingTraveling}
+                trackColor={{ false: '#E2EBE5', true: '#005440' }}
+                thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+              />
+            )}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Bio Card */}
         <ProfileBioCard
