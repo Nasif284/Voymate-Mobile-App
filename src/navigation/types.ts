@@ -59,4 +59,7 @@ export type RootStackParamList = {
   CreateTrip: undefined;
   EditProfile: undefined;
   KycVerification: undefined;
+  Trips: {
+    initialTab?: 'active' | 'past';
+  };
 };

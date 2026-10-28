@@ -59,6 +59,8 @@ export const ENDPOINTS = {
     ACTIVE: '/trip/active',
     UPCOMING: '/trip/upcoming',
     USER_UPCOMING: (userId: string) => `/trip/upcoming/${userId}`,
+    PAST: '/trip/past',
+    USER_PAST: (userId: string) => `/trip/past/${userId}`,
     CREATE: '/trip',
     UPDATE: (tripId: string) => `/trip/${tripId}`,
     DELETE: (tripId: string) => `/trip/delete/${tripId}`,

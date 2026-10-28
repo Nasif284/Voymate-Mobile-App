@@ -13,6 +13,7 @@ import { ProfileUpcomingTrip } from '../types';
 interface ProfileUpcomingTripsProps {
   trips: ProfileUpcomingTrip[];
   onTripPress?: (trip: ProfileUpcomingTrip) => void;
+  onSeeAll?: () => void;
 }
 
 const formatDate = (dateStr?: string | Date) => {
@@ -38,6 +39,7 @@ const formatYear = (dateStr?: string | Date) => {
 export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
   trips = [],
   onTripPress,
+  onSeeAll,
 }) => {
   if (!trips || trips.length === 0) return null;
 
@@ -50,8 +52,15 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
           </View>
           <Text style={styles.headerTitle}>Upcoming Travel Plans</Text>
         </View>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{trips.length}</Text>
+        <View style={styles.headerRight}>
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{trips.length}</Text>
+          </View>
+          {onSeeAll && (
+            <TouchableOpacity onPress={onSeeAll} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -172,6 +181,16 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#151D19',
     letterSpacing: -0.2,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  seeAllText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#005440',
   },
   countBadge: {
     backgroundColor: '#E8F5EE',

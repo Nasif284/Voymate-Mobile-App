@@ -8,6 +8,7 @@ import { OnboardingNavigator } from './OnboardingNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { UserProfileScreen } from '../features/profile/screens/UserProfileScreen';
 import { ConnectionsScreen } from '../features/connections/screens/ConnectionsScreen';
+import { TripsScreen } from '../features/trips/screens/TripsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -54,6 +55,11 @@ export const RootNavigator: React.FC = () => {
           <Stack.Screen
             name="Connections"
             component={ConnectionsScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="Trips"
+            component={TripsScreen}
             options={{ animation: 'slide_from_right' }}
           />
         </>

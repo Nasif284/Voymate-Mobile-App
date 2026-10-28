@@ -322,13 +322,20 @@ export const ProfileScreen: React.FC = () => {
 
           {/* Instagram-Style Stats Bar */}
           <View style={styles.statsBar}>
-            {/* Journeys */}
-            <View style={styles.statItem}>
+            {/* Journeys (Tappable) */}
+            <TouchableOpacity
+              style={styles.statItem}
+              activeOpacity={0.7}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                navigation.navigate('Trips', { initialTab: 'active' });
+              }}
+            >
               <Text style={styles.statNumber}>
                 {profile?.tripCount !== undefined ? profile.tripCount : upcomingTrips.length}
               </Text>
               <Text style={styles.statLabel}>JOURNEYS</Text>
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.statDivider} />
 
@@ -439,7 +446,11 @@ export const ProfileScreen: React.FC = () => {
         )}
 
         {/* Upcoming Journeys */}
-        <ProfileUpcomingTrips trips={upcomingTrips} />
+        <ProfileUpcomingTrips
+          trips={upcomingTrips}
+          onTripPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
+          onSeeAll={() => navigation.navigate('Trips', { initialTab: 'active' })}
+        />
       </ScrollView>
 
       {/* Edit Profile Modal */}
