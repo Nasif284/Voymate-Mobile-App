@@ -68,12 +68,6 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           <View style={styles.ambientGlowTop} />
           <View style={styles.ambientGlowBottom} />
 
-          {/* Radar Status Badge */}
-          <View style={styles.radarPill}>
-            <View style={styles.radarPulseDot} />
-            <Text style={styles.radarPillText}>VOYMATE RADAR ACTIVE</Text>
-          </View>
-
           {/* Destination & Meta */}
           <View style={styles.tripInfoRow}>
             <View style={styles.tripIconBox}>
@@ -350,31 +344,6 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 55,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  radarPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(160, 243, 212, 0.15)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginBottom: 14,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(160, 243, 212, 0.25)',
-  },
-  radarPulseDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: '#A0F3D4',
-  },
-  radarPillText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#A0F3D4',
-    letterSpacing: 0.6,
   },
   tripInfoRow: {
     flexDirection: 'row',
