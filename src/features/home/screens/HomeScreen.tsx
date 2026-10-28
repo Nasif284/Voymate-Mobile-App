@@ -21,6 +21,7 @@ import { NearbyTravelersCarousel } from '../components/NearbyTravelersCarousel';
 import { BuddyTravelerCard } from '../components/BuddyTravelerCard';
 import { ConnectModal } from '../components/ConnectModal';
 import { HomeSkeleton } from '../components/HomeSkeleton';
+import { HomeEmptyState } from '../components/HomeEmptyState';
 import { CreateTripModal } from '../../trips/components/CreateTripModal';
 import { tripService } from '../../trips/services/trip.service';
 import { Users, Compass, Sparkles } from 'lucide-react-native';
@@ -352,8 +353,8 @@ export const HomeScreen: React.FC = () => {
         onAvatarPress={() => navigation.navigate('Main', { screen: 'ProfileTab' } as any)}
       />
 
-      {/* 2. Plan Trip Banner if user has no active trip */}
-      {!isLoading && !activeTrip && (
+      {/* 2. Plan Trip Banner if user has no active trip AND feed is not empty */}
+      {!isLoading && !activeTrip && buddyUsers.length > 0 && (
         <PlanTripBanner onPlanTripPress={() => setIsCreateTripModalOpen(true)} />
       )}
 
@@ -367,20 +368,22 @@ export const HomeScreen: React.FC = () => {
         />
       )}
 
-      {/* 4. Infinite Feed Section Title */}
-      <View style={styles.feedHeader}>
-        <View style={styles.feedHeaderLeft}>
-          <View style={styles.feedIconCircle}>
-            <Users size={16} color={theme.colors.primary} />
-          </View>
-          <View>
-            <Text style={styles.feedTitle}>Looking for Travel Buddies</Text>
-            <Text style={styles.feedSubtitle}>
-              Solo travelers seeking companions for upcoming journeys
-            </Text>
+      {/* 4. Infinite Feed Section Title (Only shown when buddy users exist) */}
+      {buddyUsers.length > 0 && (
+        <View style={styles.feedHeader}>
+          <View style={styles.feedHeaderLeft}>
+            <View style={styles.feedIconCircle}>
+              <Users size={16} color={theme.colors.primary} />
+            </View>
+            <View>
+              <Text style={styles.feedTitle}>Looking for Travel Buddies</Text>
+              <Text style={styles.feedSubtitle}>
+                Solo travelers seeking companions for upcoming journeys
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
+      )}
     </View>
   );
 
@@ -407,22 +410,20 @@ export const HomeScreen: React.FC = () => {
     return null;
   };
 
-  // Render Empty State
+  // Render Psychologically-Optimized Empty State
   const renderEmpty = () => {
     if (isLoading) {
       return <HomeSkeleton />;
     }
 
     return (
-      <View style={styles.emptyCard}>
-        <View style={styles.emptyIconCircle}>
-          <Compass size={28} color={theme.colors.primary} />
-        </View>
-        <Text style={styles.emptyTitle}>Be the First Explorer</Text>
-        <Text style={styles.emptyText}>
-          No upcoming buddy trips found on the platform right now. Check back soon or set your traveling mode above!
-        </Text>
-      </View>
+      <HomeEmptyState
+        activeTrip={activeTrip}
+        onPlanTripPress={() => setIsCreateTripModalOpen(true)}
+        onViewMatchesPress={() => navigation.navigate('Main', { screen: 'MatchesTab' } as any)}
+        onViewTripsPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
+        onExplorePress={() => navigation.navigate('Main', { screen: 'ExploreTab' } as any)}
+      />
     );
   };
 
@@ -531,39 +532,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textMuted,
     marginTop: 1,
-  },
-  emptyCard: {
-    marginHorizontal: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    paddingVertical: 36,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8E4',
-    marginTop: 6,
-  },
-  emptyIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#EEF8F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 19,
   },
   footerLoader: {
     flexDirection: 'row',
