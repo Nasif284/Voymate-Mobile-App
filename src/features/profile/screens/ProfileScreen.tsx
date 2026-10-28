@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
 import { profileService } from '../services/profile.service';
 import { connectionService } from '../../connections/services/connection.service';
@@ -451,13 +452,13 @@ export const ProfileScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.bottomLogoutBtn}
             onPress={handleLogout}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 12, right: 12 }}
           >
-            <View style={styles.bottomLogoutIconCircle}>
-              <LogOut size={16} color="#DC2626" />
-            </View>
-            <Text style={styles.bottomLogoutText}>Log Out</Text>
+            <LogOut size={13} color="#DC2626" strokeWidth={2.2} />
+            <Text style={styles.bottomLogoutText}>Log out</Text>
           </TouchableOpacity>
+          <Text style={styles.appVersionText}>Voymate • v1.0.0</Text>
         </View>
       </ScrollView>
 
@@ -743,36 +744,33 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   logoutSection: {
-    marginTop: 20,
-    marginBottom: 8,
+    marginTop: 24,
+    marginBottom: 12,
+    alignItems: 'center',
   },
   bottomLogoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#FEE2E2',
-    paddingVertical: 14,
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  bottomLogoutIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#FFF1F2',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FFF5F5',
+    borderWidth: 1,
+    borderColor: '#FED7D7',
   },
   bottomLogoutText: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 12.5,
+    fontWeight: '700',
     color: '#DC2626',
+    letterSpacing: 0.1,
+  },
+  appVersionText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: theme.colors.textPlaceholder,
+    marginTop: 10,
+    letterSpacing: 0.2,
   },
 });
