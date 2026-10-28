@@ -27,6 +27,7 @@ import {
   Compass,
   Edit3,
   Trash2,
+  Wallet,
   Clock,
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -138,7 +139,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   };
 
-  // Render individual trip item matching connectionCard layout template
+  // Original Card Design
   const renderTripItem = ({ item }: { item: UserTrip }) => {
     const dateRange = formatDateRange(item.dateFrom, item.dateTo);
     const destName =
@@ -150,62 +151,64 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
     return (
       <View style={styles.tripCard}>
-        {/* Destination Thumbnail */}
-        <View style={styles.thumbWrapper}>
+        {/* Cover Image Banner */}
+        <View style={styles.imageWrap}>
           {item.destination?.coverUrl ? (
             <Image
               source={{ uri: item.destination.coverUrl }}
-              style={styles.tripThumb}
+              style={styles.tripCoverImage}
               resizeMode="cover"
             />
           ) : (
-            <View style={styles.tripThumbFallback}>
-              <Compass size={24} color="#005440" />
-            </View>
+            <View style={styles.tripCoverFallback} />
           )}
+          <View style={styles.imageOverlay} />
+
+          {/* Status Badge */}
           <View
             style={[
-              styles.statusBadge,
-              isCurrentActive ? styles.statusBadgeActive : styles.statusBadgePast,
+              styles.statusPill,
+              isCurrentActive ? styles.statusPillActive : styles.statusPillPast,
             ]}
           >
             <Text
               style={[
-                styles.statusBadgeText,
-                isCurrentActive ? styles.statusBadgeTextActive : styles.statusBadgeTextPast,
+                styles.statusPillText,
+                isCurrentActive ? styles.statusPillTextActive : styles.statusPillTextPast,
               ]}
             >
-              {isCurrentActive ? 'Active' : 'Past'}
+              {isCurrentActive ? 'Active' : 'Completed'}
             </Text>
           </View>
         </View>
 
-        {/* Trip Details Column */}
-        <View style={styles.tripInfo}>
-          <Text style={styles.tripName} numberOfLines={1}>
+        {/* Card Body */}
+        <View style={styles.cardBody}>
+          <Text style={styles.tripTitle} numberOfLines={1}>
             {item.name || destName}
           </Text>
 
           {/* Location row */}
-          <View style={styles.locationRow}>
-            <MapPin size={12} color="#005440" />
-            <Text style={styles.locationText} numberOfLines={1}>
+          <View style={styles.metaRow}>
+            <MapPin size={13} color="#005440" />
+            <Text style={styles.metaText} numberOfLines={1}>
               {destName}
             </Text>
           </View>
 
           {/* Date range row */}
           {dateRange ? (
-            <View style={styles.dateRow}>
-              <Calendar size={12} color="#5C6B64" />
+            <View style={styles.metaRow}>
+              <Calendar size={13} color="#5C6B64" />
               <Text style={styles.dateText}>{dateRange}</Text>
             </View>
           ) : null}
 
-          {/* Badges / Chips */}
+          {/* Chips row */}
           <View style={styles.badgesRow}>
             {item.travelStyle || item.travelStyleCode ? (
               <View style={styles.tagBadge}>
+                <Compass size={11} color="#005440" />
                 <Text style={styles.tagText}>
                   {item.travelStyle || item.travelStyleCode}
                 </Text>
@@ -214,6 +217,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {item.budgetStyle || item.budgetStyleCode ? (
               <View style={[styles.tagBadge, styles.tagBadgeMuted]}>
+                <Wallet size={11} color="#5C6B64" />
                 <Text style={[styles.tagText, styles.tagTextMuted]}>
                   {item.budgetStyle || item.budgetStyleCode}
                 </Text>
@@ -221,7 +225,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             ) : null}
           </View>
 
-          {/* Actions: Edit & Delete for Active Trips */}
+          {/* Action Buttons for Active Trips */}
           {isCurrentActive && (
             <View style={styles.cardActions}>
               <TouchableOpacity
@@ -232,7 +236,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
                 }}
                 activeOpacity={0.8}
               >
-                <Edit3 size={13} color="#005440" />
+                <Edit3 size={14} color="#005440" />
                 <Text style={styles.editBtnText}>Edit</Text>
               </TouchableOpacity>
 
@@ -241,7 +245,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
                 onPress={() => handleDeleteTrip(item.id)}
                 activeOpacity={0.8}
               >
-                <Trash2 size={13} color="#DC2626" />
+                <Trash2 size={14} color="#DC2626" />
                 <Text style={styles.deleteBtnText}>Delete</Text>
               </TouchableOpacity>
             </View>
@@ -517,110 +521,110 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   listContent: {
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 16,
   },
   tripCard: {
-    flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    padding: 14,
-    borderRadius: 18,
+    borderRadius: 20,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#E6EFE9',
-    gap: 14,
-    alignItems: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  thumbWrapper: {
-    width: 76,
-    height: 76,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#E8F5EE',
+  imageWrap: {
+    height: 140,
+    backgroundColor: '#E2EBE5',
     position: 'relative',
   },
-  tripThumb: {
+  tripCoverImage: {
     width: '100%',
     height: '100%',
   },
-  tripThumbFallback: {
+  tripCoverFallback: {
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E8F5EE',
+    backgroundColor: '#005440',
+    opacity: 0.85,
   },
-  statusBadge: {
+  imageOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+  },
+  statusPill: {
     position: 'absolute',
-    top: 5,
-    left: 5,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    top: 12,
+    left: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
-  statusBadgeActive: {
+  statusPillActive: {
     backgroundColor: '#005440',
   },
-  statusBadgePast: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  statusPillPast: {
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
   },
-  statusBadgeText: {
-    fontSize: 9,
+  statusPillText: {
+    fontSize: 11,
     fontWeight: '800',
   },
-  statusBadgeTextActive: {
+  statusPillTextActive: {
     color: '#FFFFFF',
   },
-  statusBadgeTextPast: {
+  statusPillTextPast: {
     color: '#FFFFFF',
   },
-  tripInfo: {
-    flex: 1,
-    gap: 4,
+  cardBody: {
+    padding: 16,
+    gap: 8,
   },
-  tripName: {
-    fontSize: 15,
+  tripTitle: {
+    fontSize: 17,
     fontWeight: '800',
     color: '#151D19',
   },
-  locationRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
-  locationText: {
-    fontSize: 12,
-    color: '#5C6B64',
-    fontWeight: '500',
+  metaText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#005440',
     flex: 1,
   },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
   dateText: {
-    fontSize: 11.5,
-    color: '#88978E',
+    fontSize: 12,
     fontWeight: '500',
+    color: '#5C6B64',
   },
   badgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
   },
   tagBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     backgroundColor: '#E8F5EE',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderRadius: 8,
   },
   tagBadgeMuted: {
     backgroundColor: '#F3F6F4',
   },
   tagText: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '700',
     color: '#005440',
   },
@@ -630,34 +634,39 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
+    gap: 10,
+    marginTop: 10,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F4F1',
   },
   editBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#E8F5EE',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 9,
     borderRadius: 12,
   },
   editBtnText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#005440',
   },
   deleteBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#FFF1F2',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#FEE2E2',
+    paddingVertical: 9,
     borderRadius: 12,
   },
   deleteBtnText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#DC2626',
   },
