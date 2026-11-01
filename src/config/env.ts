@@ -1,49 +1,25 @@
 /**
  * Environment configuration for Voymate Mobile
  *
- * For physical iPhone/Android devices on the same Wi-Fi network:
- * We connect to your computer's LAN IP on port 5000.
+ * All environment variables are loaded securely from the parent `.env` file
+ * using Expo's standard `EXPO_PUBLIC_*` convention.
+ *
+ * DO NOT hardcode local IPs, tunnels, or API secrets in this file.
  */
-const PROD_API_URL = 'https://api.travelbuddy.nasifhub.online/api/v1';
-const PROD_SOCKET_URL = 'https://api.travelbuddy.nasifhub.online';
 
-// Your computer's Wi-Fi IP on your local network
-const LOCAL_LAN_IP = '192.168.20.2';
-const DEV_LAN_API_URL = `http://${LOCAL_LAN_IP}:5000/api/v1`;
-const DEV_LAN_SOCKET_URL = `http://${LOCAL_LAN_IP}:5000`;
+const rawApiUrl =
+  process.env.EXPO_PUBLIC_API_URL || 'https://api.voymate.nasifhub.online/api/v1';
+const cleanApiUrl = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+const API_URL = cleanApiUrl.includes('/api/v1') ? cleanApiUrl : `${cleanApiUrl}/api/v1`;
 
-// Active ngrok tunnel (bypasses Windows Firewall & Wi-Fi router isolation)
-const DEV_TUNNEL_URL = 'https://early-fountain-ungloved.ngrok-free.dev';
-
-type ConnectionMode = 'tunnel' | 'local' | 'prod';
-const CONNECTION_MODE: ConnectionMode = 'tunnel' as ConnectionMode;
-
-const getApiUrl = () => {
-  switch (CONNECTION_MODE) {
-    case 'prod':
-      return PROD_API_URL;
-    case 'tunnel':
-      return `${DEV_TUNNEL_URL}/api/v1`;
-    case 'local':
-    default:
-      return DEV_LAN_API_URL;
-  }
-};
-
-const getSocketUrl = () => {
-  switch (CONNECTION_MODE) {
-    case 'prod':
-      return PROD_SOCKET_URL;
-    case 'tunnel':
-      return DEV_TUNNEL_URL;
-    case 'local':
-    default:
-      return DEV_LAN_SOCKET_URL;
-  }
-};
+const rawSocketUrl =
+  process.env.EXPO_PUBLIC_SOCKET_URL ||
+  cleanApiUrl.replace(/\/api\/v1\/?$/, '');
+const SOCKET_URL = rawSocketUrl.endsWith('/') ? rawSocketUrl.slice(0, -1) : rawSocketUrl;
 
 export const ENV = {
-  API_URL: getApiUrl(),
-  SOCKET_URL: getSocketUrl(),
+  API_URL,
+  SOCKET_URL,
+  GOOGLE_PLACES_API_KEY: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '',
   IS_DEV: __DEV__,
 } as const;

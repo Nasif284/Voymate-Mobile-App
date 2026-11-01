@@ -1,4 +1,6 @@
-const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '';
+import { ENV } from '../../config/env';
+
+const GOOGLE_PLACES_API_KEY = ENV.GOOGLE_PLACES_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '';
 
 export interface PlaceSuggestion {
   placeId: string;
