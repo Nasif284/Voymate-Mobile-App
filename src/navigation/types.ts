@@ -6,6 +6,7 @@ export type AuthStackParamList = {
   Signup: undefined;
   VerifyEmail: { email: string; password?: string };
   ForgotPassword: undefined;
+  ForgotPasswordVerify: { email: string };
   ResetPassword: { email: string };
 };
 

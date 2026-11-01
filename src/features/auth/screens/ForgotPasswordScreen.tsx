@@ -57,7 +57,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
       });
 
       haptics.success();
-      setSuccessMessage('Password reset code sent. Check your inbox.');
+      navigation.navigate('ForgotPasswordVerify', { email: cleanEmail });
     } catch (err: any) {
       haptics.error();
       const message =
@@ -103,7 +103,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
                 <Text style={styles.title}>Reset password</Text>
                 <Text style={styles.subtitle}>
-                  Enter the email address tied to your account and we'll send you recovery instructions.
+                  Enter your email address and we will send you the verification code to reset your password.
                 </Text>
               </View>
 
@@ -140,7 +140,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                 />
 
                 <Button
-                  title="Send Reset Code"
+                  title="Send Verification Code"
                   variant="primary"
                   size="lg"
                   loading={loading}
