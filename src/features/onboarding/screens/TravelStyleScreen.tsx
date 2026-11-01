@@ -12,15 +12,12 @@ import { OnboardingStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
 import { useHaptics } from '../../../hooks/useHaptics';
-import { useAuthStore } from '../../../store/authStore';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
+import { useSetOnboardingTravelStyle } from '../hooks/onboarding.hooks';
 import {
   ArrowLeft,
   Check,
   AlertCircle,
   Sparkles,
-  Compass,
   Users,
   Backpack,
   Coins,
@@ -155,11 +152,13 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>(['Mountains', 'Culture']);
   const [matchPreference, setMatchPreference] = useState<MatchPreference>('EVERYONE');
 
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const setOnboarding = useAuthStore((state) => state.setOnboarding);
   const haptics = useHaptics();
+  const setTravelStyleMutation = useSetOnboardingTravelStyle({
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = setTravelStyleMutation.isPending;
 
   // Next Micro-step
   const handleNextSubStep = () => {
@@ -211,31 +210,14 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   // Final Submit
-  const handleFinalSubmit = async () => {
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.ONBOARDING.TRAVEL_STYLE, {
-        travelType,
-        interests: selectedInterests,
-        travelPersonality: personality,
-        matchWith: matchPreference,
-      });
-
-      haptics.success();
-      // Marks onboarding as complete (skipping optional trip creation for now)
-      setOnboarding(3, true);
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        'Could not save your travel preferences. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+  const handleFinalSubmit = () => {
+    setErrorMessage(null);
+    setTravelStyleMutation.mutate({
+      travelType,
+      interests: selectedInterests,
+      travelPersonality: personality,
+      matchWith: matchPreference,
+    });
   };
 
   return (
@@ -340,7 +322,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                               isSelected && styles.radioCircleSelected,
                             ]}
                           >
-                            {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                            {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
                         <Text style={styles.cardTagline}>{type.tagline}</Text>
@@ -406,7 +388,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                               isSelected && styles.radioCircleSelected,
                             ]}
                           >
-                            {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                            {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
                         <Text style={styles.cardTagline}>{p.tagline}</Text>
@@ -440,7 +422,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       activeOpacity={0.7}
                     >
                       {isSelected ? (
-                        <Check size={15} color="#FFFFFF" style={{ marginRight: 6 }} strokeWidth={2.5} />
+                        <Check size={15} color={theme.colors.white} style={{ marginRight: 6 }} strokeWidth={2.5} />
                       ) : (
                         <Sparkles size={14} color={theme.colors.textMuted} style={{ marginRight: 6 }} />
                       )}
@@ -518,7 +500,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                               isSelected && styles.radioCircleSelected,
                             ]}
                           >
-                            {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                            {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
                         <Text style={styles.cardDesc}>{pref.subtitle}</Text>
@@ -603,7 +585,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 3.5,
     borderRadius: 2,
-    backgroundColor: 'rgba(0, 84, 64, 0.1)',
+    backgroundColor: theme.colors.borderSubtle,
   },
   segmentDashActive: {
     backgroundColor: theme.colors.primary,
@@ -640,7 +622,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
+    borderColor: theme.colors.error,
   },
   bannerIcon: {
     marginRight: 8,
@@ -660,14 +642,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     padding: 16,
     alignItems: 'flex-start',
     ...theme.shadows.subtle,
   },
   choiceCardSelected: {
     borderColor: theme.colors.primary,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
@@ -678,7 +660,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 14,
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -705,7 +687,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 84, 64, 0.2)',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -737,7 +719,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 22,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.12)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   interestChipSelected: {
@@ -750,7 +732,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   interestChipTextSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontWeight: '600',
   },
   selectedCountBox: {
@@ -772,7 +754,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 84, 64, 0.06)',
+    borderTopColor: theme.colors.borderSubtle,
   },
   actionButton: {
     borderRadius: 16,

@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { UserTrip, EditTripPayload } from '../types';
-import { tripService } from '../services/trip.service';
+import { useUpdateTripPlan } from '../hooks/trip.hooks';
 import { TRAVEL_STYLES, BUDGET_STYLES } from './CreateTripModal';
 import {
   X,
@@ -26,6 +26,7 @@ import {
   Clock,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { theme } from '../../../config/theme';
 
 interface EditTripModalProps {
   visible: boolean;
@@ -59,7 +60,8 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
   const [travelStyle, setTravelStyle] = useState('ADVENTURE');
   const [budgetStyle, setBudgetStyle] = useState('MODERATE');
   const [activePicker, setActivePicker] = useState<'from' | 'to' | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const updateTripMutation = useUpdateTripPlan();
+  const isSubmitting = updateTripMutation.isPending;
 
   useEffect(() => {
     if (trip) {
@@ -102,33 +104,31 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (dateTo <= dateFrom) {
       Alert.alert('Invalid Dates', 'Return date must be after departure date.');
       return;
     }
 
-    setIsSubmitting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    try {
-      const payload: EditTripPayload = {
-        dateFrom: dateFrom.toISOString(),
-        dateTo: dateTo.toISOString(),
-        budgetStyleCode: budgetStyle,
-        travelStyleCode: travelStyle,
-      };
+    const payload: EditTripPayload = {
+      dateFrom: dateFrom.toISOString(),
+      dateTo: dateTo.toISOString(),
+      budgetStyleCode: budgetStyle,
+      travelStyleCode: travelStyle,
+    };
 
-      await tripService.updateTrip(trip.id, payload);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Updated', 'Your trip plan has been updated.');
-      onSuccess();
-      onClose();
-    } catch {
-      Alert.alert('Update Failed', 'Could not update this trip. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    updateTripMutation.mutate(
+      { tripId: trip.id, payload },
+      {
+        onSuccess: () => {
+          Alert.alert('Updated', 'Your trip plan has been updated.');
+          onSuccess();
+          onClose();
+        },
+      }
+    );
   };
 
   const destinationName =
@@ -151,7 +151,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               <View>
                 <Text style={styles.headerTitle}>Edit Trip</Text>
                 <View style={styles.destRow}>
-                  <MapPin size={12} color="#005440" />
+                  <MapPin size={12} color={theme.colors.primary} />
                   <Text style={styles.destText} numberOfLines={1}>
                     {destinationName}
                   </Text>
@@ -162,7 +162,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 onPress={onClose}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <X size={20} color="#151D19" />
+                <X size={20} color={theme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
@@ -174,10 +174,10 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               {/* Date Selection Section */}
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Calendar size={16} color="#005440" />
+                  <Calendar size={16} color={theme.colors.primary} />
                   <Text style={styles.sectionTitle}>Travel Dates</Text>
                   <View style={styles.durationPill}>
-                    <Clock size={11} color="#005440" />
+                    <Clock size={11} color={theme.colors.primary} />
                     <Text style={styles.durationText}>{durationDays} days</Text>
                   </View>
                 </View>
@@ -198,7 +198,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                     <Text style={styles.dateLabel}>DEPARTURE</Text>
                     <Text style={styles.dateValue}>{formatDisplayDate(dateFrom)}</Text>
                   </View>
-                  <Calendar size={18} color="#005440" />
+                  <Calendar size={18} color={theme.colors.primary} />
                 </TouchableOpacity>
 
                 {activePicker === 'from' && (
@@ -209,7 +209,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                       display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                       onChange={handleDateFromChange}
                       minimumDate={new Date()}
-                      textColor="#151D19"
+                      textColor={theme.colors.textPrimary}
                     />
                   </View>
                 )}
@@ -230,7 +230,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                     <Text style={styles.dateLabel}>RETURN</Text>
                     <Text style={styles.dateValue}>{formatDisplayDate(dateTo)}</Text>
                   </View>
-                  <Calendar size={18} color="#005440" />
+                  <Calendar size={18} color={theme.colors.primary} />
                 </TouchableOpacity>
 
                 {activePicker === 'to' && (
@@ -241,7 +241,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                       display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                       onChange={handleDateToChange}
                       minimumDate={new Date(dateFrom.getTime() + 86400000)}
-                      textColor="#151D19"
+                      textColor={theme.colors.textPrimary}
                     />
                   </View>
                 )}
@@ -250,7 +250,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               {/* Travel Style Section */}
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Compass size={16} color="#005440" />
+                  <Compass size={16} color={theme.colors.primary} />
                   <Text style={styles.sectionTitle}>Travel Style</Text>
                 </View>
                 <View style={styles.chipsWrap}>
@@ -278,7 +278,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                         >
                           {style.label}
                         </Text>
-                        {isSelected && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                        {isSelected && <Check size={14} color={theme.colors.white} strokeWidth={3} />}
                       </TouchableOpacity>
                     );
                   })}
@@ -288,7 +288,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               {/* Budget Style Section */}
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
-                  <Wallet size={16} color="#005440" />
+                  <Wallet size={16} color={theme.colors.primary} />
                   <Text style={styles.sectionTitle}>Budget Style</Text>
                 </View>
                 <View style={styles.budgetGrid}>
@@ -311,7 +311,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                           <Text style={styles.budgetIcon}>{b.icon}</Text>
                           {isSelected && (
                             <View style={styles.selectedDot}>
-                              <Check size={10} color="#FFFFFF" strokeWidth={3} />
+                              <Check size={10} color={theme.colors.white} strokeWidth={3} />
                             </View>
                           )}
                         </View>
@@ -356,7 +356,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
                   <Text style={styles.submitBtnText}>Save Changes</Text>
                 )}
@@ -372,11 +372,11 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'flex-end',
   },
   sheetContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '90%',
@@ -390,12 +390,12 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF3F0',
+    borderBottomColor: theme.colors.border,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   destRow: {
     flexDirection: 'row',
@@ -406,13 +406,13 @@ const styles = StyleSheet.create({
   destText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   closeBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -433,56 +433,56 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
     flex: 1,
   },
   durationPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
   },
   durationText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   dateCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1.5,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   dateCardActive: {
-    borderColor: '#005440',
-    backgroundColor: '#F0F9F4',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryMist,
   },
   dateLabel: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.5,
   },
   dateValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     marginTop: 2,
   },
   pickerBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     marginTop: 4,
     overflow: 'hidden',
   },
@@ -495,16 +495,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1.5,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   chipSelected: {
-    backgroundColor: '#005440',
-    borderColor: '#005440',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   chipIcon: {
     fontSize: 14,
@@ -512,10 +512,10 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   chipTextSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   budgetGrid: {
     flexDirection: 'row',
@@ -524,15 +524,15 @@ const styles = StyleSheet.create({
   },
   budgetCard: {
     width: '48.5%',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1.5,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     padding: 12,
   },
   budgetCardSelected: {
-    backgroundColor: '#005440',
-    borderColor: '#005440',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   budgetTopRow: {
     flexDirection: 'row',
@@ -547,25 +547,25 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#10B981',
+    backgroundColor: theme.colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
   budgetTitle: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   budgetTitleSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   budgetDesc: {
     fontSize: 11,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   budgetDescSelected: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: theme.colors.primaryLight,
   },
   footer: {
     flexDirection: 'row',
@@ -573,32 +573,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 14,
     borderTopWidth: 1,
-    borderTopColor: '#EEF3F0',
+    borderTopColor: theme.colors.border,
   },
   cancelBtn: {
     flex: 1,
     paddingVertical: 13,
     borderRadius: 14,
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelBtnText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
   submitBtn: {
     flex: 2,
     paddingVertical: 13,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   submitBtnText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
   },
 });

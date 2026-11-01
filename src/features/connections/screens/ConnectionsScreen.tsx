@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,20 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
-import { connectionService } from '../services/connection.service';
-import { useConnectionStore } from '../../../store/connectionStore';
-import { ConnectionUser, IncomingRequest, SentRequest } from '../types';
+import {
+  useGetConnections,
+  useGetIncomingRequests,
+  useGetSentRequests,
+  useAcceptConnectionRequest,
+  useRejectConnectionRequest,
+  useWithdrawConnectionRequest,
+  useDisconnectConnection,
+} from '../hooks/connection.hooks';
+import { ConnectionUser, IncomingRequest } from '../types';
 import {
   ChevronLeft,
   Search,
@@ -28,10 +34,10 @@ import {
   Users,
   Clock,
   MapPin,
-  Send,
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
+import { theme } from '../../../config/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Connections'>;
 
@@ -41,102 +47,82 @@ type RequestSubTab = 'incoming' | 'sent';
 export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const { initialTab = 'connections', initialSubTab = 'incoming' } = route.params || {};
-  const { setRelationship } = useConnectionStore();
 
   const [activeTab, setActiveTab] = useState<MainTab>(initialTab);
   const [requestSubTab, setRequestSubTab] = useState<RequestSubTab>(initialSubTab);
-
-  const [connections, setConnections] = useState<ConnectionUser[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<IncomingRequest[]>([]);
-  const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
-
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Load All Data
-  const loadData = useCallback(async () => {
-    try {
-      const [connData, incData, sentData] = await Promise.all([
-        connectionService.getConnections().catch(() => []),
-        connectionService.getIncomingRequests().catch(() => []),
-        connectionService.getSentRequests().catch(() => []),
-      ]);
+  // TanStack Query Hooks
+  const {
+    data: connections = [],
+    isLoading: isLoadingConnections,
+    isRefetching: isRefetchingConnections,
+    refetch: refetchConnections,
+  } = useGetConnections();
 
-      setConnections(connData);
-      setIncomingRequests(incData);
-      setSentRequests(sentData);
-    } catch (err) {
-      console.warn('Error loading connections:', err);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
+  const {
+    data: incomingRequests = [],
+    isLoading: isLoadingIncoming,
+    isRefetching: isRefetchingIncoming,
+    refetch: refetchIncoming,
+  } = useGetIncomingRequests();
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const {
+    data: sentRequests = [],
+    isLoading: isLoadingSent,
+    isRefetching: isRefetchingSent,
+    refetch: refetchSent,
+  } = useGetSentRequests();
 
-  const onRefresh = () => {
-    setIsRefreshing(true);
-    loadData();
-  };
+  const acceptMutation = useAcceptConnectionRequest();
+  const rejectMutation = useRejectConnectionRequest();
+  const withdrawMutation = useWithdrawConnectionRequest();
+  const disconnectMutation = useDisconnectConnection();
+
+  const isLoading = isLoadingConnections || isLoadingIncoming || isLoadingSent;
+  const isRefreshing =
+    isRefetchingConnections || isRefetchingIncoming || isRefetchingSent;
+
+  const onRefresh = useCallback(() => {
+    refetchConnections();
+    refetchIncoming();
+    refetchSent();
+  }, [refetchConnections, refetchIncoming, refetchSent]);
 
   // Accept incoming request
-  const handleAccept = async (request: IncomingRequest) => {
+  const handleAccept = (request: IncomingRequest) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    try {
-      await connectionService.acceptRequest(request.id);
-      setRelationship(request.sender.id, 'CONNECTED', null, null);
-      setIncomingRequests((prev) => prev.filter((r) => r.id !== request.id));
-      // Add to connections list
-      setConnections((prev) => [
-        {
-          id: request.id,
-          userId: request.sender.id,
-          fullName: request.sender.fullName,
-          avatarUrl: request.sender.avatarUrl,
-          state: request.sender.state,
-          country: request.sender.country,
+    acceptMutation.mutate(
+      {
+        targetUserId: request.sender.id,
+        requestId: request.id,
+      },
+      {
+        onSuccess: () => {
+          Alert.alert('Connected', `You and ${request.sender.fullName} are now connected.`);
         },
-        ...prev,
-      ]);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Connected', `You and ${request.sender.fullName} are now connected.`);
-    } catch {
-      Alert.alert('Error', 'Could not accept this request.');
-    }
+      }
+    );
   };
 
   // Decline incoming request
-  const handleReject = async (requestId: string) => {
+  const handleReject = (requestId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    try {
-      const targetReq = incomingRequests.find((r) => r.id === requestId);
-      await connectionService.rejectRequest(requestId);
-      if (targetReq?.sender?.id) {
-        setRelationship(targetReq.sender.id, 'NONE', null, null);
-      }
-      setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
-    } catch {
-      Alert.alert('Error', 'Could not decline this request.');
-    }
+    const targetReq = incomingRequests.find((r) => r.id === requestId);
+    rejectMutation.mutate({
+      requestId,
+      senderId: targetReq?.sender?.id,
+    });
   };
 
   // Cancel sent request
-  const handleCancelSent = async (requestId: string) => {
+  const handleCancelSent = (requestId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    try {
-      const targetReq = sentRequests.find((r) => r.id === requestId);
-      await connectionService.withdrawRequest(requestId);
-      if (targetReq?.receiver?.id) {
-        setRelationship(targetReq.receiver.id, 'NONE', null, null);
-      }
-      setSentRequests((prev) => prev.filter((r) => r.id !== requestId));
-    } catch {
-      Alert.alert('Error', 'Could not cancel this request.');
-    }
+    const targetReq = sentRequests.find((r) => r.id === requestId);
+    withdrawMutation.mutate({
+      requestId,
+      receiverId: targetReq?.receiver?.id,
+    });
   };
 
   // Remove connection
@@ -149,17 +135,12 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            try {
-              await connectionService.disconnect(conn.id);
-              if (conn.userId) {
-                setRelationship(conn.userId, 'NONE', null, null);
-              }
-              setConnections((prev) => prev.filter((c) => c.id !== conn.id));
-            } catch {
-              Alert.alert('Error', 'Could not remove connection.');
-            }
+            disconnectMutation.mutate({
+              connectionId: conn.id,
+              userId: conn.userId,
+            });
           },
         },
       ]
@@ -208,7 +189,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <ChevronLeft size={24} color="#151D19" />
+          <ChevronLeft size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Network</Text>
         <View style={styles.headerRightPlaceholder} />
@@ -255,18 +236,18 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
       {/* Content Area */}
       {isLoading ? (
         <View style={styles.loaderCenter}>
-          <ActivityIndicator size="large" color="#005440" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : activeTab === 'connections' ? (
         /* CONNECTIONS TAB */
         <View style={styles.tabContent}>
           {/* Search Bar */}
           <View style={styles.searchBox}>
-            <Search size={16} color="#88978E" />
+            <Search size={16} color={theme.colors.textMuted} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by name or location..."
-              placeholderTextColor="#88978E"
+              placeholderTextColor={theme.colors.textPlaceholder}
               value={searchQuery}
               onChangeText={setSearchQuery}
               clearButtonMode="while-editing"
@@ -279,12 +260,12 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#005440" />
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <View style={styles.emptyIconCircle}>
-                  <Users size={32} color="#005440" />
+                  <Users size={32} color={theme.colors.primary} />
                 </View>
                 <Text style={styles.emptyTitle}>No Travel Mates Yet</Text>
                 <Text style={styles.emptySubtitle}>
@@ -318,7 +299,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                     </Text>
                     {location ? (
                       <View style={styles.locationRow}>
-                        <MapPin size={11} color="#5C6B64" />
+                        <MapPin size={11} color={theme.colors.textSecondary} />
                         <Text style={styles.locationText} numberOfLines={1}>
                           {location}
                         </Text>
@@ -332,7 +313,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                       style={styles.messageBtn}
                       onPress={() => handleMessage(item.userId, item.fullName, item.avatarUrl)}
                     >
-                      <MessageSquare size={14} color="#005440" />
+                      <MessageSquare size={14} color={theme.colors.primary} />
                       <Text style={styles.messageBtnText}>Message</Text>
                     </TouchableOpacity>
 
@@ -341,7 +322,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                       onPress={() => handleDisconnect(item)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      <UserX size={15} color="#88978E" />
+                      <UserX size={15} color={theme.colors.textMuted} />
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
@@ -403,12 +384,12 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#005440" />
+                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
               }
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <View style={styles.emptyIconCircle}>
-                    <Users size={32} color="#005440" />
+                    <Users size={32} color={theme.colors.primary} />
                   </View>
                   <Text style={styles.emptyTitle}>No Incoming Requests</Text>
                   <Text style={styles.emptySubtitle}>
@@ -451,7 +432,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         <Text style={styles.connName}>{item.sender.fullName}</Text>
                         {senderLocation ? (
                           <View style={styles.locationRow}>
-                            <MapPin size={11} color="#5C6B64" />
+                            <MapPin size={11} color={theme.colors.textSecondary} />
                             <Text style={styles.locationText}>{senderLocation}</Text>
                           </View>
                         ) : null}
@@ -471,7 +452,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         style={styles.acceptBtn}
                         onPress={() => handleAccept(item)}
                       >
-                        <Check size={14} color="#FFFFFF" strokeWidth={2.5} />
+                        <Check size={14} color={theme.colors.white} strokeWidth={2.5} />
                         <Text style={styles.acceptBtnText}>Accept</Text>
                       </TouchableOpacity>
 
@@ -479,7 +460,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         style={styles.declineBtn}
                         onPress={() => handleReject(item.id)}
                       >
-                        <X size={14} color="#5C6B64" />
+                        <X size={14} color={theme.colors.textSecondary} />
                         <Text style={styles.declineBtnText}>Decline</Text>
                       </TouchableOpacity>
                     </View>
@@ -495,12 +476,12 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#005440" />
+                <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
               }
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <View style={styles.emptyIconCircle}>
-                    <Clock size={32} color="#005440" />
+                    <Clock size={32} color={theme.colors.primary} />
                   </View>
                   <Text style={styles.emptyTitle}>No Sent Requests</Text>
                   <Text style={styles.emptySubtitle}>
@@ -543,14 +524,14 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         <Text style={styles.connName}>{item.receiver.fullName}</Text>
                         {receiverLocation ? (
                           <View style={styles.locationRow}>
-                            <MapPin size={11} color="#5C6B64" />
+                            <MapPin size={11} color={theme.colors.textSecondary} />
                             <Text style={styles.locationText}>{receiverLocation}</Text>
                           </View>
                         ) : null}
                       </View>
 
                       <View style={styles.pendingBadge}>
-                        <Clock size={11} color="#5C6B64" />
+                        <Clock size={11} color={theme.colors.textSecondary} />
                         <Text style={styles.pendingText}>Pending</Text>
                       </View>
                     </TouchableOpacity>
@@ -582,7 +563,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -590,9 +571,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E6EFE9',
+    borderBottomColor: theme.colors.border,
   },
   backBtn: {
     width: 36,
@@ -603,17 +584,17 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   headerRightPlaceholder: {
     width: 36,
   },
   tabsRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E6EFE9',
+    borderBottomColor: theme.colors.border,
   },
   tabBtn: {
     flex: 1,
@@ -626,21 +607,21 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabBtnActive: {
-    borderBottomColor: '#005440',
+    borderBottomColor: theme.colors.primary,
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#88978E',
+    fontWeight: '600',
+    color: theme.colors.textMuted,
   },
   tabTextActive: {
-    color: '#005440',
+    color: theme.colors.primary,
   },
   unreadDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
   },
   tabContent: {
     flex: 1,
@@ -653,7 +634,7 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     marginHorizontal: 16,
     marginTop: 14,
     marginBottom: 8,
@@ -661,13 +642,13 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     gap: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     fontWeight: '500',
   },
   listContent: {
@@ -678,31 +659,31 @@ const styles = StyleSheet.create({
   connectionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     padding: 14,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     gap: 12,
   },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   avatarFallback: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitial: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '600',
   },
   connInfo: {
     flex: 1,
@@ -710,8 +691,8 @@ const styles = StyleSheet.create({
   },
   connName: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   locationRow: {
     flexDirection: 'row',
@@ -720,7 +701,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 12,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     fontWeight: '500',
   },
   connActions: {
@@ -732,15 +713,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 12,
   },
   messageBtnText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   disconnectBtn: {
     padding: 6,
@@ -755,28 +736,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
   },
   subTabPillActive: {
-    backgroundColor: '#005440',
-    borderColor: '#005440',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   subTabText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
   subTabTextActive: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   requestCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     gap: 12,
   },
   requestHeader: {
@@ -788,7 +769,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 10,
@@ -796,18 +777,18 @@ const styles = StyleSheet.create({
   pendingText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   messageBox: {
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#EBF1ED',
+    borderColor: theme.colors.border,
   },
   messageText: {
     fontSize: 13,
-    color: '#374151',
+    color: theme.colors.textSecondary,
     lineHeight: 18,
     fontStyle: 'italic',
   },
@@ -819,45 +800,45 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
   acceptBtnText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   declineBtn: {
     flex: 1,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
   declineBtnText: {
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   cancelSentBtn: {
     height: 38,
     borderRadius: 12,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelSentText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   emptyContainer: {
     paddingVertical: 60,
@@ -870,19 +851,19 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
   },

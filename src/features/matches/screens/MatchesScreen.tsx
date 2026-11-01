@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   RefreshControl,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
@@ -14,10 +13,16 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
-import { useAuthStore } from '../../../store/authStore';
 import { useConnectionStore } from '../../../store/connectionStore';
-import { matchesService } from '../services/matches.service';
-import { connectionService } from '../../connections/services/connection.service';
+import {
+  useGetMatchesActiveTrip,
+  useGetMatchesUpcomingTrips,
+  useGetTripMatches,
+} from '../hooks/matches.hooks';
+import {
+  useSendConnectionRequest,
+  useAcceptConnectionRequest,
+} from '../../connections/hooks/connection.hooks';
 import { ActiveTrip, TripMatchItem } from '../types';
 import { MatchesHeader } from '../components/MatchesHeader';
 import { ActiveTripCapsule } from '../components/ActiveTripCapsule';
@@ -27,7 +32,7 @@ import { MatchCard } from '../components/MatchCard';
 import { MatchesSkeleton } from '../components/MatchesSkeleton';
 import { ConnectModal } from '../../home/components/ConnectModal';
 import { CreateTripModal } from '../../trips/components/CreateTripModal';
-import { Compass, ArrowRight, Luggage, Plus, Sparkles } from 'lucide-react-native';
+import { Compass, ArrowRight, Luggage, Sparkles } from 'lucide-react-native';
 
 type MatchesScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'MatchesTab'>,
@@ -37,308 +42,276 @@ type MatchesScreenNavigationProp = CompositeNavigationProp<
 export const MatchesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<MatchesScreenNavigationProp>();
-  const { user: authUser } = useAuthStore();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const [activeTrip, setActiveTrip] = useState<ActiveTrip | null>(null);
-  const [upcomingTrips, setUpcomingTrips] = useState<ActiveTrip[]>([]);
+  const [selectedTripOverride, setSelectedTripOverride] = useState<ActiveTrip | null>(null);
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [isCreateTripModalOpen, setIsCreateTripModalOpen] = useState(false);
-
-  const [matches, setMatches] = useState<TripMatchItem[]>([]);
-  const [buddiesOnRoad, setBuddiesOnRoad] = useState<TripMatchItem[]>([]);
-  const {
-    relationships,
-    setRelationship,
-    seedFromMatches,
-    syncFromServerFallback,
-    acceptUserRequest,
-  } = useConnectionStore();
-
-  // Connect Modal state
   const [selectedMatchForConnect, setSelectedMatchForConnect] = useState<TripMatchItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Fetch matches for selected Trip
-  const fetchTripMatches = async (tripId: string) => {
-    try {
-      const res = await matchesService.getTripMatches(tripId, 1, 15);
-      const matchItems = res.matches || [];
-      const roadBuddies = res.buddiesOnRoad || [];
-      setMatches(matchItems);
-      setBuddiesOnRoad(roadBuddies);
-      seedFromMatches([...matchItems, ...roadBuddies]);
+  // TanStack Query Hooks
+  const {
+    data: primaryTrip,
+    isLoading: isLoadingPrimaryTrip,
+    refetch: refetchPrimaryTrip,
+  } = useGetMatchesActiveTrip();
 
-      if (
-        matchItems.some(
-          (m) => !m.connectionStatus && !m.tripMatch?.connectionStatus
-        )
-      ) {
-        await syncFromServerFallback(authUser?.id);
-      }
-    } catch {
-      setMatches([]);
-      setBuddiesOnRoad([]);
+  const {
+    data: upcomingTrips = [],
+    isLoading: isLoadingUpcomingTrips,
+    refetch: refetchUpcomingTrips,
+  } = useGetMatchesUpcomingTrips();
+
+  // Derive active trip from override -> primaryTrip -> first upcoming trip
+  const activeTrip = useMemo(() => {
+    if (selectedTripOverride) {
+      const updated = upcomingTrips.find((t) => t.id === selectedTripOverride.id);
+      if (updated) return updated;
     }
-  };
+    return primaryTrip?.id ? primaryTrip : upcomingTrips[0] || null;
+  }, [selectedTripOverride, primaryTrip, upcomingTrips]);
 
-  // Initial loading
-  const loadData = async () => {
-    setIsLoading(true);
+  const {
+    data: matchesResponse,
+    isLoading: isLoadingMatches,
+    isRefetching: isRefetchingMatches,
+    refetch: refetchMatches,
+  } = useGetTripMatches(activeTrip?.id, 1, 15);
 
-    try {
-      const [primaryTrip, userTrips] = await Promise.all([
-        matchesService.getActiveTrip(),
-        matchesService.getUserUpcomingTrips(),
-      ]);
+  const sendConnectionMutation = useSendConnectionRequest();
+  const acceptConnectionMutation = useAcceptConnectionRequest();
 
-      setUpcomingTrips(userTrips);
+  const relationships = useConnectionStore((s) => s.relationships);
 
-      const targetTrip = primaryTrip?.id ? primaryTrip : userTrips[0] || null;
-      setActiveTrip(targetTrip);
-
-      if (targetTrip?.id) {
-        await fetchTripMatches(targetTrip.id);
-      } else {
-        setMatches([]);
-        setBuddiesOnRoad([]);
-      }
-    } catch {
-      setActiveTrip(null);
-      setMatches([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+  const matches = matchesResponse?.matches || [];
+  const buddiesOnRoad = matchesResponse?.buddiesOnRoad || [];
+  const isLoading =
+    isLoadingPrimaryTrip ||
+    isLoadingUpcomingTrips ||
+    (Boolean(activeTrip?.id) && isLoadingMatches);
 
   // Pull-to-refresh
-  const onRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-
-    try {
-      const [primaryTrip, userTrips] = await Promise.all([
-        matchesService.getActiveTrip(),
-        matchesService.getUserUpcomingTrips(),
-      ]);
-      setUpcomingTrips(userTrips);
-
-      const currentTripId = activeTrip?.id || primaryTrip?.id || userTrips[0]?.id;
-      const targetTrip = userTrips.find((t) => t.id === currentTripId) || primaryTrip || userTrips[0] || null;
-      setActiveTrip(targetTrip);
-
-      if (targetTrip?.id) {
-        await fetchTripMatches(targetTrip.id);
-      } else {
-        setMatches([]);
-      }
-    } catch {
-      // Non-blocking
+  const onRefresh = useCallback(() => {
+    refetchPrimaryTrip();
+    refetchUpcomingTrips();
+    if (activeTrip?.id) {
+      refetchMatches();
     }
-    setIsRefreshing(false);
-  }, [activeTrip]);
+  }, [refetchPrimaryTrip, refetchUpcomingTrips, refetchMatches, activeTrip?.id]);
 
   // Handle switching active trip
-  const handleSelectTrip = async (selected: ActiveTrip) => {
-    setActiveTrip(selected);
-    setIsLoading(true);
-    await fetchTripMatches(selected.id);
-    setIsLoading(false);
+  const handleSelectTrip = (selected: ActiveTrip) => {
+    setSelectedTripOverride(selected);
   };
 
   // Connect Handler
-  const handleConnectPress = (item: TripMatchItem) => {
+  const handleConnectPress = useCallback((item: TripMatchItem) => {
     setSelectedMatchForConnect(item);
     setModalVisible(true);
-  };
+  }, []);
 
   const handleSendConnection = async (message: string) => {
     if (!selectedMatchForConnect) return;
-    const targetId = selectedMatchForConnect.user.id;
-
-    try {
-      await connectionService.sendRequest({
-        receiverId: targetId,
-        message,
-      });
-
-      setRelationship(targetId, 'REQUEST_SENT');
-    } catch (error: any) {
-      Alert.alert(
-        'Request Error',
-        error?.response?.data?.message || 'Could not send request. Please try again.'
-      );
-    }
+    await sendConnectionMutation.mutateAsync({
+      receiverId: selectedMatchForConnect.user.id,
+      message,
+    });
   };
 
   // Accept Handler
-  const handleAcceptPress = async (item: TripMatchItem) => {
-    try {
-      await acceptUserRequest(
-        item.user.id,
-        item.requestId || item.tripMatch?.requestId,
-        authUser?.id
-      );
-    } catch {
-      Alert.alert('Error', 'Could not accept connection request.');
-    }
-  };
+  const handleAcceptPress = useCallback(
+    (item: TripMatchItem) => {
+      acceptConnectionMutation.mutate({
+        targetUserId: item.user.id,
+        requestId: item.requestId || item.tripMatch?.requestId,
+      });
+    },
+    [acceptConnectionMutation]
+  );
 
   // Message Handler
-  const handleMessagePress = (item: TripMatchItem) => {
-    navigation.navigate('ChatRoom', {
-      targetUserId: item.user.id,
-      targetUserName: item.user.fullName,
-      targetUserAvatar: item.user.avatarUrl || undefined,
-    });
-  };
+  const handleMessagePress = useCallback(
+    (item: TripMatchItem) => {
+      navigation.navigate('ChatRoom', {
+        targetUserId: item.user.id,
+        targetUserName: item.user.fullName,
+        targetUserAvatar: item.user.avatarUrl || undefined,
+      });
+    },
+    [navigation]
+  );
 
-  const handleMatchCardPress = (item: TripMatchItem) => {
-    navigation.navigate('UserProfile', {
-      userId: item.user.id,
-      matchId: item.tripMatch.id,
-      variant: 'MATCH',
-      initialName: item.user.fullName,
-      initialAvatar: item.user.avatarUrl || undefined,
-    });
-  };
+  const handleMatchCardPress = useCallback(
+    (item: TripMatchItem) => {
+      navigation.navigate('UserProfile', {
+        userId: item.user.id,
+        matchId: item.tripMatch.id,
+        variant: 'MATCH',
+        initialName: item.user.fullName,
+        initialAvatar: item.user.avatarUrl || undefined,
+      });
+    },
+    [navigation]
+  );
 
   const tabBarHeight = 82 + insets.bottom;
   const destinationTitle = activeTrip?.destination?.name || activeTrip?.name;
 
+  const renderMatchItem = useCallback(
+    ({ item }: { item: TripMatchItem }) => (
+      <View style={styles.cardWrapper}>
+        <MatchCard
+          match={item}
+          connectionStatus={
+            relationships[item.user.id]?.status ||
+            item.connectionStatus ||
+            item.tripMatch?.connectionStatus ||
+            'NONE'
+          }
+          onPress={handleMatchCardPress}
+          onConnectPress={handleConnectPress}
+          onAcceptPress={handleAcceptPress}
+          onMessagePress={handleMessagePress}
+        />
+      </View>
+    ),
+    [
+      relationships,
+      handleMatchCardPress,
+      handleConnectPress,
+      handleAcceptPress,
+      handleMessagePress,
+    ]
+  );
+
+  const renderHeader = () => (
+    <>
+      <MatchesHeader activeTripDestination={destinationTitle} />
+
+      {!isLoading && activeTrip && (
+        <View style={styles.content}>
+          <ActiveTripCapsule
+            trip={activeTrip}
+            matchCount={matches.length}
+            onChangeTrip={upcomingTrips.length > 1 ? () => setIsTripModalOpen(true) : undefined}
+          />
+
+          {buddiesOnRoad.length > 0 && (
+            <BuddiesOnTheRoadAlert
+              buddies={buddiesOnRoad}
+              onMessagePress={handleMessagePress}
+            />
+          )}
+        </View>
+      )}
+    </>
+  );
+
+  const renderEmpty = () => {
+    if (isLoading) {
+      return <MatchesSkeleton />;
+    }
+
+    if (!activeTrip) {
+      return (
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyCard}>
+            <View style={styles.emptyIconCircle}>
+              <Compass size={30} color={theme.colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>Create a Trip to See Your Matches</Text>
+            <Text style={styles.emptyText}>
+              Add your destination and travel dates to see travelers going to the same place at the same time.
+            </Text>
+            <View style={styles.emptyActionRow}>
+              <TouchableOpacity
+                style={styles.planTripBtn}
+                onPress={() => setIsCreateTripModalOpen(true)}
+                activeOpacity={0.85}
+              >
+                <Sparkles size={14} color={theme.colors.white} />
+                <Text style={styles.planTripBtnText}>Create Travel Plan</Text>
+                <ArrowRight size={14} color={theme.colors.white} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.exploreBtnSecondary}
+                onPress={() => navigation.navigate('ExploreTab')}
+                activeOpacity={0.85}
+              >
+                <Compass size={14} color={theme.colors.primary} />
+                <Text style={styles.exploreBtnSecondaryText}>Explore Destinations</Text>
+                <ArrowRight size={13} color={theme.colors.primary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.content}>
+        <View style={styles.emptyCard}>
+          <View style={styles.emptyIconCircle}>
+            <Compass size={28} color={theme.colors.primary} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            No Matches for {destinationTitle || 'Your Trip'} Yet
+          </Text>
+          <Text style={styles.emptyText}>
+            No travelers match your exact dates yet. Your trip is visible to others, and new matches will appear here automatically.
+          </Text>
+          <View style={styles.emptyActionRow}>
+            <TouchableOpacity
+              style={styles.planTripBtn}
+              onPress={() => navigation.navigate('ExploreTab')}
+              activeOpacity={0.85}
+            >
+              <Compass size={14} color={theme.colors.white} />
+              <Text style={styles.planTripBtnText}>Explore Other Destinations</Text>
+              <ArrowRight size={14} color={theme.colors.white} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.exploreBtnSecondary}
+              onPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
+              activeOpacity={0.85}
+            >
+              <Luggage size={14} color={theme.colors.primary} />
+              <Text style={styles.exploreBtnSecondaryText}>View My Trips</Text>
+              <ArrowRight size={13} color={theme.colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.screen}>
-      <ScrollView
+      <FlatList
+        data={!isLoading && activeTrip ? matches : []}
+        keyExtractor={(item) => `${item.user.id}-${item.tripMatch?.id || ''}`}
+        renderItem={renderMatchItem}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
         contentContainerStyle={[
           styles.scrollContainer,
           { paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 24 },
         ]}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={6}
+        maxToRenderPerBatch={8}
+        windowSize={5}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
+            refreshing={isRefetchingMatches}
             onRefresh={onRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
           />
         }
-      >
-        {/* Header */}
-        <MatchesHeader activeTripDestination={destinationTitle} />
-
-        {isLoading ? (
-          <MatchesSkeleton />
-        ) : !activeTrip ? (
-          /* Empty state: No active trip scheduled */
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyCard}>
-              <View style={styles.emptyIconCircle}>
-                <Compass size={30} color={theme.colors.primary} />
-              </View>
-              <Text style={styles.emptyTitle}>Create a Trip to See Your Matches</Text>
-              <Text style={styles.emptyText}>
-                Add your destination and travel dates to see travelers going to the same place at the same time.
-              </Text>
-              <View style={styles.emptyActionRow}>
-                <TouchableOpacity
-                  style={styles.planTripBtn}
-                  onPress={() => setIsCreateTripModalOpen(true)}
-                  activeOpacity={0.85}
-                >
-                  <Sparkles size={14} color="#FFFFFF" />
-                  <Text style={styles.planTripBtnText}>Create Travel Plan</Text>
-                  <ArrowRight size={14} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.exploreBtnSecondary}
-                  onPress={() => navigation.navigate('ExploreTab')}
-                  activeOpacity={0.85}
-                >
-                  <Compass size={14} color={theme.colors.primary} />
-                  <Text style={styles.exploreBtnSecondaryText}>Explore Destinations</Text>
-                  <ArrowRight size={13} color={theme.colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.content}>
-            {/* Active Trip Capsule with Switch Trip Button */}
-            <ActiveTripCapsule
-              trip={activeTrip}
-              matchCount={matches.length}
-              onChangeTrip={upcomingTrips.length > 1 ? () => setIsTripModalOpen(true) : undefined}
-            />
-
-            {/* Buddies on the road alert */}
-            {buddiesOnRoad.length > 0 && (
-              <BuddiesOnTheRoadAlert
-                buddies={buddiesOnRoad}
-                onMessagePress={handleMessagePress}
-              />
-            )}
-
-            {/* Match Cards List */}
-            {matches.length === 0 ? (
-              <View style={styles.emptyCard}>
-                <View style={styles.emptyIconCircle}>
-                  <Compass size={28} color={theme.colors.primary} />
-                </View>
-                <Text style={styles.emptyTitle}>
-                  No Matches for {destinationTitle || 'Your Trip'} Yet
-                </Text>
-                <Text style={styles.emptyText}>
-                  No travelers match your exact dates yet. Your trip is visible to others, and new matches will appear here automatically.
-                </Text>
-                <View style={styles.emptyActionRow}>
-                  <TouchableOpacity
-                    style={styles.planTripBtn}
-                    onPress={() => navigation.navigate('ExploreTab')}
-                    activeOpacity={0.85}
-                  >
-                    <Compass size={14} color="#FFFFFF" />
-                    <Text style={styles.planTripBtnText}>Explore Other Destinations</Text>
-                    <ArrowRight size={14} color="#FFFFFF" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.exploreBtnSecondary}
-                    onPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
-                    activeOpacity={0.85}
-                  >
-                    <Luggage size={14} color={theme.colors.primary} />
-                    <Text style={styles.exploreBtnSecondaryText}>View My Trips</Text>
-                    <ArrowRight size={13} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
-              matches.map((item) => (
-                <MatchCard
-                  key={`${item.user.id}-${item.tripMatch?.id || ''}`}
-                  match={item}
-                  connectionStatus={
-                    relationships[item.user.id]?.status ||
-                    item.connectionStatus ||
-                    item.tripMatch?.connectionStatus ||
-                    'NONE'
-                  }
-                  onPress={handleMatchCardPress}
-                  onConnectPress={handleConnectPress}
-                  onAcceptPress={handleAcceptPress}
-                  onMessagePress={handleMessagePress}
-                />
-              ))
-            )}
-          </View>
-        )}
-      </ScrollView>
+      />
 
       {/* Select Trip Modal */}
       <SelectTripModal
@@ -371,7 +344,7 @@ export const MatchesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   scrollContainer: {
     paddingBottom: 40,
@@ -379,31 +352,34 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
   },
+  cardWrapper: {
+    paddingHorizontal: 20,
+  },
   emptyContainer: {
     paddingHorizontal: 20,
     marginTop: 10,
   },
   emptyCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8ECE9',
+    borderColor: theme.colors.border,
     marginTop: 8,
   },
   emptyIconCircle: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     marginBottom: 8,
   },
@@ -440,37 +416,18 @@ const styles = StyleSheet.create({
   planTripBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  exploreBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    gap: 8,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  exploreBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   exploreBtnSecondary: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
     gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.2)',
+    borderColor: theme.colors.primaryBorder,
   },
   exploreBtnSecondaryText: {
     fontSize: 12,

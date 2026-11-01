@@ -1,26 +1,32 @@
 {
   "expo": {
-    "name": "Voymate-app",
-    "slug": "Voymate-app",
+    "name": "Voymate",
+    "slug": "voymate-app",
+    "scheme": "voymate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.voymate.app",
       "supportsTablet": true,
       "infoPlist": {
-        "NSAppTransportSecurity": {
-          "NSAllowsArbitraryLoads": true
-        }
+        "NSLocationWhenInUseUsageDescription": "Voymate uses your location to help you discover nearby travelers and autofill your city during profile setup.",
+        "NSPhotoLibraryUsageDescription": "Voymate needs access to your photo library so you can upload a profile avatar and cover photo."
       }
     },
     "android": {
+      "package": "com.voymate.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#E11D48",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -28,7 +34,27 @@
     },
     "plugins": [
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Voymate uses your location to help you discover nearby travelers and autofill your city."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Voymate needs access to your photo library so you can upload a profile avatar and cover photo."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ]
     ]
   }
 }

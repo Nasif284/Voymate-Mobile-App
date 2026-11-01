@@ -17,10 +17,8 @@ import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
 import { OtpInput } from '../../../components/ui/OtpInput';
 import { ArrowLeft, AlertCircle, CheckCircle, Mail } from 'lucide-react-native';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
-import { useAuthStore } from '../../../store/authStore';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useVerifyEmail, useSendOtp } from '../hooks/auth.hooks';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'VerifyEmail'>;
 
@@ -29,14 +27,25 @@ const RESEND_COOLDOWN_SECONDS = 45;
 export const VerifyEmailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { email, password } = route.params;
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN_SECONDS);
 
-  const setAuthSession = useAuthStore((state) => state.setAuthSession);
   const haptics = useHaptics();
+  const verifyEmailMutation = useVerifyEmail({
+    password,
+    onFallbackNavigateLogin: () => navigation.navigate('Login'),
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const sendOtpMutation = useSendOtp({
+    onSuccess: () => {
+      setCountdown(RESEND_COOLDOWN_SECONDS);
+      setStatusMessage('A new verification code has been sent to your email.');
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = verifyEmailMutation.isPending;
+  const resending = sendOtpMutation.isPending;
 
   // Resend Countdown Timer
   useEffect(() => {
@@ -57,7 +66,7 @@ export const VerifyEmailScreen: React.FC<Props> = ({ navigation, route }) => {
     if (statusMessage) setStatusMessage(null);
   };
 
-  const handleVerify = async (codeToVerify?: string) => {
+  const handleVerify = (codeToVerify?: string) => {
     if (loading) return;
     Keyboard.dismiss();
     const finalCode = (codeToVerify || code).trim();
@@ -68,81 +77,21 @@ export const VerifyEmailScreen: React.FC<Props> = ({ navigation, route }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.VERIFY_EMAIL, {
-        email: email.trim().toLowerCase(),
-        code: finalCode,
-      });
-
-      haptics.success();
-
-      // Seamless auto-login if password was captured during registration
-      if (password) {
-        try {
-          const loginRes = await apiClient.post(ENDPOINTS.AUTH.LOGIN, {
-            email: email.trim().toLowerCase(),
-            password,
-          });
-          const loginData = loginRes.data?.data;
-          if (loginData) {
-            await setAuthSession(
-              loginData.user,
-              {
-                accessToken: loginData.accessToken,
-                refreshToken: loginData.refreshToken,
-              },
-              {
-                step: loginData.onboardingStep || 1,
-                isCompleted: loginData.onboardingCompleted ?? false,
-              },
-              true
-            );
-            return;
-          }
-        } catch {
-          // If auto-login fails, fall through to login navigation
-        }
-      }
-
-      navigation.navigate('Login');
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        'Invalid or expired verification code. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    verifyEmailMutation.mutate({
+      email: email.trim().toLowerCase(),
+      code: finalCode,
+    });
   };
 
-  const handleResend = async () => {
+  const handleResend = () => {
     if (countdown > 0 || resending) return;
 
-    try {
-      setResending(true);
-      setErrorMessage(null);
-      await apiClient.post(ENDPOINTS.AUTH.SEND_OTP, {
-        email: email.trim().toLowerCase(),
-        purpose: 'email_verify',
-      });
-      haptics.light();
-      setCountdown(RESEND_COOLDOWN_SECONDS);
-      setStatusMessage('A new verification code has been sent to your email.');
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        'Could not resend code. Please wait a moment and try again.';
-      setErrorMessage(message);
-    } finally {
-      setResending(false);
-    }
+    setErrorMessage(null);
+    sendOtpMutation.mutate({
+      email: email.trim().toLowerCase(),
+      purpose: 'email_verify',
+    });
   };
 
   return (

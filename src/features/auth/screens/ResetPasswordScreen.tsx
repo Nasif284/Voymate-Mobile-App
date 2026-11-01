@@ -22,11 +22,9 @@ import {
   CheckCircle,
   AlertCircle,
   Check,
-  ShieldCheck,
 } from 'lucide-react-native';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useResetPassword } from '../hooks/auth.hooks';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ResetPassword'>;
 
@@ -34,11 +32,23 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   const { email } = route.params;
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const haptics = useHaptics();
+  const resetPasswordMutation = useResetPassword({
+    onSuccess: () => {
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }, 2500);
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = resetPasswordMutation.isPending;
 
   // Password rules
   const hasMinLength = newPassword.length >= 8;
@@ -50,7 +60,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   const isFormValid =
     hasMinLength && hasUppercase && hasLowercase && hasNumber && passwordsMatch;
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     Keyboard.dismiss();
 
     if (!hasMinLength) {
@@ -71,35 +81,11 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.RESET_PASSWORD, {
-        email: email.trim().toLowerCase(),
-        password: newPassword,
-      });
-
-      haptics.success();
-      setIsSuccess(true);
-
-      // Auto redirect to Login after 2.5 seconds
-      setTimeout(() => {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
-      }, 2500);
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        'Unable to update password. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    resetPasswordMutation.mutate({
+      email: email.trim().toLowerCase(),
+      password: newPassword,
+    });
   };
 
   const handleGoToLogin = () => {
@@ -214,7 +200,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       <Text style={styles.requirementsHeader}>Password Requirements:</Text>
                       <View style={styles.reqRow}>
                         <View style={[styles.reqCheck, hasMinLength && styles.reqCheckActive]}>
-                          {hasMinLength && <Check size={10} color="#FFFFFF" strokeWidth={3} />}
+                          {hasMinLength && <Check size={10} color={theme.colors.white} strokeWidth={3} />}
                         </View>
                         <Text style={[styles.reqText, hasMinLength && styles.reqTextActive]}>
                           At least 8 characters
@@ -229,7 +215,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                           ]}
                         >
                           {hasUppercase && hasLowercase && (
-                            <Check size={10} color="#FFFFFF" strokeWidth={3} />
+                            <Check size={10} color={theme.colors.white} strokeWidth={3} />
                           )}
                         </View>
                         <Text
@@ -244,7 +230,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
                       <View style={styles.reqRow}>
                         <View style={[styles.reqCheck, hasNumber && styles.reqCheckActive]}>
-                          {hasNumber && <Check size={10} color="#FFFFFF" strokeWidth={3} />}
+                          {hasNumber && <Check size={10} color={theme.colors.white} strokeWidth={3} />}
                         </View>
                         <Text style={[styles.reqText, hasNumber && styles.reqTextActive]}>
                           At least one number (0-9)
@@ -257,7 +243,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                             style={[styles.reqCheck, passwordsMatch && styles.reqCheckActive]}
                           >
                             {passwordsMatch && (
-                              <Check size={10} color="#FFFFFF" strokeWidth={3} />
+                              <Check size={10} color={theme.colors.white} strokeWidth={3} />
                             )}
                           </View>
                           <Text
@@ -317,7 +303,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   header: {
@@ -353,7 +339,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
+    borderColor: theme.colors.error,
   },
   bannerIcon: {
     marginRight: 8,
@@ -372,12 +358,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   requirementsBox: {
-    backgroundColor: 'rgba(0, 84, 64, 0.03)',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 14,
     padding: 14,
     gap: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     marginTop: 4,
   },
   requirementsHeader: {
@@ -397,7 +383,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#E2E8E4',
+    backgroundColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },

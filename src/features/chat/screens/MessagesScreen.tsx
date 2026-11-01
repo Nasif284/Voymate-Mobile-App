@@ -9,27 +9,24 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
-  Platform,
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 import { RootStackParamList } from '../../../navigation/types';
-import { chatService } from '../services/chat.service';
+import { theme } from '../../../config/theme';
+import { QUERY_KEYS } from '../../../api/queryClient';
+import { useGetConversations } from '../hooks/chat.hooks';
+import { useGetConnections } from '../../connections/hooks/connection.hooks';
 import { socketService } from '../services/socket.service';
-import { connectionService } from '../../connections/services/connection.service';
 import { Conversation, ChatMessage } from '../types';
-import { ConnectionUser } from '../../connections/types';
 import {
   Search,
   MessageSquare,
   MessageSquarePlus,
   Users,
-  Compass,
-  Check,
-  CheckCheck,
-  ChevronRight,
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
@@ -58,43 +55,40 @@ const formatConversationTime = (dateStr?: string | Date) => {
 export const MessagesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const queryClient = useQueryClient();
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [connections, setConnections] = useState<ConnectionUser[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Load conversations and connections
-  const loadData = useCallback(async () => {
-    try {
-      const [convs, conns] = await Promise.all([
-        chatService.getConversations().catch(() => []),
-        connectionService.getConnections().catch(() => []),
-      ]);
+  // TanStack Query Hooks
+  const {
+    data: conversations = [],
+    isLoading: isLoadingConversations,
+    isRefetching: isRefetchingConversations,
+    refetch: refetchConversations,
+  } = useGetConversations();
 
-      setConversations(convs);
-      setConnections(conns);
-    } catch (err) {
-      console.warn('Error loading messages data:', err);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
+  const {
+    data: connections = [],
+    isLoading: isLoadingConnections,
+    isRefetching: isRefetchingConnections,
+    refetch: refetchConnections,
+  } = useGetConnections();
 
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-    }, [loadData])
-  );
+  const isLoading = isLoadingConversations || isLoadingConnections;
+  const isRefreshing = isRefetchingConversations || isRefetchingConnections;
+
+  const loadData = useCallback(() => {
+    refetchConversations();
+    refetchConnections();
+  }, [refetchConversations, refetchConnections]);
 
   useEffect(() => {
-    socketService.connect();
+    let isMounted = true;
+    let unsubMessage: (() => void) | undefined;
 
-    // Listen for new messages in any conversation
+    // Listen for new messages in any conversation and update React Query cache
     const handleNewMessage = (newMsg: ChatMessage) => {
-      setConversations((prev) => {
+      queryClient.setQueryData<Conversation[]>(QUERY_KEYS.conversations, (prev = []) => {
         const existingIdx = prev.findIndex((c) => c.conversationId === newMsg.conversationId);
         if (existingIdx !== -1) {
           const updated = [...prev];
@@ -110,24 +104,27 @@ export const MessagesScreen: React.FC = () => {
           updated.splice(existingIdx, 1);
           return [target, ...updated];
         } else {
-          // If conversation isn't in list yet, reload data
-          loadData();
+          refetchConversations();
           return prev;
         }
       });
     };
 
-    socketService.onMessage(handleNewMessage);
+    socketService.connect().then(() => {
+      if (isMounted) {
+        unsubMessage = socketService.onMessage(handleNewMessage);
+      }
+    });
 
     return () => {
-      socketService.offMessage(handleNewMessage);
+      isMounted = false;
+      unsubMessage?.();
     };
-  }, [loadData]);
+  }, [queryClient, refetchConversations]);
 
-  const onRefresh = () => {
-    setIsRefreshing(true);
+  const onRefresh = useCallback(() => {
     loadData();
-  };
+  }, [loadData]);
 
   // Filter conversations
   const filteredConversations = useMemo(() => {
@@ -285,7 +282,7 @@ export const MessagesScreen: React.FC = () => {
     if (searchQuery.trim()) {
       return (
         <View style={styles.emptyContainer}>
-          <Search size={36} color="#88978E" />
+          <Search size={36} color={theme.colors.textMuted} />
           <Text style={styles.emptyTitle}>No Matching Chats</Text>
           <Text style={styles.emptySubtitle}>Check the spelling or search for another name.</Text>
         </View>
@@ -295,7 +292,7 @@ export const MessagesScreen: React.FC = () => {
     return (
       <View style={styles.emptyContainer}>
         <View style={styles.emptyIconCircle}>
-          <MessageSquare size={32} color="#005440" />
+          <MessageSquare size={32} color={theme.colors.primary} />
         </View>
         <Text style={styles.emptyTitle}>No Messages Yet</Text>
         <Text style={styles.emptySubtitle}>
@@ -309,7 +306,7 @@ export const MessagesScreen: React.FC = () => {
           }}
           activeOpacity={0.8}
         >
-          <Users size={16} color="#FFFFFF" />
+          <Users size={16} color={theme.colors.white} />
           <Text style={styles.emptyCtaText}>{connections.length > 0 ? 'View My Connections' : 'Find Travel Mates'}</Text>
         </TouchableOpacity>
       </View>
@@ -340,17 +337,17 @@ export const MessagesScreen: React.FC = () => {
           activeOpacity={0.8}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MessageSquarePlus size={22} color="#005440" />
+          <MessageSquarePlus size={22} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* Search Bar */}
       <View style={styles.searchWrap}>
-        <Search size={16} color="#88978E" />
+        <Search size={16} color={theme.colors.textMuted} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search messages or mates..."
-          placeholderTextColor="#88978E"
+          placeholderTextColor={theme.colors.textPlaceholder}
           value={searchQuery}
           onChangeText={setSearchQuery}
           clearButtonMode="while-editing"
@@ -360,7 +357,7 @@ export const MessagesScreen: React.FC = () => {
       {/* Conversations List */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#005440" />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : (
         <FlatList
@@ -377,8 +374,8 @@ export const MessagesScreen: React.FC = () => {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={onRefresh}
-              tintColor="#005440"
-              colors={['#005440']}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
             />
           }
           ListEmptyComponent={renderEmptyState}
@@ -391,7 +388,7 @@ export const MessagesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -399,34 +396,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF3F0',
+    borderBottomColor: theme.colors.borderSubtle,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '900',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.4,
   },
   headerSubtitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#005440',
+    color: theme.colors.primary,
     marginTop: 2,
   },
   newChatBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 8,
@@ -434,13 +431,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     gap: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     padding: 0,
   },
   loadingContainer: {
@@ -457,8 +454,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     marginBottom: 10,
     letterSpacing: 0.4,
   },
@@ -474,9 +471,9 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 26,
     borderWidth: 2,
-    borderColor: '#005440',
+    borderColor: theme.colors.primary,
     padding: 2,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
   },
   mateAvatarImg: {
     width: '100%',
@@ -487,36 +484,36 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 24,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   mateAvatarInitial: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   mateName: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
     marginTop: 4,
     textAlign: 'center',
   },
   conversationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     padding: 14,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#EEF3F0',
+    borderColor: theme.colors.border,
     marginBottom: 10,
     gap: 12,
   },
   conversationRowUnread: {
-    backgroundColor: '#F9FCFA',
-    borderColor: '#CBE5D7',
+    backgroundColor: theme.colors.primaryMist,
+    borderColor: theme.colors.primaryBorder,
   },
   convAvatarWrap: {
     width: 48,
@@ -533,14 +530,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 24,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   convAvatarInitial: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
   },
   onlineDot: {
     position: 'absolute',
@@ -549,9 +546,9 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#10B981',
+    backgroundColor: theme.colors.success,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.white,
   },
   convDetails: {
     flex: 1,
@@ -564,22 +561,22 @@ const styles = StyleSheet.create({
   },
   convName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
     flex: 1,
     marginRight: 8,
   },
   convNameUnread: {
-    fontWeight: '900',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   convTime: {
     fontSize: 11,
-    color: '#88978E',
+    color: theme.colors.textMuted,
   },
   convTimeUnread: {
-    color: '#005440',
-    fontWeight: '700',
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   convBottomRow: {
     flexDirection: 'row',
@@ -597,26 +594,26 @@ const styles = StyleSheet.create({
   },
   lastMessageText: {
     fontSize: 13,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     flex: 1,
   },
   lastMessageTextUnread: {
-    color: '#151D19',
-    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    fontWeight: '600',
   },
   unreadBadge: {
     minWidth: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
   unreadBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   emptyContainer: {
     paddingVertical: 70,
@@ -629,19 +626,19 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   emptySubtitle: {
     fontSize: 13,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
     maxWidth: 260,
@@ -650,15 +647,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 14,
     marginTop: 12,
   },
   emptyCtaText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '600',
   },
 });

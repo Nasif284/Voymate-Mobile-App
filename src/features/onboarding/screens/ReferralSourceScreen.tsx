@@ -11,10 +11,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
+import { VoymateLogo } from '../../../components/ui/VoymateLogo';
 import { useHaptics } from '../../../hooks/useHaptics';
-import { useAuthStore } from '../../../store/authStore';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
+import { useSetOnboardingSource } from '../hooks/onboarding.hooks';
 import {
   Users,
   Share2,
@@ -24,7 +23,6 @@ import {
   MoreHorizontal,
   Check,
   AlertCircle,
-  Compass,
 } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'ReferralSource'>;
@@ -70,11 +68,16 @@ const SOURCE_OPTIONS: SourceOption[] = [
 
 export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedSource, setSelectedSource] = useState<string>('FRIENDS_FAMILY');
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const setOnboarding = useAuthStore((state) => state.setOnboarding);
   const haptics = useHaptics();
+  const setSourceMutation = useSetOnboardingSource({
+    onSuccess: () => {
+      navigation.navigate('ProfileDetails');
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = setSourceMutation.isPending;
 
   const handleSelect = (id: string) => {
     haptics.selection();
@@ -82,30 +85,11 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
     if (errorMessage) setErrorMessage(null);
   };
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!selectedSource || loading) return;
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.ONBOARDING.SOURCE, {
-        source: selectedSource,
-      });
-
-      haptics.success();
-      setOnboarding(2, false);
-      navigation.navigate('ProfileDetails');
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        'Could not save your response. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    setSourceMutation.mutate({ source: selectedSource });
   };
 
   return (
@@ -114,7 +98,7 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
         {/* Top Step Progress Indicator */}
         <View style={styles.stepProgressHeader}>
           <View style={styles.brandRow}>
-            <Compass size={22} color={theme.colors.primary} />
+            <VoymateLogo size={24} withBackground />
             <Text style={styles.brandText}>Voymate</Text>
           </View>
           <Text style={styles.stepCounterText}>Step 1 of 3</Text>
@@ -185,7 +169,7 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
                       isSelected && styles.radioCircleSelected,
                     ]}
                   >
-                    {isSelected && <Check size={13} color="#FFFFFF" strokeWidth={3} />}
+                    {isSelected && <Check size={13} color={theme.colors.white} strokeWidth={3} />}
                   </View>
                 </TouchableOpacity>
               );
@@ -244,7 +228,7 @@ const styles = StyleSheet.create({
   },
   progressBarTrack: {
     height: 3,
-    backgroundColor: 'rgba(0, 84, 64, 0.08)',
+    backgroundColor: theme.colors.borderSubtle,
     marginHorizontal: 24,
     borderRadius: 2,
     overflow: 'hidden',
@@ -284,7 +268,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
+    borderColor: theme.colors.error,
   },
   bannerIcon: {
     marginRight: 8,
@@ -307,12 +291,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   optionCardSelected: {
     borderColor: theme.colors.primary,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -323,7 +307,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -346,7 +330,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 84, 64, 0.2)',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -364,7 +348,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 84, 64, 0.06)',
+    borderTopColor: theme.colors.borderSubtle,
   },
   continueButton: {
     borderRadius: 16,

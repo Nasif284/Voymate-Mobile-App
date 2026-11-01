@@ -110,7 +110,7 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
             };
 
             const activeColor = theme.colors.primary;
-            const inactiveColor = '#5C6861';
+            const inactiveColor = theme.colors.textMuted;
 
             return (
               <TouchableOpacity
@@ -120,20 +120,22 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 onPress={onPress}
                 onLongPress={onLongPress}
-                activeOpacity={0.75}
+                activeOpacity={0.7}
                 style={styles.tabSlot}
               >
-                <View
-                  style={[
-                    styles.tabPill,
-                    isFocused && styles.tabPillActive,
-                  ]}
-                >
-                  <IconComponent
-                    size={21}
-                    color={isFocused ? activeColor : inactiveColor}
-                    strokeWidth={isFocused ? 2.3 : 1.9}
-                  />
+                <View style={styles.tabContent}>
+                  <View
+                    style={[
+                      styles.iconWrapper,
+                      isFocused && styles.iconWrapperActive,
+                    ]}
+                  >
+                    <IconComponent
+                      size={20}
+                      color={isFocused ? activeColor : inactiveColor}
+                      strokeWidth={isFocused ? 2.2 : 1.75}
+                    />
+                  </View>
                   <Text
                     style={[
                       styles.tabLabel,
@@ -178,31 +180,32 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 34,
     // Floating ambient drop shadow
-    shadowColor: '#0A2920',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.14,
-    shadowRadius: 22,
-    elevation: 16,
+    shadowColor: theme.colors.cardShadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
   },
   islandClipContainer: {
     flex: 1,
     borderRadius: 34,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   iosGlassTint: {
-    backgroundColor: 'rgba(255, 255, 255, 0.52)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
   },
   androidGlassTint: {
-    backgroundColor: 'rgba(255, 255, 255, 0.93)',
+    backgroundColor: theme.colors.surface,
   },
   tabsRow: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 6,
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
   },
   tabSlot: {
     flex: 1,
@@ -210,30 +213,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabPill: {
-    width: '92%',
-    height: 50,
-    borderRadius: 26,
+  tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-    gap: 2,
+    gap: 3,
   },
-  tabPillActive: {
-    backgroundColor: 'rgba(0, 84, 64, 0.11)',
-    borderColor: 'rgba(0, 84, 64, 0.16)',
+  iconWrapper: {
+    width: 42,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconWrapperActive: {
+    backgroundColor: theme.colors.primaryMist,
   },
   tabLabel: {
-    fontSize: 10,
-    letterSpacing: -0.2,
+    fontSize: 10.5,
+    letterSpacing: -0.1,
   },
   tabLabelActive: {
-    fontWeight: '700',
+    fontWeight: '600',
     color: theme.colors.primary,
   },
   tabLabelInactive: {
     fontWeight: '500',
-    color: '#5C6861',
+    color: theme.colors.textMuted,
   },
 });

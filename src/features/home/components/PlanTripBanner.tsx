@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Compass, ArrowRight, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { theme } from '../../../config/theme';
 
 interface PlanTripBannerProps {
   onPlanTripPress: () => void;
@@ -30,13 +31,13 @@ export const PlanTripBanner: React.FC<PlanTripBannerProps> = ({
         <View style={styles.contentRow}>
           {/* Evocative Icon Badge */}
           <View style={styles.iconBadge}>
-            <Compass size={22} color="#A0F3D4" strokeWidth={2.2} />
+            <Compass size={22} color={theme.colors.primaryLight} strokeWidth={2.2} />
           </View>
 
           {/* Text Container */}
           <View style={styles.textContainer}>
             <View style={styles.tagRow}>
-              <Sparkles size={10} color="#A0F3D4" />
+              <Sparkles size={10} color={theme.colors.primaryLight} />
               <Text style={styles.tagText}>NO ACTIVE TRIP</Text>
             </View>
             <Text style={styles.title}>Planning a trip?</Text>
@@ -48,7 +49,7 @@ export const PlanTripBanner: React.FC<PlanTripBannerProps> = ({
           {/* Classy Action Pill */}
           <View style={styles.actionPill}>
             <Text style={styles.actionText}>Plan Trip</Text>
-            <ArrowRight size={13} color="#004736" strokeWidth={2.5} />
+            <ArrowRight size={13} color={theme.colors.textPrimary} strokeWidth={2.5} />
           </View>
         </View>
       </TouchableOpacity>
@@ -62,15 +63,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    backgroundColor: '#004736',
+    backgroundColor: theme.colors.textPrimary,
     borderRadius: 22,
     paddingVertical: 14,
     paddingHorizontal: 16,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#004736',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.12,
     shadowRadius: 10,
     elevation: 4,
   },
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(160, 243, 212, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   ambientCircleTwo: {
     position: 'absolute',
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(160, 243, 212, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -118,14 +119,14 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#A0F3D4',
+    fontWeight: '600',
+    color: theme.colors.primaryLight,
     letterSpacing: 0.8,
   },
   title: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
     letterSpacing: -0.2,
   },
   subtitle: {
@@ -137,20 +138,16 @@ const styles = StyleSheet.create({
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 14,
     gap: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    ...theme.shadows.subtle,
   },
   actionText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#004736',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
 });

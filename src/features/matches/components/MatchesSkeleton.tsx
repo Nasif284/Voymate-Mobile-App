@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { theme } from '../../../config/theme';
 
 export const MatchesSkeleton: React.FC = () => {
   return (
@@ -42,15 +43,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E8ECE9',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
     marginBottom: 20,
   },
   shimmerBox: {
-    backgroundColor: '#EAEFEA',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 8,
   },
 });

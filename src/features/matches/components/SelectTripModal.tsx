@@ -117,7 +117,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                           >
                             <Luggage
                               size={16}
-                              color={isSelected ? '#FFFFFF' : theme.colors.primary}
+                              color={isSelected ? theme.colors.white : theme.colors.primary}
                             />
                           </View>
                           <View style={styles.tripInfo}>
@@ -138,7 +138,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
 
                         {isSelected && (
                           <View style={styles.selectedBadge}>
-                            <Check size={13} color="#FFFFFF" />
+                            <Check size={13} color={theme.colors.white} />
                             <Text style={styles.selectedText}>Active</Text>
                           </View>
                         )}
@@ -159,7 +159,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                     }}
                     activeOpacity={0.85}
                   >
-                    <Plus size={16} color="#FFFFFF" />
+                    <Plus size={16} color={theme.colors.white} />
                     <Text style={styles.planBtnText}>Create Travel Plan</Text>
                   </TouchableOpacity>
                 </View>
@@ -175,19 +175,19 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '75%',
     paddingTop: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 20,
   },
@@ -198,11 +198,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2EF',
+    borderBottomColor: theme.colors.border,
   },
   title: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
   },
   subtitle: {
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     padding: 6,
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
   },
   scrollContent: {
@@ -225,14 +225,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: '#E8ECE9',
+    borderColor: theme.colors.border,
     padding: 14,
   },
   tripCardSelected: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   tripCardLeft: {
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   selectedText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   emptyContainer: {
     padding: 30,
@@ -327,6 +327,6 @@ const styles = StyleSheet.create({
   planBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
 });

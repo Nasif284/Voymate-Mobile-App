@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { User, Quote, Plus } from 'lucide-react-native';
+import { theme } from '../../../config/theme';
 
 interface ProfileBioCardProps {
   name: string;
@@ -18,7 +19,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <User size={15} color="#005440" />
+          <User size={15} color={theme.colors.primary} />
         </View>
         <Text style={styles.headerTitle}>About {firstName}</Text>
       </View>
@@ -27,7 +28,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
         <View style={styles.content}>
           <Quote
             size={16}
-            color="#C9EADB"
+            color={theme.colors.primaryLight}
             style={styles.quoteIcon}
           />
           <Text style={styles.bioText}>{bio!.trim()}</Text>
@@ -38,7 +39,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
             Add a short bio about your travel style so potential travel mates know more about you.
           </Text>
           <View style={styles.addBioPill}>
-            <Plus size={13} color="#005440" />
+            <Plus size={13} color={theme.colors.primary} />
             <Text style={styles.addBioPillText}>Add Bio</Text>
           </View>
         </TouchableOpacity>
@@ -49,14 +50,14 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    shadowColor: '#000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -72,14 +73,14 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   content: {
@@ -91,28 +92,28 @@ const styles = StyleSheet.create({
   },
   bioText: {
     fontSize: 14,
-    color: '#2D3732',
+    color: theme.colors.textPrimary,
     lineHeight: 22,
     fontWeight: '500',
   },
   emptyPrompt: {
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     gap: 10,
   },
   emptyPromptText: {
     fontSize: 13,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     lineHeight: 19,
   },
   addBioPill: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
@@ -121,6 +122,6 @@ const styles = StyleSheet.create({
   addBioPillText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
 });

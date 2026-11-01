@@ -86,10 +86,10 @@ export const ActiveTripCapsule: React.FC<ActiveTripCapsuleProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.2)',
+    borderColor: theme.colors.border,
     padding: 16,
     marginBottom: 20,
   },
@@ -117,10 +117,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   countBadge: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 8,
     paddingVertical: 2.5,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   countText: {
     fontSize: 10,
@@ -130,12 +132,12 @@ const styles = StyleSheet.create({
   switchBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.25)',
+    borderColor: theme.colors.border,
     gap: 2,
   },
   switchBtnText: {
@@ -152,10 +154,10 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -166,8 +168,8 @@ const styles = StyleSheet.create({
   },
   destinationTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#181D1A',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   dateRow: {

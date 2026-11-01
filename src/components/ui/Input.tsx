@@ -3,7 +3,6 @@ import {
   View,
   TextInput,
   Text,
-  StyleSheet,
   TextInputProps,
   TouchableOpacity,
   ViewStyle,
@@ -18,6 +17,7 @@ interface InputProps extends TextInputProps {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   containerStyle?: ViewStyle;
+  className?: string;
   isPassword?: boolean;
 }
 
@@ -27,6 +27,7 @@ export const Input: React.FC<InputProps> = ({
   leftIcon,
   rightIcon,
   containerStyle,
+  className,
   isPassword = false,
   secureTextEntry,
   ...props
@@ -40,22 +41,29 @@ export const Input: React.FC<InputProps> = ({
     setHidePassword((prev) => !prev);
   };
 
-  return (
-    <View style={[styles.container, containerStyle]}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+  const wrapperClasses = [
+    'flex-row items-center bg-surface border rounded-2xl px-4 h-[54px]',
+    error
+      ? 'border-error bg-error-light'
+      : isFocused
+      ? 'border-primary border-[1.5px]'
+      : 'border-border',
+  ].join(' ');
 
-      <View
-        style={[
-          styles.inputWrapper,
-          isFocused && styles.inputWrapperFocused,
-          error ? styles.inputWrapperError : null,
-        ]}
-      >
-        {leftIcon ? <View style={styles.leftIconContainer}>{leftIcon}</View> : null}
+  return (
+    <View className={`w-full mb-4 ${className || ''}`} style={containerStyle}>
+      {label ? (
+        <Text className="text-[13px] font-semibold text-textSecondary mb-2 tracking-wide">
+          {label}
+        </Text>
+      ) : null}
+
+      <View className={wrapperClasses}>
+        {leftIcon ? <View className="mr-2.5 justify-center items-center">{leftIcon}</View> : null}
 
         <TextInput
           placeholderTextColor={theme.colors.textPlaceholder}
-          style={styles.textInput}
+          className="flex-1 h-full text-textPrimary text-[15px] py-0"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword ? hidePassword : secureTextEntry}
@@ -65,7 +73,7 @@ export const Input: React.FC<InputProps> = ({
 
         {isPassword ? (
           <TouchableOpacity
-            style={styles.rightIconContainer}
+            className="ml-2.5 justify-center items-center"
             onPress={togglePasswordVisibility}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             activeOpacity={0.7}
@@ -77,74 +85,13 @@ export const Input: React.FC<InputProps> = ({
             )}
           </TouchableOpacity>
         ) : rightIcon ? (
-          <View style={styles.rightIconContainer}>{rightIcon}</View>
+          <View className="ml-2.5 justify-center items-center">{rightIcon}</View>
         ) : null}
       </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text className="text-xs text-error mt-1.5 ml-1 font-medium">{error}</Text>
+      ) : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    marginBottom: theme.spacing.lg,
-  },
-  label: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.textSecondary,
-    marginBottom: 7,
-    letterSpacing: 0.1,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.12)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 54,
-    ...theme.shadows.subtle,
-  },
-  inputWrapperFocused: {
-    borderColor: theme.colors.primary,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  inputWrapperError: {
-    borderColor: theme.colors.error,
-    backgroundColor: '#FFFDFD',
-  },
-  textInput: {
-    flex: 1,
-    height: '100%',
-    color: theme.colors.textPrimary,
-    fontSize: theme.typography.sizes.base,
-    paddingVertical: 0,
-  },
-  leftIconContainer: {
-    marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rightIconContainer: {
-    marginLeft: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: theme.typography.sizes.xs,
-    color: theme.colors.error,
-    marginTop: 5,
-    marginLeft: 4,
-    fontWeight: theme.typography.weights.medium,
-  },
-});

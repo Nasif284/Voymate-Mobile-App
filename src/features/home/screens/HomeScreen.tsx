@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,15 +6,23 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
-  Alert,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
 import { useConnectionStore, ConnectionStatusType } from '../../../store/connectionStore';
-import { homeService } from '../services/home.service';
-import { connectionService } from '../../connections/services/connection.service';
+import {
+  useGetUsersForCardsInfinite,
+  useGetNearbyUsers,
+  useToggleTravelingStatus,
+} from '../hooks/home.hooks';
+import { useGetMe } from '../../profile/hooks/profile.hooks';
+import { useGetActiveTrip } from '../../trips/hooks/trip.hooks';
+import {
+  useSendConnectionRequest,
+  useAcceptConnectionRequest,
+} from '../../connections/hooks/connection.hooks';
 import { UserWithDetails } from '../types';
 import { HomeHeader } from '../components/HomeHeader';
 import { PlanTripBanner } from '../components/PlanTripBanner';
@@ -24,9 +32,8 @@ import { ConnectModal } from '../components/ConnectModal';
 import { HomeSkeleton } from '../components/HomeSkeleton';
 import { HomeEmptyState } from '../components/HomeEmptyState';
 import { CreateTripModal } from '../../trips/components/CreateTripModal';
-import { tripService } from '../../trips/services/trip.service';
-import { Users, Compass, Sparkles } from 'lucide-react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Users, Sparkles } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
 import * as Haptics from 'expo-haptics';
@@ -36,34 +43,47 @@ const PAGE_SIZE = 8;
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user: authUser, setUser } = useAuthStore();
+  const { user: authUser } = useAuthStore();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isTraveling, setIsTraveling] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-
-  // Pagination State for Infinite Reels-Style Scroll
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
-  const isFetchingRef = useRef(false);
-
-  const [activeTrip, setActiveTrip] = useState<any>(null);
   const [isCreateTripModalOpen, setIsCreateTripModalOpen] = useState(false);
+  const [selectedUserForConnect, setSelectedUserForConnect] = useState<UserWithDetails | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
-  const [nearbyUsers, setNearbyUsers] = useState<UserWithDetails[]>([]);
-  const [buddyUsers, setBuddyUsers] = useState<UserWithDetails[]>([]);
+  // TanStack Query Hooks
   const {
-    relationships,
-    setRelationship,
-    seedFromUsers,
-    syncFromServerFallback,
-    acceptUserRequest,
-  } = useConnectionStore();
+    data: currentUserProfile,
+    refetch: refetchProfile,
+  } = useGetMe();
 
-  const connectionsMap = React.useMemo(() => {
+  const isTraveling = Boolean(currentUserProfile?.isTraveling ?? authUser?.isTraveling);
+
+  const {
+    data: activeTrip,
+    refetch: refetchActiveTrip,
+  } = useGetActiveTrip();
+
+  const {
+    data: cardsPages,
+    isLoading,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchCards,
+  } = useGetUsersForCardsInfinite(PAGE_SIZE);
+
+  const {
+    data: nearbyUsers = [],
+    refetch: refetchNearby,
+  } = useGetNearbyUsers(50, isTraveling);
+
+  const toggleTravelingMutation = useToggleTravelingStatus();
+  const sendConnectionMutation = useSendConnectionRequest();
+  const acceptConnectionMutation = useAcceptConnectionRequest();
+
+  const relationships = useConnectionStore((s) => s.relationships);
+
+  const connectionsMap = useMemo(() => {
     const map: Record<string, ConnectionStatusType> = {};
     Object.entries(relationships).forEach(([uid, rel]) => {
       map[uid] = rel.status;
@@ -71,262 +91,100 @@ export const HomeScreen: React.FC = () => {
     return map;
   }, [relationships]);
 
-  // Connect Modal State
-  const [selectedUserForConnect, setSelectedUserForConnect] = useState<UserWithDetails | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // 1. Fetch user profile & active trip
-  const fetchProfileAndConnections = async () => {
-    try {
-      const [profileRes, activeTripRes] = await Promise.allSettled([
-        homeService.getMyProfile(),
-        tripService.getActiveTrip(),
-      ]);
-
-      if (profileRes.status === 'fulfilled' && profileRes.value) {
-        const p = profileRes.value;
-        setCurrentUserProfile(p);
-        setIsTraveling(Boolean(p.isTraveling));
-      }
-
-      if (activeTripRes.status === 'fulfilled') {
-        setActiveTrip(activeTripRes.value);
-      }
-    } catch {
-      // Non-blocking error
-    }
-  };
-
-  // 2. Fetch travelers (Page 1) with includeAll=true for mobile
-  const fetchInitialTravelers = async (travelingState: boolean) => {
-    try {
-      const promises: Promise<any>[] = [homeService.getUsersForCards(1, PAGE_SIZE, true)];
-
-      if (travelingState) {
-        promises.push(homeService.getNearbyUsers(1, 10, 50));
-      }
-
-      const results = await Promise.allSettled(promises);
-      let needsFallbackSync = false;
-
-      // Buddy users looking for companions across the platform
-      if (results[0].status === 'fulfilled' && results[0].value?.users) {
-        const loadedUsers: UserWithDetails[] = results[0].value.users;
-        setBuddyUsers(loadedUsers);
-        seedFromUsers(loadedUsers);
-        if (loadedUsers.some((u) => u.connectionStatus === undefined)) {
-          needsFallbackSync = true;
+  // Flatten deduplicated paginated users from InfiniteQuery
+  const buddyUsers = useMemo(() => {
+    if (!cardsPages?.pages) return [];
+    const seen = new Set<string>();
+    const list: UserWithDetails[] = [];
+    for (const page of cardsPages.pages) {
+      for (const u of page.users) {
+        if (!seen.has(u.id)) {
+          seen.add(u.id);
+          list.push(u);
         }
-        setPage(1);
-        setTotalPages(results[0].value.totalPages || 1);
       }
-
-      // Nearby users (only when user is in traveling state)
-      if (travelingState && results[1]?.status === 'fulfilled' && results[1].value?.users) {
-        const activeNearby: UserWithDetails[] = results[1].value.users.filter(
-          (u: UserWithDetails) => u.isTraveling !== false
-        );
-        setNearbyUsers(activeNearby);
-        seedFromUsers(activeNearby);
-        if (activeNearby.some((u) => u.connectionStatus === undefined)) {
-          needsFallbackSync = true;
-        }
-      } else {
-        setNearbyUsers([]);
-      }
-
-      if (needsFallbackSync) {
-        await syncFromServerFallback(authUser?.id);
-      }
-    } catch {
-      // Non-blocking
     }
-  };
-
-  // Initial load
-  const loadInitialData = async () => {
-    setIsLoading(true);
-    await fetchProfileAndConnections();
-    try {
-      const profile = await homeService.getMyProfile().catch(() => null);
-      const traveling = Boolean(profile?.isTraveling);
-      setIsTraveling(traveling);
-      await fetchInitialTravelers(traveling);
-    } catch {
-      await fetchInitialTravelers(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  // Re-sync traveling status & profile whenever HomeScreen gains focus
-  useFocusEffect(
-    useCallback(() => {
-      let isMounted = true;
-      homeService
-        .getMyProfile()
-        .then((profile) => {
-          if (isMounted && profile) {
-            setCurrentUserProfile(profile);
-            const traveling = Boolean(profile.isTraveling);
-            setIsTraveling(traveling);
-            if (authUser && authUser.isTraveling !== traveling) {
-              setUser({ ...authUser, isTraveling: traveling });
-            }
-          }
-        })
-        .catch(() => {});
-
-      return () => {
-        isMounted = false;
-      };
-    }, [authUser, setUser])
-  );
+    return list;
+  }, [cardsPages]);
 
   // Pull-to-refresh
-  const onRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    setPage(1);
-    await Promise.all([
-      fetchProfileAndConnections(),
-      fetchInitialTravelers(isTraveling),
-    ]);
-    setIsRefreshing(false);
-  }, [isTraveling]);
-
-  // Infinite Scroll Trigger (Reels-style continuous scroll)
-  const handleLoadMore = async () => {
-    if (
-      isFetchingRef.current ||
-      isFetchingNextPage ||
-      page >= totalPages ||
-      isLoading ||
-      isRefreshing
-    ) {
-      return;
+  const onRefresh = useCallback(() => {
+    refetchProfile();
+    refetchActiveTrip();
+    refetchCards();
+    if (isTraveling) {
+      refetchNearby();
     }
+  }, [refetchProfile, refetchActiveTrip, refetchCards, refetchNearby, isTraveling]);
 
-    isFetchingRef.current = true;
-    setIsFetchingNextPage(true);
-
-    try {
-      const nextPage = page + 1;
-      const res = await homeService.getUsersForCards(nextPage, PAGE_SIZE, true);
-
-      if (res?.users && res.users.length > 0) {
-        seedFromUsers(res.users);
-        setBuddyUsers((prev) => {
-          const existingIds = new Set(prev.map((u) => u.id));
-          const uniqueNew = res.users.filter((u) => !existingIds.has(u.id));
-          return [...prev, ...uniqueNew];
-        });
-        setPage(nextPage);
-        setTotalPages(res.totalPages || nextPage);
-      } else {
-        setTotalPages(page);
-      }
-    } catch {
-      // Graceful fallback
-    } finally {
-      isFetchingRef.current = false;
-      setIsFetchingNextPage(false);
+  // Infinite Scroll Trigger
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage && !isLoading) {
+      fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, isLoading, fetchNextPage]);
 
   // Toggle traveling status from Header
-  const handleToggleTraveling = async () => {
-    if (isUpdatingStatus) return;
-    const nextState = !isTraveling;
-    const prevState = isTraveling;
-
-    // Optimistic UI updates
-    setIsTraveling(nextState);
-    if (authUser) {
-      setUser({ ...authUser, isTraveling: nextState });
-    }
-    setCurrentUserProfile((prev: any) => (prev ? { ...prev, isTraveling: nextState } : prev));
-    setIsUpdatingStatus(true);
+  const handleToggleTraveling = () => {
+    if (toggleTravelingMutation.isPending) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    try {
-      await homeService.updateTravelingStatus(nextState, currentUserProfile);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      // Refresh travelers feed in background without blocking or reverting status on feed error
-      fetchInitialTravelers(nextState).catch(() => {});
-    } catch (err: any) {
-      // Revert on failure
-      setIsTraveling(prevState);
-      if (authUser) {
-        setUser({ ...authUser, isTraveling: prevState });
-      }
-      setCurrentUserProfile((prev: any) => (prev ? { ...prev, isTraveling: prevState } : prev));
-      Alert.alert(
-        'Status Error',
-        err?.response?.data?.message || 'Could not update traveling status right now. Please try again.'
-      );
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+    toggleTravelingMutation.mutate({
+      isTraveling: !isTraveling,
+      currentProfile: currentUserProfile,
+    });
   };
 
   // Open Connect Modal
-  const handleConnectPress = (user: UserWithDetails) => {
+  const handleConnectPress = useCallback((user: UserWithDetails) => {
     setSelectedUserForConnect(user);
     setModalVisible(true);
-  };
+  }, []);
 
   // Submit Connection Request
   const handleSendConnection = async (message: string) => {
     if (!selectedUserForConnect) return;
-    const targetId = selectedUserForConnect.id;
-
-    try {
-      await connectionService.sendRequest({
-        receiverId: targetId,
-        message,
-      });
-
-      setRelationship(targetId, 'REQUEST_SENT');
-    } catch (error: any) {
-      Alert.alert(
-        'Request Error',
-        error?.response?.data?.message || 'Could not send request. Please try again.'
-      );
-    }
+    await sendConnectionMutation.mutateAsync({
+      receiverId: selectedUserForConnect.id,
+      message,
+    });
   };
 
   // Accept Connection Request
-  const handleAcceptPress = async (user: UserWithDetails) => {
-    try {
-      await acceptUserRequest(user.id, user.requestId, authUser?.id);
-    } catch {
-      Alert.alert('Error', 'Could not accept connection request.');
-    }
-  };
+  const handleAcceptPress = useCallback(
+    (user: UserWithDetails) => {
+      acceptConnectionMutation.mutate({
+        targetUserId: user.id,
+        requestId: user.requestId,
+      });
+    },
+    [acceptConnectionMutation]
+  );
 
   // Message press
-  const handleMessagePress = (user: UserWithDetails) => {
-    navigation.navigate('ChatRoom', {
-      targetUserId: user.id,
-      targetUserName: user.fullName,
-      targetUserAvatar: user.avatarUrl || undefined,
-    });
-  };
+  const handleMessagePress = useCallback(
+    (user: UserWithDetails) => {
+      navigation.navigate('ChatRoom', {
+        targetUserId: user.id,
+        targetUserName: user.fullName,
+        targetUserAvatar: user.avatarUrl || undefined,
+      });
+    },
+    [navigation]
+  );
 
-  const handleUserCardPress = (user: UserWithDetails, isNearby: boolean = false) => {
-    navigation.navigate('UserProfile', {
-      userId: user.id,
-      tripId: user.activeTrip?.id,
-      variant: isNearby ? 'NEARBY' : user.activeTrip ? 'COMPANION' : 'PUBLIC',
-      distanceKm: user.distanceKm,
-      initialName: user.fullName,
-      initialAvatar: user.avatarUrl || undefined,
-    });
-  };
+  const handleUserCardPress = useCallback(
+    (user: UserWithDetails, isNearby: boolean = false) => {
+      navigation.navigate('UserProfile', {
+        userId: user.id,
+        tripId: user.activeTrip?.id,
+        variant: isNearby ? 'NEARBY' : user.activeTrip ? 'COMPANION' : 'PUBLIC',
+        distanceKm: user.distanceKm,
+        initialName: user.fullName,
+        initialAvatar: user.avatarUrl || undefined,
+      });
+    },
+    [navigation]
+  );
 
   const hasNearbyTravelers = isTraveling && nearbyUsers.length > 0;
   const userLocationString =
@@ -336,26 +194,22 @@ export const HomeScreen: React.FC = () => {
 
   const tabBarHeight = 82 + insets.bottom;
 
-  // Render Header Above Feed
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* 1. Profile & Traveling Status Toggle Header */}
       <HomeHeader
         userName={currentUserProfile?.fullName || authUser?.fullName || 'Traveler'}
         avatarUrl={currentUserProfile?.avatarUrl || authUser?.avatarUrl}
         location={userLocationString}
         isTraveling={isTraveling}
         onToggleTraveling={handleToggleTraveling}
-        isUpdatingStatus={isUpdatingStatus}
+        isUpdatingStatus={toggleTravelingMutation.isPending}
         onAvatarPress={() => navigation.navigate('Main', { screen: 'ProfileTab' } as any)}
       />
 
-      {/* 2. Plan Trip Banner if user has no active trip AND feed is not empty */}
       {!isLoading && !activeTrip && buddyUsers.length > 0 && (
         <PlanTripBanner onPlanTripPress={() => setIsCreateTripModalOpen(true)} />
       )}
 
-      {/* 3. Nearby Section: ONLY shown first when user is traveling */}
       {hasNearbyTravelers && (
         <NearbyTravelersCarousel
           users={nearbyUsers}
@@ -367,7 +221,6 @@ export const HomeScreen: React.FC = () => {
         />
       )}
 
-      {/* 4. Infinite Feed Section Title (Only shown when buddy users exist) */}
       {buddyUsers.length > 0 && (
         <View style={styles.feedHeader}>
           <View style={styles.feedHeaderLeft}>
@@ -386,7 +239,6 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 
-  // Render Bottom Footer: Spinner while fetching next page or "All caught up"
   const renderFooter = () => {
     if (isFetchingNextPage) {
       return (
@@ -397,7 +249,7 @@ export const HomeScreen: React.FC = () => {
       );
     }
 
-    if (!isLoading && page >= totalPages && buddyUsers.length > 0) {
+    if (!isLoading && !hasNextPage && buddyUsers.length > 0) {
       return (
         <View style={styles.caughtUpContainer}>
           <Sparkles size={13} color={theme.colors.primary} />
@@ -409,7 +261,6 @@ export const HomeScreen: React.FC = () => {
     return null;
   };
 
-  // Render Psychologically-Optimized Empty State
   const renderEmpty = () => {
     if (isLoading) {
       return <HomeSkeleton />;
@@ -459,7 +310,7 @@ export const HomeScreen: React.FC = () => {
         removeClippedSubviews={Platform.OS === 'android'}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
+            refreshing={isRefetching && !isFetchingNextPage}
             onRefresh={onRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
@@ -488,7 +339,7 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   listContent: {
     paddingBottom: 40,
@@ -517,13 +368,13 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
   feedTitle: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
@@ -553,7 +404,7 @@ const styles = StyleSheet.create({
   },
   caughtUpText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     color: theme.colors.primary,
   },
 });

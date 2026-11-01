@@ -1,36 +1,26 @@
 import React from 'react';
-import { View, ActivityIndicator, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, ActivityIndicator, Text, ViewStyle } from 'react-native';
 import { theme } from '../../config/theme';
 
 interface LoadingSpinnerProps {
   message?: string;
   size?: 'small' | 'large';
   style?: ViewStyle;
+  className?: string;
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message,
   size = 'large',
   style,
+  className,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View className={`p-5 items-center justify-center ${className || ''}`} style={style}>
       <ActivityIndicator size={size} color={theme.colors.primary} />
-      {message ? <Text style={styles.message}>{message}</Text> : null}
+      {message ? (
+        <Text className="mt-3 text-[13px] text-textSecondary font-medium">{message}</Text>
+      ) : null}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: theme.spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  message: {
-    marginTop: theme.spacing.md,
-    fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textSecondary,
-    fontWeight: theme.typography.weights.medium,
-  },
-});

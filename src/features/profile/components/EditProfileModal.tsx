@@ -13,13 +13,15 @@ import {
 } from 'react-native';
 import { X, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useUpdateProfile } from '../hooks/profile.hooks';
 import { UserProfileData, UpdatePersonalProfilePayload } from '../types';
+import { theme } from '../../../config/theme';
 
 interface EditProfileModalProps {
   visible: boolean;
   profile: UserProfileData;
   onClose: () => void;
-  onSave: (payload: UpdatePersonalProfilePayload) => Promise<void>;
+  onSave?: (payload: UpdatePersonalProfilePayload) => Promise<void>;
 }
 
 const TRAVEL_STYLES = ['BACKPACKER', 'BUDGET', 'LUXURY', 'ADVENTURE', 'CULTURAL'];
@@ -64,7 +66,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     (profile.languages || []).join(', ')
   );
 
-  const [isSaving, setIsSaving] = useState(false);
+  const updateProfileMutation = useUpdateProfile();
+  const isSaving = updateProfileMutation.isPending;
 
   const toggleInterest = (interest: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -80,32 +83,27 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     );
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const languages = languagesInput
-        .split(',')
-        .map((l) => l.trim())
-        .filter(Boolean);
+  const handleSave = () => {
+    const languages = languagesInput
+      .split(',')
+      .map((l) => l.trim())
+      .filter(Boolean);
 
-      const payload: UpdatePersonalProfilePayload = {
-        fullName: fullName.trim() || profile.fullName,
-        bio: bio.trim(),
-        travelType,
-        travelPersonalityCode: travelPersonality,
-        interests,
-        skills,
-        languages,
-      };
+    const payload: UpdatePersonalProfilePayload = {
+      fullName: fullName.trim() || profile.fullName,
+      bio: bio.trim(),
+      travelType,
+      travelPersonalityCode: travelPersonality,
+      interests,
+      skills,
+      languages,
+    };
 
-      await onSave(payload);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      onClose();
-    } catch {
-      // Handled by caller
-    } finally {
-      setIsSaving(false);
-    }
+    updateProfileMutation.mutate(payload, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
   };
 
   return (
@@ -118,7 +116,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <X size={22} color="#151D19" />
+              <X size={22} color={theme.colors.textPrimary} />
             </TouchableOpacity>
             <Text style={styles.title}>Edit Profile</Text>
             <TouchableOpacity
@@ -127,7 +125,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               style={[styles.saveBtn, isSaving && { opacity: 0.6 }]}
             >
               {isSaving ? (
-                <ActivityIndicator size="small" color="#005440" />
+                <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
                 <Text style={styles.saveBtnText}>Save</Text>
               )}
@@ -147,7 +145,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={fullName}
                 onChangeText={setFullName}
                 placeholder="Your full name"
-                placeholderTextColor="#88978E"
+                placeholderTextColor={theme.colors.textPlaceholder}
               />
             </View>
 
@@ -159,7 +157,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Tell other travelers about yourself and where you want to go..."
-                placeholderTextColor="#88978E"
+                placeholderTextColor={theme.colors.textPlaceholder}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
@@ -181,7 +179,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                         setTravelType(style);
                       }}
                     >
-                      {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                       <Text
                         style={[styles.pillText, isSelected && styles.pillTextSelected]}
                       >
@@ -208,7 +206,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                         setTravelPersonality(item);
                       }}
                     >
-                      {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                       <Text
                         style={[styles.pillText, isSelected && styles.pillTextSelected]}
                       >
@@ -232,7 +230,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                       style={[styles.pill, isSelected && styles.pillSelected]}
                       onPress={() => toggleInterest(interest)}
                     >
-                      {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                       <Text
                         style={[styles.pillText, isSelected && styles.pillTextSelected]}
                       >
@@ -256,7 +254,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                       style={[styles.pill, isSelected && styles.pillSelected]}
                       onPress={() => toggleSkill(skill)}
                     >
-                      {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                       <Text
                         style={[styles.pillText, isSelected && styles.pillTextSelected]}
                       >
@@ -276,7 +274,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 value={languagesInput}
                 onChangeText={setLanguagesInput}
                 placeholder="English, Spanish, French..."
-                placeholderTextColor="#88978E"
+                placeholderTextColor={theme.colors.textPlaceholder}
               />
             </View>
           </ScrollView>
@@ -289,11 +287,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -302,24 +300,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#E6EFE9',
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   title: {
     fontSize: 17,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   saveBtn: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 12,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
   },
   saveBtnText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   formScroll: {
     flex: 1,
@@ -334,19 +332,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.6,
   },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     fontWeight: '600',
   },
   bioInput: {
@@ -362,23 +360,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 14,
   },
   pillSelected: {
-    backgroundColor: '#005440',
-    borderColor: '#005440',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
   },
   pillText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   pillTextSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
 });

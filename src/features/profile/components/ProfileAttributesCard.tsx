@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Compass, Sparkles, Globe, Award, Heart } from 'lucide-react-native';
+import { theme } from '../../../config/theme';
 
 interface ProfileAttributesCardProps {
   travelType?: string | null;
@@ -30,7 +31,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <Compass size={16} color="#005440" />
+          <Compass size={16} color={theme.colors.primary} />
         </View>
         <Text style={styles.headerTitle}>Travel Preferences</Text>
       </View>
@@ -42,7 +43,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
             <View style={styles.highlightItem}>
               <Text style={styles.subLabel}>TRAVEL STYLE</Text>
               <View style={styles.stylePill}>
-                <Sparkles size={12} color="#005440" />
+                <Sparkles size={12} color={theme.colors.primary} />
                 <Text style={styles.stylePillText}>{travelType}</Text>
               </View>
             </View>
@@ -63,7 +64,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
       {languages.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionLabelRow}>
-            <Globe size={13} color="#5C6B64" />
+            <Globe size={13} color={theme.colors.textSecondary} />
             <Text style={styles.subLabel}>LANGUAGES</Text>
           </View>
           <View style={styles.tagWrap}>
@@ -80,7 +81,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
       {skills.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionLabelRow}>
-            <Award size={13} color="#5C6B64" />
+            <Award size={13} color={theme.colors.textSecondary} />
             <Text style={styles.subLabel}>SKILLS</Text>
           </View>
           <View style={styles.tagWrap}>
@@ -97,7 +98,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
       {interests.length > 0 && (
         <View style={styles.section}>
           <View style={styles.sectionLabelRow}>
-            <Heart size={13} color="#5C6B64" />
+            <Heart size={13} color={theme.colors.textSecondary} />
             <Text style={styles.subLabel}>INTERESTS</Text>
           </View>
           <View style={styles.tagWrap}>
@@ -115,14 +116,14 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    shadowColor: '#000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -135,20 +136,20 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F4F1',
+    borderBottomColor: theme.colors.border,
   },
   headerIcon: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   highlightSection: {
@@ -163,29 +164,29 @@ const styles = StyleSheet.create({
   },
   subLabel: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.6,
   },
   stylePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#C9EADB',
+    borderColor: theme.colors.primaryBorder,
     alignSelf: 'flex-start',
   },
   stylePillText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   personalityPill: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 14,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   personalityPillText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#374151',
+    color: theme.colors.textPrimary,
   },
   section: {
     gap: 8,
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   langTag: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -218,32 +219,32 @@ const styles = StyleSheet.create({
   langTagText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: theme.colors.textSecondary,
   },
   skillTag: {
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D4EBE0',
+    borderColor: theme.colors.primaryBorder,
   },
   skillTagText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   interestTag: {
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2EBE5',
+    borderColor: theme.colors.border,
   },
   interestTagText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#151D19',
+    color: theme.colors.textPrimary,
   },
 });

@@ -8,16 +8,19 @@ export const apiClient = axios.create({
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
-    'Bypass-Tunnel-Reminder': 'true',
-    'ngrok-skip-browser-warning': 'true',
   },
 });
 
 let isRefreshing = false;
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (value?: unknown) => void;
   reject: (reason?: unknown) => void;
-}> = [];
+}[] = [];
+let onUnauthorizedCallback: (() => void) | null = null;
+
+export const setOnUnauthorizedCallback = (callback: (() => void) | null): void => {
+  onUnauthorizedCallback = callback;
+};
 
 const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach((promise) => {
@@ -50,7 +53,14 @@ apiClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    const isAuthRefreshEndpoint = originalRequest?.url?.includes(ENDPOINTS.AUTH.REFRESH);
+
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthRefreshEndpoint
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -107,6 +117,7 @@ apiClient.interceptors.response.use(
       } catch (refreshErr) {
         processQueue(refreshErr as Error, null);
         await storageService.clearSession();
+        onUnauthorizedCallback?.();
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;

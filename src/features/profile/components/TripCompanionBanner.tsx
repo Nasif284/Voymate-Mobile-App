@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Luggage, Calendar, MessageSquare, ArrowRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { theme } from '../../../config/theme';
 
 interface TripCompanionBannerProps {
   userName: string;
@@ -41,7 +42,7 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
       {/* Decorative accent top bar */}
       <View style={styles.headerRow}>
         <View style={styles.iconContainer}>
-          <Luggage size={18} color="#A0F3D4" />
+          <Luggage size={18} color={theme.colors.primaryLight} />
         </View>
 
         <View style={styles.tagContainer}>
@@ -75,9 +76,9 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
         }}
         activeOpacity={0.85}
       >
-        <MessageSquare size={15} color="#004736" />
+        <MessageSquare size={15} color={theme.colors.primary} />
         <Text style={styles.ctaButtonText}>Message {firstName} to Join</Text>
-        <ArrowRight size={14} color="#004736" />
+        <ArrowRight size={14} color={theme.colors.primary} />
       </TouchableOpacity>
     </View>
   );
@@ -85,14 +86,14 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#004736',
+    backgroundColor: theme.colors.textPrimary,
     borderRadius: 24,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: 'rgba(160, 243, 212, 0.25)',
-    shadowColor: '#004736',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -122,15 +123,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    backgroundColor: '#A0F3D4',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
   badgeText: {
-    color: '#004736',
+    color: theme.colors.white,
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '600',
     letterSpacing: 0.5,
   },
   dateTag: {
@@ -143,14 +144,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   dateTagText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 11,
     fontWeight: '600',
   },
   headline: {
     fontSize: 17,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
     lineHeight: 23,
     letterSpacing: -0.2,
     marginBottom: 6,
@@ -162,22 +163,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   ctaButton: {
-    backgroundColor: '#A0F3D4',
+    backgroundColor: theme.colors.surface,
     height: 44,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   ctaButtonText: {
-    color: '#004736',
+    color: theme.colors.primary,
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '600',
   },
 });

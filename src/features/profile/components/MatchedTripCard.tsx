@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { MapPin, Calendar, Compass, Wallet } from 'lucide-react-native';
+import { theme } from '../../../config/theme';
 
 interface MatchedTripCardProps {
   trip: {
@@ -49,7 +50,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <MapPin size={16} color="#005440" />
+          <MapPin size={16} color={theme.colors.primary} />
         </View>
         <Text style={styles.headerTitle}>Matched Trip Plan</Text>
       </View>
@@ -81,7 +82,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
         {dateRangeStr ? (
           <View style={styles.tile}>
             <View style={styles.tileIconWrapper}>
-              <Calendar size={14} color="#005440" />
+              <Calendar size={14} color={theme.colors.primary} />
             </View>
             <View style={styles.tileTextWrapper}>
               <Text style={styles.tileLabel}>TRAVEL DATES</Text>
@@ -95,7 +96,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
         {trip.travelStyle ? (
           <View style={styles.tile}>
             <View style={styles.tileIconWrapper}>
-              <Compass size={14} color="#005440" />
+              <Compass size={14} color={theme.colors.primary} />
             </View>
             <View style={styles.tileTextWrapper}>
               <Text style={styles.tileLabel}>TRAVEL STYLE</Text>
@@ -109,7 +110,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
         {trip.budgetStyle ? (
           <View style={styles.tile}>
             <View style={styles.tileIconWrapper}>
-              <Wallet size={14} color="#005440" />
+              <Wallet size={14} color={theme.colors.primary} />
             </View>
             <View style={styles.tileTextWrapper}>
               <Text style={styles.tileLabel}>BUDGET STYLE</Text>
@@ -126,14 +127,14 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     marginHorizontal: 16,
     marginTop: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    shadowColor: '#000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -146,27 +147,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F4F1',
+    borderBottomColor: theme.colors.border,
   },
   headerIcon: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   bannerContainer: {
     width: '100%',
     height: 140,
     position: 'relative',
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
   },
   bannerImage: {
     width: '100%',
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   bannerFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   bannerOverlay: {
     ...StyleSheet.absoluteFill,
@@ -189,8 +190,8 @@ const styles = StyleSheet.create({
   },
   tripName: {
     fontSize: 18,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
     letterSpacing: -0.2,
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
@@ -210,18 +211,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#EBF1ED',
+    borderColor: theme.colors.border,
   },
   tileIconWrapper: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -230,14 +231,14 @@ const styles = StyleSheet.create({
   },
   tileLabel: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.6,
   },
   tileValue: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
     marginTop: 1,
   },
 });

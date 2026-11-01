@@ -98,7 +98,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     onPress={handleReset}
                     activeOpacity={0.7}
                   >
-                    <RotateCcw size={12} color="#BA1A1A" />
+                    <RotateCcw size={12} color={theme.colors.error} />
                     <Text style={styles.resetText}>Reset</Text>
                   </TouchableOpacity>
                 )}
@@ -193,17 +193,17 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '75%',
     paddingTop: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
@@ -216,14 +216,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2EF',
+    borderBottomColor: theme.colors.border,
   },
   headerLeft: {
     flex: 1,
   },
   title: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
   },
   subtitle: {
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   resetBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(186, 26, 26, 0.08)',
+    backgroundColor: theme.colors.errorLight,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 10,
@@ -247,12 +247,12 @@ const styles = StyleSheet.create({
   },
   resetText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#BA1A1A',
+    fontWeight: '600',
+    color: theme.colors.error,
   },
   closeBtn: {
     padding: 6,
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
   },
   scrollContent: {
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     color: theme.colors.primary,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 14,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   chipActive: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   chipEmoji: {
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: theme.colors.primary,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   footer: {
     paddingHorizontal: 22,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   applyBtnText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,21 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
-  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
-import { profileService } from '../services/profile.service';
-import { connectionService } from '../../connections/services/connection.service';
-import { useAuthStore } from '../../../store/authStore';
 import { useConnectionStore } from '../../../store/connectionStore';
 import {
-  UserProfileData,
-  MatchProfileData,
-  ProfileUpcomingTrip,
-  ProfileVariant,
-} from '../types';
+  useGetUserProfile,
+  useGetMatchProfile,
+  useGetProfileUpcomingTrips,
+} from '../hooks/profile.hooks';
+import {
+  useSendConnectionRequest,
+  useAcceptConnectionRequest,
+} from '../../connections/hooks/connection.hooks';
+import { ProfileVariant } from '../types';
 import { ProfileHero } from '../components/ProfileHero';
 import { MatchCompatibilityCard } from '../components/MatchCompatibilityCard';
 import { MatchedTripCard } from '../components/MatchedTripCard';
@@ -29,6 +29,7 @@ import { ProfileBioCard } from '../components/ProfileBioCard';
 import { ProfileAttributesCard } from '../components/ProfileAttributesCard';
 import { ProfileUpcomingTrips } from '../components/ProfileUpcomingTrips';
 import { ConnectModal } from '../../home/components/ConnectModal';
+import { theme } from '../../../config/theme';
 import * as Haptics from 'expo-haptics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserProfile'>;
@@ -40,23 +41,53 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     tripId,
     variant = 'PUBLIC',
     distanceKm,
-    initialName,
-    initialAvatar,
   } = route.params;
 
-  const { user: authUser } = useAuthStore();
-  const {
-    relationships,
-    setRelationship,
-    syncFromServerFallback,
-    acceptUserRequest,
-  } = useConnectionStore();
+  const relationships = useConnectionStore((s) => s.relationships);
+  const [showConnectModal, setShowConnectModal] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<UserProfileData | null>(null);
-  const [matchData, setMatchData] = useState<MatchProfileData['match'] | null>(null);
-  const [matchedTrip, setMatchedTrip] = useState<MatchProfileData['matchedTrip'] | null>(null);
-  const [upcomingTrips, setUpcomingTrips] = useState<ProfileUpcomingTrip[]>([]);
+  // TanStack Query Hooks
+  const {
+    data: matchProfileData,
+    isLoading: isLoadingMatchProfile,
+    isError: isMatchProfileError,
+  } = useGetMatchProfile(matchId, Boolean(matchId));
+
+  const {
+    data: regularUserProfile,
+    isLoading: isLoadingUserProfile,
+    isError: isUserProfileError,
+  } = useGetUserProfile(userId, !matchId);
+
+  const { data: upcomingTrips = [] } = useGetProfileUpcomingTrips(userId);
+
+  const sendConnectionMutation = useSendConnectionRequest();
+  const acceptConnectionMutation = useAcceptConnectionRequest();
+
+  const user = matchId ? matchProfileData?.user : regularUserProfile;
+  const matchData = matchId
+    ? matchProfileData?.match
+    : regularUserProfile?.match
+      ? {
+          id: 'generated',
+          totalPoints: regularUserProfile.match.totalPoints,
+          explanation: { reasons: regularUserProfile.match.reasons },
+        }
+      : null;
+  const matchedTrip = matchId ? matchProfileData?.matchedTrip : null;
+
+  const isLoading = matchId ? isLoadingMatchProfile : isLoadingUserProfile;
+  const isError = matchId ? isMatchProfileError : isUserProfileError;
+
+  useEffect(() => {
+    if (isError) {
+      Alert.alert(
+        'Profile Unavailable',
+        'Unable to load the traveler profile at this moment.',
+        [{ text: 'Go Back', onPress: () => navigation.goBack() }]
+      );
+    }
+  }, [isError, navigation]);
 
   const effectiveTargetId = user?.id || userId;
   const connectionStatus =
@@ -64,118 +95,30 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     user?.connectionStatus ||
     'NONE';
 
-  const [showConnectModal, setShowConnectModal] = useState(false);
-
-  // Load Profile Data
-  const loadProfile = useCallback(async () => {
-    try {
-      setIsLoading(true);
-
-      if (matchId) {
-        // Fetch full match profile
-        const matchRes = await profileService.getMatchProfile(matchId);
-        setUser(matchRes.user);
-        setMatchData(matchRes.match);
-        if (matchRes.matchedTrip) {
-          setMatchedTrip(matchRes.matchedTrip);
-        }
-        const serverStatus =
-          matchRes.connectionStatus || matchRes.user?.connectionStatus;
-        const serverReqId =
-          matchRes.requestId || matchRes.user?.requestId || null;
-        const serverConnId =
-          matchRes.connectionId || matchRes.user?.connectionId || null;
-
-        if (serverStatus && matchRes.user?.id) {
-          setRelationship(
-            matchRes.user.id,
-            serverStatus,
-            serverReqId,
-            serverConnId
-          );
-        } else if (
-          matchRes.user?.id &&
-          !useConnectionStore.getState().relationships[matchRes.user.id]
-        ) {
-          await syncFromServerFallback(authUser?.id);
-        }
-      } else {
-        // Fetch regular user profile
-        const userRes = await profileService.getUserProfile(userId);
-        setUser(userRes);
-        if (userRes.match) {
-          setMatchData({
-            id: 'generated',
-            totalPoints: userRes.match.totalPoints,
-            explanation: { reasons: userRes.match.reasons },
-          });
-        }
-        if (userRes.connectionStatus) {
-          setRelationship(
-            userRes.id,
-            userRes.connectionStatus,
-            userRes.requestId,
-            userRes.connectionId
-          );
-        } else if (
-          userRes.id &&
-          !useConnectionStore.getState().relationships[userRes.id]
-        ) {
-          await syncFromServerFallback(authUser?.id);
-        }
-      }
-
-      // Fetch user's upcoming trips in parallel
-      try {
-        const targetIdForTrips = userId;
-        const trips = await profileService.getUserUpcomingTrips(targetIdForTrips);
-        setUpcomingTrips(trips);
-      } catch {
-        // Soft-fail for upcoming trips
-      }
-    } catch (err: any) {
-      console.warn('Error loading user profile:', err);
-      Alert.alert(
-        'Profile Unavailable',
-        'Unable to load the traveler profile at this moment.',
-        [{ text: 'Go Back', onPress: () => navigation.goBack() }]
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId, matchId, navigation, authUser?.id, setRelationship, syncFromServerFallback]);
-
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
-
   // Handle Send Connection
   const handleSendConnection = async (message: string) => {
     if (!user) return;
-    try {
-      await connectionService.sendRequest({
-        receiverId: user.id,
-        message,
-      });
-      setRelationship(user.id, 'REQUEST_SENT');
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Mate Request Sent', `Your request was sent to ${user.fullName}!`);
-    } catch (err) {
-      Alert.alert('Error', 'Could not send mate request. Please try again.');
-      throw err;
-    }
+    await sendConnectionMutation.mutateAsync({
+      receiverId: user.id,
+      message,
+    });
+    Alert.alert('Mate Request Sent', `Your request was sent to ${user.fullName}!`);
   };
 
   // Handle Accept Connection
-  const handleAcceptConnection = async () => {
+  const handleAcceptConnection = () => {
     if (!user) return;
-    try {
-      await acceptUserRequest(user.id, user.requestId, authUser?.id);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Connected!', `You and ${user.fullName} are now travel mates.`);
-    } catch {
-      Alert.alert('Error', 'Could not accept connection request.');
-    }
+    acceptConnectionMutation.mutate(
+      {
+        targetUserId: user.id,
+        requestId: user.requestId,
+      },
+      {
+        onSuccess: () => {
+          Alert.alert('Connected!', `You and ${user.fullName} are now travel mates.`);
+        },
+      }
+    );
   };
 
   // Handle Direct Message
@@ -192,7 +135,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar style="light" />
-        <ActivityIndicator size="large" color="#005440" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
         <Text style={styles.loadingText}>Loading traveler profile...</Text>
       </View>
     );
@@ -202,7 +145,6 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     return null;
   }
 
-  // Find companion trip if on COMPANION variant
   const featuredCompanionTrip =
     tripId && upcomingTrips.length > 0
       ? upcomingTrips.find((t) => t.id === tripId) || upcomingTrips[0]
@@ -211,8 +153,8 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const effectiveVariant: ProfileVariant = matchId
     ? 'MATCH'
     : tripId || variant === 'COMPANION'
-    ? 'COMPANION'
-    : variant;
+      ? 'COMPANION'
+      : variant;
 
   return (
     <View style={styles.root}>
@@ -224,7 +166,6 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         bounces={true}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Hero Section */}
         <ProfileHero
           user={user}
           variant={effectiveVariant}
@@ -237,7 +178,6 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           onMessagePress={handleMessagePress}
         />
 
-        {/* Variant: Companion Invitation Banner */}
         {effectiveVariant === 'COMPANION' && featuredCompanionTrip && (
           <TripCompanionBanner
             userName={user.fullName}
@@ -252,7 +192,6 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         )}
 
-        {/* Variant: Match Compatibility Card */}
         {matchData && (
           <MatchCompatibilityCard
             score={matchData.totalPoints}
@@ -260,13 +199,10 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         )}
 
-        {/* Variant: Matched Trip Plan Card */}
         {matchedTrip && <MatchedTripCard trip={matchedTrip} />}
 
-        {/* About Bio Card */}
         <ProfileBioCard name={user.fullName} bio={user.bio} />
 
-        {/* Travel Identity & Attributes */}
         <ProfileAttributesCard
           travelType={user.travelType}
           travelPersonality={user.travelPersonality}
@@ -275,16 +211,14 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           interests={user.interests}
         />
 
-        {/* Upcoming Journeys (excluding matched trip if already shown) */}
         <ProfileUpcomingTrips
           trips={upcomingTrips}
-          onTripPress={(trip) => {
+          onTripPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
         />
       </ScrollView>
 
-      {/* Connect Message Modal */}
       <ConnectModal
         visible={showConnectModal}
         recipientName={user.fullName}
@@ -298,11 +232,11 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
@@ -310,7 +244,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   scroll: {
     flex: 1,

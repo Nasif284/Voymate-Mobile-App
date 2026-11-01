@@ -30,7 +30,7 @@ export const BuddiesOnTheRoadAlert: React.FC<BuddiesOnTheRoadAlertProps> = ({
             />
           ) : (
             <View style={styles.avatarFallback}>
-              <Users size={14} color="#FFFFFF" />
+              <Users size={14} color={theme.colors.white} />
             </View>
           )}
         </View>
@@ -52,7 +52,7 @@ export const BuddiesOnTheRoadAlert: React.FC<BuddiesOnTheRoadAlertProps> = ({
         onPress={() => onMessagePress(firstBuddy)}
         activeOpacity={0.8}
       >
-        <MessageSquare size={13} color="#FFFFFF" />
+        <MessageSquare size={13} color={theme.colors.white} />
         <Text style={styles.actionBtnText}>Chat</Text>
       </TouchableOpacity>
     </View>
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.textPrimary,
     borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   avatarFallback: {
     width: 36,
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   textContainer: {
     flex: 1,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   subtitle: {
     fontSize: 10,
@@ -118,17 +118,15 @@ const styles = StyleSheet.create({
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F6E56',
+    backgroundColor: theme.colors.primary,
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 12,
     gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   actionBtnText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
 });

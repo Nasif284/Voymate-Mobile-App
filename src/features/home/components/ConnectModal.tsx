@@ -43,19 +43,21 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
     setMessage(starter);
   };
 
-  const handleSend = async () => {
+  const handleSend = () => {
     if (isSending) return;
     setIsSending(true);
-    try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      await onSend(message.trim() || `Hey ${recipientName}, let's connect on Voymate!`);
-      setMessage('');
-      onClose();
-    } catch {
-      // Error handled by caller
-    } finally {
-      setIsSending(false);
-    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Promise.resolve(
+      onSend(message.trim() || `Hey ${recipientName}, let's connect on Voymate!`)
+    )
+      .then(() => {
+        setMessage('');
+        onClose();
+      })
+      .catch(() => {})
+      .finally(() => {
+        setIsSending(false);
+      });
   };
 
   return (
@@ -132,10 +134,10 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
                   disabled={isSending}
                 >
                   {isSending ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <ActivityIndicator size="small" color={theme.colors.white} />
                   ) : (
                     <>
-                      <Send size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Send size={15} color={theme.colors.white} style={{ marginRight: 6 }} />
                       <Text style={styles.sendText}>Send Request</Text>
                     </>
                   )}
@@ -152,21 +154,21 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'flex-end',
   },
   sheetContainer: {
     width: '100%',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 24,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 20,
   },
@@ -188,7 +190,7 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     padding: 4,
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 20,
   },
   quickStarters: {
@@ -208,24 +210,24 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   starterChip: {
-    backgroundColor: '#F3F8F5',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 12,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.12)',
+    borderColor: theme.colors.border,
   },
   starterText: {
     fontSize: 12,
-    color: theme.colors.primary,
+    color: theme.colors.textPrimary,
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#F7FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     padding: 14,
     fontSize: 14,
     color: theme.colors.textPrimary,
@@ -243,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   cancelText: {
     fontSize: 14,
@@ -270,6 +272,6 @@ const styles = StyleSheet.create({
   sendText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
 });

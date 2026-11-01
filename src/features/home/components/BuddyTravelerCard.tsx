@@ -74,7 +74,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
         {/* Date Range Badge (if upcoming trip exists) */}
         {tripDates ? (
           <View style={styles.dateBadge}>
-            <Calendar size={11} color="#FFFFFF" />
+            <Calendar size={11} color={theme.colors.white} />
             <Text style={styles.dateText}>{tripDates}</Text>
           </View>
         ) : null}
@@ -105,7 +105,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
         {/* Top: Name, Age, Home Location */}
         <View style={[styles.nameSection, !destinationText && { marginBottom: 14 }]}>
           <Text style={styles.name} numberOfLines={1}>
-            {user.fullName}{user.age ? `, ${user.age}` : ''}
+            {user.fullName}
           </Text>
 
           <View style={styles.homeLocationRow}>
@@ -162,7 +162,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
               onPress={() => onMessagePress?.(user)}
               activeOpacity={0.85}
             >
-              <MessageSquare size={15} color="#FFFFFF" />
+              <MessageSquare size={15} color={theme.colors.white} />
               <Text style={styles.btnTextLight}>Message Mate</Text>
             </TouchableOpacity>
           ) : connectionStatus === 'REQUEST_RECEIVED' ? (
@@ -171,7 +171,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
               onPress={() => onAcceptPress?.(user)}
               activeOpacity={0.85}
             >
-              <Check size={15} color="#FFFFFF" />
+              <Check size={15} color={theme.colors.white} />
               <Text style={styles.btnTextLight}>Accept Request</Text>
             </TouchableOpacity>
           ) : connectionStatus === 'REQUEST_SENT' ? (
@@ -184,7 +184,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
               onPress={() => onConnectPress(user)}
               activeOpacity={0.85}
             >
-              <UserPlus size={15} color="#FFFFFF" />
+              <UserPlus size={15} color={theme.colors.white} />
               <Text style={styles.btnTextLight}>Connect</Text>
             </TouchableOpacity>
           )}
@@ -194,25 +194,27 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
   );
 });
 
+BuddyTravelerCard.displayName = 'BuddyTravelerCard';
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E8ECE9',
+    borderColor: theme.colors.border,
     marginBottom: 20,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 14,
+    elevation: 2,
   },
   coverWrapper: {
     height: 120,
     width: '100%',
     position: 'relative',
-    backgroundColor: '#0F6E56',
+    backgroundColor: theme.colors.primaryDark,
   },
   coverImage: {
     width: '100%',
@@ -222,7 +224,7 @@ const styles = StyleSheet.create({
   coverPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   dateBadge: {
     position: 'absolute',
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   dateText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -245,13 +247,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'rgba(0, 84, 64, 0.85)',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
   },
   styleText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 10,
     fontWeight: '700',
     textTransform: 'capitalize',
@@ -267,8 +269,8 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#EAEAEA',
+    borderColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   avatarFallback: {
     width: 60,
@@ -278,12 +280,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   avatarFallbackText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   body: {
     paddingTop: 36,
@@ -295,7 +297,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
@@ -312,7 +314,7 @@ const styles = StyleSheet.create({
   destinationBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 14,
@@ -324,7 +326,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
   destinationName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#181D1A',
+    color: theme.colors.textPrimary,
     marginTop: 1,
   },
   bioText: {
@@ -358,7 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   interestChip: {
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 8,
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   interestMoreChip: {
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -399,18 +401,18 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   btnConnected: {
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   btnAccept: {
-    backgroundColor: '#0F6E56',
+    backgroundColor: theme.colors.primary,
   },
   btnSent: {
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   btnTextLight: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.onPrimary,
   },
   btnTextMuted: {
     fontSize: 13,

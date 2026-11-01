@@ -3,11 +3,9 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   Pressable,
   Platform,
 } from 'react-native';
-import { theme } from '../../config/theme';
 import { useHaptics } from '../../hooks/useHaptics';
 
 interface OtpInputProps {
@@ -48,7 +46,6 @@ export const OtpInput: React.FC<OtpInputProps> = ({
   };
 
   const handleChangeText = (text: string) => {
-    // Only allow numeric characters and max length
     const numericText = text.replace(/[^0-9]/g, '').slice(0, length);
     onChange(numericText);
     haptics.selection();
@@ -61,7 +58,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
   const digits = value.split('');
 
   return (
-    <Pressable style={styles.container} onPress={handlePress}>
+    <Pressable className="w-full items-center my-4" onPress={handlePress}>
       <TextInput
         ref={inputRef}
         value={value}
@@ -72,37 +69,39 @@ export const OtpInput: React.FC<OtpInputProps> = ({
         autoComplete={Platform.OS === 'ios' ? 'one-time-code' : 'sms-otp'}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        style={styles.hiddenInput}
+        className="absolute top-0 left-0 right-0 bottom-0 opacity-0"
         caretHidden
         editable={!disabled}
       />
 
-      <View style={styles.cellsRow}>
+      <View className="flex-row justify-between w-full max-w-[350px]">
         {Array.from({ length }).map((_, index) => {
           const digit = digits[index] || '';
           const isCurrent = isFocused && index === digits.length;
           const isFilled = digit.length > 0;
 
+          const cellClasses = [
+            'w-[45px] h-[54px] rounded-[13px] bg-surface items-center justify-center border-[1.2px]',
+            error
+              ? 'border-error bg-error-light'
+              : isCurrent
+              ? 'border-primary border-2 shadow-sm'
+              : isFilled
+              ? 'border-primary'
+              : 'border-border shadow-sm',
+          ].join(' ');
+
+          const textClasses = [
+            'text-xl font-bold text-center',
+            error ? 'text-error' : isFilled ? 'text-primary' : 'text-textPrimary',
+          ].join(' ');
+
           return (
-            <View
-              key={index}
-              style={[
-                styles.cell,
-                isFilled && styles.cellFilled,
-                isCurrent && styles.cellCurrent,
-                error && styles.cellError,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.cellText,
-                  isFilled && styles.cellTextFilled,
-                  error && styles.cellTextError,
-                ]}
-              >
-                {digit}
-              </Text>
-              {isCurrent && !isFilled && <View style={styles.cursor} />}
+            <View key={index} className={cellClasses}>
+              <Text className={textClasses}>{digit}</Text>
+              {isCurrent && !isFilled ? (
+                <View className="w-[1.5px] h-5 bg-primary rounded-[1px]" />
+              ) : null}
             </View>
           );
         })}
@@ -110,72 +109,3 @@ export const OtpInput: React.FC<OtpInputProps> = ({
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    alignItems: 'center',
-    marginVertical: 18,
-  },
-  hiddenInput: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0,
-  },
-  cellsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    maxWidth: 350,
-  },
-  cell: {
-    width: 45,
-    height: 54,
-    borderRadius: 13,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadows.subtle,
-  },
-  cellFilled: {
-    borderColor: theme.colors.primary,
-    backgroundColor: '#FFFFFF',
-  },
-  cellCurrent: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-    backgroundColor: '#FFFFFF',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cellError: {
-    borderColor: theme.colors.error,
-    backgroundColor: '#FFFDFD',
-  },
-  cellText: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  cellTextFilled: {
-    color: theme.colors.primary,
-  },
-  cellTextError: {
-    color: theme.colors.error,
-  },
-  cursor: {
-    position: 'absolute',
-    width: 2,
-    height: 22,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 1,
-  },
-});

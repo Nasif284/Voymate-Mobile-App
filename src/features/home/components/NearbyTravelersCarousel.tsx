@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { theme } from '../../../config/theme';
 import { UserWithDetails } from '../types';
+import { formatDistanceKm } from '../../../utils/formatters';
 import { MapPin, UserPlus, Check, MessageSquare } from 'lucide-react-native';
 
 interface NearbyTravelersCarouselProps {
@@ -59,7 +60,8 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
       >
         {users.map((user) => {
           const status = connectionsMap[user.id] || user.connectionStatus || 'NONE';
-          const distance = user.distanceKm ? `${user.distanceKm} km away` : 'Nearby';
+          const rawDistance = user.distanceKm ?? (user as any).distance ?? (user as any).distance_km;
+          const distance = formatDistanceKm(rawDistance);
 
           return (
             <TouchableOpacity
@@ -78,7 +80,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                 )}
                 {/* Distance Badge */}
                 <View style={styles.distanceBadge}>
-                  <MapPin size={10} color="#FFFFFF" />
+                  <MapPin size={10} color={theme.colors.white} />
                   <Text style={styles.distanceText}>{distance}</Text>
                 </View>
               </View>
@@ -99,7 +101,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
               {/* Card Body */}
               <View style={styles.cardBody}>
                 <Text style={styles.userName} numberOfLines={1}>
-                  {user.fullName}{user.age ? `, ${user.age}` : ''}
+                  {user.fullName}
                 </Text>
 
                 <Text style={styles.userLocation} numberOfLines={1}>
@@ -126,7 +128,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                       style={[styles.actionBtn, styles.btnConnected]}
                       onPress={() => onMessagePress ? onMessagePress(user) : onConnectPress(user)}
                     >
-                      <MessageSquare size={13} color="#FFFFFF" />
+                      <MessageSquare size={13} color={theme.colors.white} />
                       <Text style={styles.btnTextLight}>Message</Text>
                     </TouchableOpacity>
                   ) : status === 'REQUEST_SENT' ? (
@@ -138,7 +140,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                       style={[styles.actionBtn, styles.btnAccept]}
                       onPress={() => onAcceptPress ? onAcceptPress(user) : onConnectPress(user)}
                     >
-                      <Check size={13} color="#FFFFFF" />
+                      <Check size={13} color={theme.colors.white} />
                       <Text style={styles.btnTextLight}>Accept</Text>
                     </TouchableOpacity>
                   ) : (
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   countBadge: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: 12,
@@ -213,22 +215,22 @@ const styles = StyleSheet.create({
   },
   card: {
     width: 205,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECE9',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 8,
     elevation: 2,
   },
   coverWrapper: {
     height: 75,
     width: '100%',
     position: 'relative',
-    backgroundColor: '#0F6E56',
+    backgroundColor: theme.colors.primaryDark,
   },
   coverImage: {
     width: '100%',
@@ -238,7 +240,7 @@ const styles = StyleSheet.create({
   coverPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   distanceBadge: {
     position: 'absolute',
@@ -246,16 +248,17 @@ const styles = StyleSheet.create({
     right: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 10,
-    gap: 3,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
   },
   distanceText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '600',
+    color: theme.colors.white,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.1,
   },
   avatarWrapper: {
     position: 'absolute',
@@ -268,8 +271,8 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#EAEAEA',
+    borderColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   avatarFallback: {
     width: 44,
@@ -279,10 +282,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2.5,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   avatarFallbackText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -308,7 +311,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   interestTag: {
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -331,9 +334,9 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   btnConnect: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.2)',
+    borderColor: theme.colors.primaryBorder,
   },
   btnTextConnect: {
     fontSize: 11,
@@ -344,15 +347,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
   },
   btnAccept: {
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   btnSent: {
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   btnTextLight: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   btnTextMuted: {
     fontSize: 11,

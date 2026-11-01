@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,22 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
-  Dimensions,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
-import { profileService } from '../services/profile.service';
-import { connectionService } from '../../connections/services/connection.service';
-import { UserProfileData, ProfileUpcomingTrip } from '../types';
+import {
+  useGetMe,
+  useGetProfileUpcomingTrips,
+  useUpdateProfile,
+  useUpdateAvatar,
+  useUpdateCover,
+} from '../hooks/profile.hooks';
+import {
+  useGetConnections,
+  useGetIncomingRequests,
+} from '../../connections/hooks/connection.hooks';
 import { ProfileAttributesCard } from '../components/ProfileAttributesCard';
 import { ProfileBioCard } from '../components/ProfileBioCard';
 import { ProfileUpcomingTrips } from '../components/ProfileUpcomingTrips';
@@ -28,161 +35,92 @@ import {
   Camera,
   MapPin,
   Calendar,
-  Compass,
-  Users,
-  ShieldCheck,
-  PlusCircle,
   LogOut,
   Edit3,
   Radio,
-  ChevronRight,
 } from 'lucide-react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
 import { StatusBar } from 'expo-status-bar';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user: authUser, logout, setUser } = useAuthStore();
+  const { user: authUser, logout } = useAuthStore();
 
-  const [profile, setProfile] = useState<UserProfileData | null>(null);
-  const [upcomingTrips, setUpcomingTrips] = useState<ProfileUpcomingTrip[]>([]);
-  const [connectionsCount, setConnectionsCount] = useState<number>(0);
-  const [incomingRequestsCount, setIncomingRequestsCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdatingTraveling, setIsUpdatingTraveling] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  const fetchProfileData = useCallback(async () => {
-    try {
-      const [data, conns, incomingReqs] = await Promise.all([
-        profileService.getMe(),
-        connectionService.getConnections().catch(() => []),
-        connectionService.getIncomingRequests().catch(() => []),
-      ]);
+  // TanStack Query Hooks
+  const { data: profile = null } = useGetMe();
+  const { data: connections = [] } = useGetConnections();
+  const { data: incomingRequests = [] } = useGetIncomingRequests();
+  const { data: upcomingTrips = [] } = useGetProfileUpcomingTrips(profile?.id);
 
-      setProfile(data);
-      setConnectionsCount(conns.length);
-      setIncomingRequestsCount(incomingReqs.length);
+  const updateProfileMutation = useUpdateProfile();
+  const updateAvatarMutation = useUpdateAvatar();
+  const updateCoverMutation = useUpdateCover();
 
-      if (data?.id) {
-        try {
-          const trips = await profileService.getUserUpcomingTrips(data.id);
-          setUpcomingTrips(trips);
-        } catch {
-          // Non-critical
-        }
-      }
-    } catch (err) {
-      console.warn('Error fetching personal profile:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfileData();
-    }, [fetchProfileData])
-  );
+  const connectionsCount = connections.length;
+  const incomingRequestsCount = incomingRequests.length;
+  const isUpdatingTraveling = updateProfileMutation.isPending;
 
   // Handle Pick and Upload Avatar
   const handlePickAvatar = async () => {
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Permission Denied', 'Please allow gallery access to upload a photo.');
-        return;
-      }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission Denied', 'Please allow gallery access to upload a photo.');
+      return;
+    }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
 
-      if (!result.canceled && result.assets[0]?.uri) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        setIsLoading(true);
-        await profileService.updateAvatar(result.assets[0].uri);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        await fetchProfileData();
-      }
-    } catch (err) {
-      Alert.alert('Upload Failed', 'Could not update profile photo. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (!result.canceled && result.assets[0]?.uri) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      updateAvatarMutation.mutate(result.assets[0].uri);
     }
   };
 
   // Handle Pick and Upload Cover
   const handlePickCover = async () => {
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Permission Denied', 'Please allow gallery access to upload a cover photo.');
-        return;
-      }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission Denied', 'Please allow gallery access to upload a cover photo.');
+      return;
+    }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [16, 9],
-        quality: 0.8,
-      });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
 
-      if (!result.canceled && result.assets[0]?.uri) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        setIsLoading(true);
-        await profileService.updateCover(result.assets[0].uri);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        await fetchProfileData();
-      }
-    } catch (err) {
-      Alert.alert('Upload Failed', 'Could not update cover photo. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (!result.canceled && result.assets[0]?.uri) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      updateCoverMutation.mutate(result.assets[0].uri);
     }
   };
 
   // Toggle Traveling State
-  const handleToggleTraveling = async (newVal: boolean) => {
+  const handleToggleTraveling = (newVal: boolean) => {
     if (!profile || isUpdatingTraveling) return;
-    const prevVal = profile.isTraveling;
-    // Optimistic update
-    setProfile((prev) => (prev ? { ...prev, isTraveling: newVal } : null));
-    if (authUser) {
-      setUser({ ...authUser, isTraveling: newVal });
-    }
-    setIsUpdatingTraveling(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    try {
-      await profileService.updateProfile({
-        fullName: profile.fullName,
-        bio: profile.bio || '',
-        isTraveling: newVal,
-        travelPersonalityCode: profile.travelPersonality || undefined,
-        interests: profile.interests || [],
-        languages: profile.languages || [],
-        skills: profile.skills || [],
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      // Revert on error
-      setProfile((prev) => (prev ? { ...prev, isTraveling: prevVal } : null));
-      if (authUser) {
-        setUser({ ...authUser, isTraveling: prevVal });
-      }
-      Alert.alert('Update Failed', 'Could not update traveling status.');
-    } finally {
-      setIsUpdatingTraveling(false);
-    }
+    updateProfileMutation.mutate({
+      fullName: profile.fullName,
+      bio: profile.bio || '',
+      isTraveling: newVal,
+      travelPersonalityCode: profile.travelPersonality || undefined,
+      interests: profile.interests || [],
+      languages: profile.languages || [],
+      skills: profile.skills || [],
+    });
   };
 
   // Confirm and Log Out
@@ -252,7 +190,7 @@ export const ProfileScreen: React.FC = () => {
             onPress={handlePickCover}
             activeOpacity={0.8}
           >
-            <Camera size={13} color="#FFFFFF" />
+            <Camera size={13} color={theme.colors.white} />
             <Text style={styles.changeCoverBtnText}>Change cover</Text>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -278,7 +216,7 @@ export const ProfileScreen: React.FC = () => {
                 </View>
               )}
               <View style={styles.cameraBadge}>
-                <Camera size={14} color="#FFFFFF" />
+                <Camera size={14} color={theme.colors.white} />
               </View>
             </TouchableOpacity>
 
@@ -289,7 +227,7 @@ export const ProfileScreen: React.FC = () => {
                 onPress={() => setShowEditModal(true)}
                 activeOpacity={0.8}
               >
-                <Edit3 size={15} color="#005440" />
+                <Edit3 size={15} color={theme.colors.primary} />
                 <Text style={styles.editProfileButtonText}>Edit Profile</Text>
               </TouchableOpacity>
             </View>
@@ -299,17 +237,16 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.nameSection}>
             <Text style={styles.nameText}>
               {profile?.fullName || authUser?.fullName || 'Voymate Traveler'}
-              {profile?.age ? `, ${profile.age}` : ''}
             </Text>
             {locationString ? (
               <View style={styles.locationRow}>
-                <MapPin size={13} color="#005440" />
+                <MapPin size={13} color={theme.colors.primary} />
                 <Text style={styles.locationText}>{locationString}</Text>
               </View>
             ) : null}
             {memberSince ? (
               <View style={styles.memberRow}>
-                <Calendar size={12} color="#5C6B64" />
+                <Calendar size={12} color={theme.colors.textSecondary} />
                 <Text style={styles.memberText}>Member since {memberSince}</Text>
               </View>
             ) : null}
@@ -394,7 +331,7 @@ export const ProfileScreen: React.FC = () => {
             >
               <Radio
                 size={18}
-                color={profile?.isTraveling ? '#005440' : '#5C6B64'}
+                color={profile?.isTraveling ? theme.colors.primary : theme.colors.textSecondary}
               />
             </View>
 
@@ -410,14 +347,14 @@ export const ProfileScreen: React.FC = () => {
             </View>
 
             {isUpdatingTraveling ? (
-              <ActivityIndicator size="small" color="#005440" />
+              <ActivityIndicator size="small" color={theme.colors.primary} />
             ) : (
               <Switch
                 value={Boolean(profile?.isTraveling)}
                 onValueChange={handleToggleTraveling}
                 disabled={isUpdatingTraveling}
-                trackColor={{ false: '#E2EBE5', true: '#005440' }}
-                thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+                trackColor={{ false: theme.colors.surfaceDim, true: theme.colors.primary }}
+                thumbColor={Platform.OS === 'ios' ? undefined : theme.colors.white}
               />
             )}
           </View>
@@ -456,7 +393,7 @@ export const ProfileScreen: React.FC = () => {
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 12, right: 12 }}
           >
-            <LogOut size={13} color="#DC2626" strokeWidth={2.2} />
+            <LogOut size={13} color={theme.colors.error} strokeWidth={2.2} />
             <Text style={styles.bottomLogoutText}>Log out</Text>
           </TouchableOpacity>
           <Text style={styles.appVersionText}>Voymate • v1.0.0</Text>
@@ -470,9 +407,7 @@ export const ProfileScreen: React.FC = () => {
           profile={profile}
           onClose={() => setShowEditModal(false)}
           onSave={async (payload) => {
-            const updated = await profileService.updateProfile(payload);
-            setProfile(updated);
-            await fetchProfileData();
+            await updateProfileMutation.mutateAsync(payload);
           }}
         />
       )}
@@ -483,7 +418,7 @@ export const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   scroll: {
     flex: 1,
@@ -494,7 +429,7 @@ const styles = StyleSheet.create({
   coverContainer: {
     width: '100%',
     height: 220,
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
     position: 'relative',
   },
   coverImage: {
@@ -504,16 +439,16 @@ const styles = StyleSheet.create({
   coverFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   coverGradientSim: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
     opacity: 0.85,
   },
   coverDarkGradient: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    backgroundColor: theme.colors.overlay,
   },
   changeCoverBtn: {
     position: 'absolute',
@@ -522,7 +457,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: theme.colors.overlay,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -530,18 +465,18 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   changeCoverBtnText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 11,
     fontWeight: '700',
   },
   identityCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     marginTop: -32,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -559,9 +494,9 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 45,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#E8F5EE',
-    shadowColor: '#000',
+    borderColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceSubtle,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
@@ -579,14 +514,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 45,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
     fontSize: 34,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   cameraBadge: {
     position: 'absolute',
@@ -595,9 +530,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -611,25 +546,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#C9EADB',
+    borderColor: theme.colors.primaryBorder,
   },
   editProfileButtonText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   nameSection: {
     marginBottom: 16,
   },
   nameText: {
     fontSize: 24,
-    fontWeight: '900',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.4,
     marginBottom: 4,
   },
@@ -642,7 +577,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   memberRow: {
     flexDirection: 'row',
@@ -652,17 +587,17 @@ const styles = StyleSheet.create({
   memberText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   statsBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: '#E8EFEA',
+    borderColor: theme.colors.border,
   },
   statItem: {
     alignItems: 'center',
@@ -675,27 +610,27 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: 18,
-    fontWeight: '900',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
   statBadgeDot: {
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     marginTop: -8,
   },
   statLabel: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.6,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 24,
-    backgroundColor: '#DDE5E0',
+    backgroundColor: theme.colors.border,
   },
   travelingCard: {
     marginHorizontal: 16,
@@ -705,12 +640,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   travelingCardActive: {
-    backgroundColor: '#E8F5EE',
-    borderColor: '#A0F3D4',
+    backgroundColor: theme.colors.primaryMist,
+    borderColor: theme.colors.primaryBorder,
   },
   travelingCardInactive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E6EFE9',
+    backgroundColor: theme.colors.surface,
+    borderColor: theme.colors.border,
   },
   travelingHeader: {
     flexDirection: 'row',
@@ -725,22 +660,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   travelingIconWrapActive: {
-    backgroundColor: '#C9EADB',
+    backgroundColor: theme.colors.primaryLight,
   },
   travelingIconWrapInactive: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   travelingTextWrap: {
     flex: 1,
   },
   travelingTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   travelingSubtitle: {
     fontSize: 11,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     lineHeight: 15,
     marginTop: 2,
   },
@@ -757,14 +692,14 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: theme.colors.errorLight,
     borderWidth: 1,
-    borderColor: '#FED7D7',
+    borderColor: theme.colors.errorLight,
   },
   bottomLogoutText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#DC2626',
+    color: theme.colors.error,
     letterSpacing: 0.1,
   },
   appVersionText: {

@@ -17,11 +17,10 @@ import { theme } from '../../../config/theme';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { GoogleIcon } from '../../../components/ui/GoogleIcon';
-import { Mail, Lock, Compass, AlertCircle } from 'lucide-react-native';
-import { useAuthStore } from '../../../store/authStore';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
+import { VoymateLogo } from '../../../components/ui/VoymateLogo';
+import { Mail, Lock, AlertCircle } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useLogin } from '../hooks/auth.hooks';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -35,11 +34,13 @@ interface LoginScreenProps {
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const setAuthSession = useAuthStore((state) => state.setAuthSession);
   const haptics = useHaptics();
+  const loginMutation = useLogin({
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = loginMutation.isPending;
 
   const handleEmailChange = (text: string) => {
     setEmail(text);
@@ -51,7 +52,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     if (errorMessage) setErrorMessage(null);
   };
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     Keyboard.dismiss();
 
     if (!email.trim() || !password) {
@@ -60,44 +61,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      const response = await apiClient.post(ENDPOINTS.AUTH.LOGIN, {
-        email: email.trim().toLowerCase(),
-        password,
-      });
-
-      const data = response.data?.data;
-      if (data) {
-        haptics.success();
-        await setAuthSession(
-          data.user,
-          {
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
-          },
-          {
-            step: data.onboardingStep || 1,
-            isCompleted: data.onboardingCompleted ?? false,
-          },
-          data.isVerified ?? true
-        );
-      }
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        (err.message === 'Network Error'
-          ? 'Unable to connect to the server. Please check your internet connection and try again.'
-          : null) ||
-        'Incorrect email or password. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    loginMutation.mutate({
+      email: email.trim().toLowerCase(),
+      password,
+    });
   };
 
   return (
@@ -116,9 +84,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {/* Minimalist Creative Brand Mark */}
               <View style={styles.brandHero}>
                 <View style={styles.brandHaloRing}>
-                  <View style={styles.brandIconCircle}>
-                    <Compass size={28} color={theme.colors.primary} strokeWidth={1.8} />
-                  </View>
+                  <VoymateLogo size={54} withBackground />
                 </View>
                 <Text style={styles.brandWordmark}>VOYMATE</Text>
               </View>
@@ -151,7 +117,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   autoComplete="email"
                   textContentType="emailAddress"
                   returnKeyType="next"
-                  leftIcon={<Mail size={18} color="#7A8B84" />}
+                  leftIcon={<Mail size={18} color={theme.colors.textMuted} />}
                   containerStyle={styles.inputContainer}
                 />
 
@@ -164,7 +130,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   textContentType="password"
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
-                  leftIcon={<Lock size={18} color="#7A8B84" />}
+                  leftIcon={<Lock size={18} color={theme.colors.textMuted} />}
                   containerStyle={styles.inputContainer}
                 />
 
@@ -261,7 +227,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(160, 243, 212, 0.25)',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -274,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.borderSubtle,
     ...theme.shadows.subtle,
   },
   brandWordmark: {
@@ -309,7 +275,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
+    borderColor: theme.colors.error,
   },
   errorIcon: {
     marginRight: 8,
@@ -350,12 +316,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(0, 84, 64, 0.08)',
+    backgroundColor: theme.colors.border,
   },
   dividerText: {
     marginHorizontal: 14,
     fontSize: 12,
-    color: '#8A9791',
+    color: theme.colors.textMuted,
     fontWeight: '500',
     letterSpacing: 0.2,
   },
@@ -365,7 +331,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     borderRadius: 16,
     height: 52,
     ...theme.shadows.subtle,

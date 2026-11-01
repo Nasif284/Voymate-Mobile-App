@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,8 +13,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 import { RootStackParamList } from '../../../navigation/types';
-import { chatService } from '../services/chat.service';
+import { theme } from '../../../config/theme';
+import { QUERY_KEYS } from '../../../api/queryClient';
+import { useGetDirectChat, useGetMessages } from '../hooks/chat.hooks';
 import { socketService } from '../services/socket.service';
 import { ChatMessage } from '../types';
 import { useAuthStore } from '../../../store/authStore';
@@ -56,6 +59,7 @@ const formatDateDivider = (dateStr?: string | Date) => {
 
 export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { user: currentUser } = useAuthStore();
   const {
     conversationId: initialConvId,
@@ -64,58 +68,57 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     targetUserAvatar,
   } = route.params;
 
-  const [conversationId, setConversationId] = useState<string | null>(initialConvId || null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [isTargetOnline, setIsTargetOnline] = useState(false);
 
-  // Initialize and load conversation
-  const initChat = useCallback(async () => {
-    try {
-      let convId = conversationId;
-      if (!convId && targetUserId) {
-        convId = await chatService.getDirectChat(targetUserId);
-        if (convId) {
-          setConversationId(convId);
-        }
-      }
+  // TanStack Query Hooks
+  const {
+    data: resolvedConvId,
+    isLoading: isLoadingDirectChat,
+  } = useGetDirectChat(targetUserId, !initialConvId && Boolean(targetUserId));
 
-      if (convId) {
-        const msgs = await chatService.getMessages(convId);
-        // Order: newest first for inverted list
-        setMessages(msgs.reverse());
-        socketService.joinConversation(convId);
-        socketService.markAsRead(convId);
-      }
-    } catch (err) {
-      console.warn('Error loading chat:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [conversationId, targetUserId]);
+  const conversationId = initialConvId || resolvedConvId || null;
+
+  const {
+    data: messages = [],
+    isLoading: isLoadingMessages,
+  } = useGetMessages(conversationId);
+
+  const isLoading = isLoadingDirectChat || (Boolean(conversationId) && isLoadingMessages);
 
   useEffect(() => {
-    socketService.connect();
-    initChat();
+    let isMounted = true;
+    let unsubMessage: (() => void) | undefined;
+    let unsubRead: (() => void) | undefined;
+    let unsubPresence: (() => void) | undefined;
 
-    // Listen for incoming messages
+    // Listen for incoming messages and update React Query cache
     const handleIncomingMessage = (newMsg: ChatMessage) => {
-      if (newMsg.conversationId === conversationId || (!conversationId && newMsg.senderId === targetUserId)) {
-        setMessages((prev) => [newMsg, ...prev]);
-        if (newMsg.conversationId) {
-          socketService.markAsRead(newMsg.conversationId);
+      const activeConvId = conversationId || newMsg.conversationId;
+      if (
+        newMsg.conversationId === conversationId ||
+        (!conversationId && newMsg.senderId === targetUserId)
+      ) {
+        if (activeConvId) {
+          queryClient.setQueryData<ChatMessage[]>(
+            QUERY_KEYS.messages(activeConvId),
+            (prev = []) => [newMsg, ...prev]
+          );
+          socketService.markAsRead(activeConvId);
         }
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
       }
     };
 
     // Listen for read receipts
     const handleMessagesRead = (data: { conversationId: string; readerId: string }) => {
-      if (data.conversationId === conversationId && data.readerId !== currentUser?.id) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.senderId === currentUser?.id ? { ...m, status: 'READ' } : m
-          )
+      if (data.conversationId === conversationId && data.readerId !== currentUser?.id && conversationId) {
+        queryClient.setQueryData<ChatMessage[]>(
+          QUERY_KEYS.messages(conversationId),
+          (prev = []) =>
+            prev.map((m) =>
+              m.senderId === currentUser?.id ? { ...m, status: 'READ' } : m
+            )
         );
       }
     };
@@ -127,52 +130,63 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       }
     };
 
-    socketService.onMessage(handleIncomingMessage);
-    socketService.onMessagesRead(handleMessagesRead);
-    socketService.onPresenceChange(handlePresence);
+    socketService.connect().then(() => {
+      if (!isMounted) return;
+      unsubMessage = socketService.onMessage(handleIncomingMessage);
+      unsubRead = socketService.onMessagesRead(handleMessagesRead);
+      unsubPresence = socketService.onPresenceChange(handlePresence);
+
+      if (conversationId) {
+        socketService.joinConversation(conversationId);
+        socketService.markAsRead(conversationId);
+      }
+    });
 
     return () => {
-      socketService.offMessage(handleIncomingMessage);
-      socketService.offMessagesRead(handleMessagesRead);
+      isMounted = false;
+      unsubMessage?.();
+      unsubRead?.();
+      unsubPresence?.();
       if (conversationId) {
         socketService.leaveConversation(conversationId);
       }
     };
-  }, [conversationId, targetUserId, initChat, currentUser?.id]);
+  }, [conversationId, targetUserId, currentUser?.id, queryClient]);
 
   // Send Text Message
-  const handleSendText = async () => {
+  const handleSendText = () => {
     const trimmed = inputText.trim();
     if (!trimmed) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setInputText('');
 
-    // Optimistic message
-    const tempId = `temp_${Date.now()}`;
-    const optimisticMsg: ChatMessage = {
-      id: tempId,
-      conversationId: conversationId || '',
-      senderId: currentUser?.id || '',
-      type: 'TEXT',
-      content: trimmed,
-      status: 'SENT',
-      createdAt: new Date().toISOString(),
-    };
+    // Optimistic message in React Query cache
+    if (conversationId) {
+      const tempId = `temp_${Date.now()}`;
+      const optimisticMsg: ChatMessage = {
+        id: tempId,
+        conversationId,
+        senderId: currentUser?.id || '',
+        type: 'TEXT',
+        content: trimmed,
+        status: 'SENT',
+        createdAt: new Date().toISOString(),
+      };
 
-    setMessages((prev) => [optimisticMsg, ...prev]);
-
-    try {
-      socketService.sendMessage(
-        {
-          conversationId: conversationId || undefined,
-          recipientId: !conversationId ? targetUserId : undefined,
-        },
-        trimmed
+      queryClient.setQueryData<ChatMessage[]>(
+        QUERY_KEYS.messages(conversationId),
+        (prev = []) => [optimisticMsg, ...prev]
       );
-    } catch (err) {
-      console.warn('Send error:', err);
     }
+
+    socketService.sendMessage(
+      {
+        conversationId: conversationId || undefined,
+        recipientId: !conversationId ? targetUserId : undefined,
+      },
+      trimmed
+    );
   };
 
   const renderMessageItem = ({ item, index }: { item: ChatMessage; index: number }) => {
@@ -231,9 +245,9 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
               {isMe && (
                 <View style={styles.statusTick}>
                   {item.status === 'READ' ? (
-                    <CheckCheck size={13} color="#4ADE80" />
+                    <CheckCheck size={13} color={theme.colors.success} />
                   ) : (
-                    <Check size={13} color="rgba(255, 255, 255, 0.7)" />
+                    <Check size={13} color={theme.colors.onPrimaryMuted} />
                   )}
                 </View>
               )}
@@ -256,7 +270,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ChevronLeft size={24} color="#151D19" />
+            <ChevronLeft size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -302,7 +316,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       >
         {isLoading ? (
           <View style={styles.centerLoading}>
-            <ActivityIndicator size="large" color="#005440" />
+            <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : messages.length === 0 ? (
           <View style={styles.emptyChatContainer}>
@@ -329,7 +343,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           <TextInput
             style={styles.textInput}
             placeholder="Type a message..."
-            placeholderTextColor="#88978E"
+            placeholderTextColor={theme.colors.textPlaceholder}
             value={inputText}
             onChangeText={setInputText}
             multiline
@@ -344,7 +358,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={handleSendText}
             disabled={!inputText.trim()}
           >
-            <Send size={16} color="#FFFFFF" strokeWidth={2.5} />
+            <Send size={16} color={theme.colors.white} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -355,7 +369,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -363,9 +377,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF3F0',
+    borderBottomColor: theme.colors.borderSubtle,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -401,14 +415,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 20,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitial: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
   },
   onlineDot: {
     position: 'absolute',
@@ -417,21 +431,21 @@ const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 6,
-    backgroundColor: '#10B981',
+    backgroundColor: theme.colors.success,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.white,
   },
   headerTextWrap: {
     flex: 1,
   },
   headerName: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   headerStatus: {
     fontSize: 11,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     marginTop: 1,
   },
   chatArea: {
@@ -450,14 +464,14 @@ const styles = StyleSheet.create({
   },
   emptyChatTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     textAlign: 'center',
     marginBottom: 6,
   },
   emptyChatSubtitle: {
     fontSize: 13,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 19,
   },
@@ -472,9 +486,9 @@ const styles = StyleSheet.create({
   },
   dateDividerText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#88978E',
-    backgroundColor: '#EEF3F0',
+    fontWeight: '600',
+    color: theme.colors.textMuted,
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 10,
@@ -496,13 +510,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bubbleMe: {
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     borderBottomRightRadius: 4,
   },
   bubbleOther: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderBottomLeftRadius: 4,
   },
   messageText: {
@@ -510,10 +524,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   messageTextMe: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   messageTextOther: {
-    color: '#151D19',
+    color: theme.colors.textPrimary,
   },
   timeStatusRow: {
     flexDirection: 'row',
@@ -526,10 +540,10 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   timeTextMe: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: theme.colors.onPrimaryMuted,
   },
   timeTextOther: {
-    color: '#88978E',
+    color: theme.colors.textMuted,
   },
   statusTick: {
     marginLeft: 2,
@@ -537,23 +551,23 @@ const styles = StyleSheet.create({
   inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 12,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#EEF3F0',
+    borderTopColor: theme.colors.borderSubtle,
     gap: 8,
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     fontSize: 14,
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     maxHeight: 100,
   },
   sendBtn: {
@@ -564,9 +578,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendBtnActive: {
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
   },
   sendBtnInactive: {
-    backgroundColor: '#B5C4BC',
+    backgroundColor: theme.colors.border,
   },
 });

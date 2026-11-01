@@ -15,15 +15,15 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
-import * as Location from 'expo-location';
 import { Country, State, City } from 'country-state-city';
 import { OnboardingStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
 import { useHaptics } from '../../../hooks/useHaptics';
-import { useAuthStore } from '../../../store/authStore';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
+import {
+  useSetOnboardingProfile,
+  useReverseGeocode,
+} from '../hooks/onboarding.hooks';
 import { SearchableSelectModal, SelectOption } from '../../../components/ui/SearchableSelectModal';
 import {
   Camera,
@@ -36,7 +36,6 @@ import {
   Plus,
   Sparkles,
   User,
-  Heart,
   Navigation as LocationIcon,
   ChevronDown,
 } from 'lucide-react-native';
@@ -102,7 +101,6 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [nationality, setNationality] = useState('');
   const [stateName, setStateName] = useState('');
   const [cityName, setCityName] = useState('');
-  const [locating, setLocating] = useState(false);
 
   // Location Modals
   const [countryModalVisible, setCountryModalVisible] = useState(false);
@@ -135,69 +133,63 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
     }));
   }, [selectedCountryCode, selectedStateCode]);
 
+  // Skills & Languages
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(['Navigation', 'Photography']);
+  const [customSkill, setCustomSkill] = useState('');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English']);
+  const [customLanguage, setCustomLanguage] = useState('');
+
+  // Submission & Validation
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const monthRef = useRef<any>(null);
+  const yearRef = useRef<any>(null);
+
+  const haptics = useHaptics();
+  const reverseGeocodeMutation = useReverseGeocode({
+    onSuccess: (locData) => {
+      const code = locData.countryCode || '';
+      const found = Country.getCountryByCode(code);
+      const resolvedCountry = found
+        ? `${found.flag ? `${found.flag} ` : ''}${found.name}`
+        : locData.country || code;
+
+      setSelectedCountryCode(code);
+      setNationality(resolvedCountry);
+
+      const states = code ? State.getStatesOfCountry(code) : [];
+      const matchedState = states.find(
+        (s) =>
+          s.isoCode.toUpperCase() === locData.stateCode?.toUpperCase() ||
+          s.name.toLowerCase() === locData.state?.toLowerCase()
+      );
+
+      const resStateCode = matchedState?.isoCode || locData.stateCode || '';
+      const resStateName = matchedState?.name || locData.state || '';
+
+      setSelectedStateCode(resStateCode);
+      setStateName(resStateName);
+
+      const resCity = locData.district || locData.city || '';
+      setCityName(resCity);
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const locating = reverseGeocodeMutation.isPending;
+
+  const setProfileMutation = useSetOnboardingProfile({
+    onSuccess: () => {
+      navigation.navigate('TravelStyle');
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = setProfileMutation.isPending;
+
   // Handle "Use Current Location"
-  const handleUseCurrentLocation = async () => {
-    try {
-      setLocating(true);
-      haptics.selection();
-      setErrorMessage(null);
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        haptics.error();
-        Alert.alert(
-          'Location Permission Required',
-          'Please allow Voymate to access your location in your phone settings to auto-fill your hometown.'
-        );
-        return;
-      }
-
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      const res = await apiClient.post(ENDPOINTS.LOCATION.REVERSE_GEOCODE, {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-
-      const locData = res.data?.data;
-      if (locData) {
-        haptics.success();
-        const code = locData.countryCode || '';
-        const found = Country.getCountryByCode(code);
-        const resolvedCountry = found
-          ? `${found.flag ? `${found.flag} ` : ''}${found.name}`
-          : locData.country || code;
-
-        setSelectedCountryCode(code);
-        setNationality(resolvedCountry);
-
-        const states = code ? State.getStatesOfCountry(code) : [];
-        const matchedState = states.find(
-          (s) =>
-            s.isoCode.toUpperCase() === locData.stateCode?.toUpperCase() ||
-            s.name.toLowerCase() === locData.state?.toLowerCase()
-        );
-
-        const resStateCode = matchedState?.isoCode || locData.stateCode || '';
-        const resStateName = matchedState?.name || locData.state || '';
-
-        setSelectedStateCode(resStateCode);
-        setStateName(resStateName);
-
-        const resCity = locData.district || locData.city || '';
-        setCityName(resCity);
-      }
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.message ||
-        'Could not detect location. Please pick your country, region, and city below.';
-      setErrorMessage(message);
-    } finally {
-      setLocating(false);
-    }
+  const handleUseCurrentLocation = () => {
+    haptics.selection();
+    setErrorMessage(null);
+    reverseGeocodeMutation.mutate();
   };
 
   const handleSelectCountry = (opt: SelectOption) => {
@@ -217,22 +209,6 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const handleSelectCity = (opt: SelectOption) => {
     setCityName(opt.label);
   };
-
-  // Skills & Languages
-  const [selectedSkills, setSelectedSkills] = useState<string[]>(['Navigation', 'Photography']);
-  const [customSkill, setCustomSkill] = useState('');
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English']);
-  const [customLanguage, setCustomLanguage] = useState('');
-
-  // Submission & Validation
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const monthRef = useRef<any>(null);
-  const yearRef = useRef<any>(null);
-
-  const setOnboarding = useAuthStore((state) => state.setOnboarding);
-  const haptics = useHaptics();
 
   // Pick Avatar
   const handlePickAvatar = async () => {
@@ -338,7 +314,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   // Final Submit
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = () => {
     if (selectedSkills.length === 0) {
       haptics.error();
       setErrorMessage('Please select at least one travel skill.');
@@ -350,73 +326,55 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
+    setErrorMessage(null);
 
-      const d = parseInt(dobDay, 10);
-      const m = parseInt(dobMonth, 10);
-      const y = parseInt(dobYear, 10);
-      // Format as full ISO-8601 DateTime string expected by Prisma (e.g. "2003-01-27T00:00:00.000Z")
-      const dobDate = new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
-      const dobIsoString = dobDate.toISOString();
+    const d = parseInt(dobDay, 10);
+    const m = parseInt(dobMonth, 10);
+    const y = parseInt(dobYear, 10);
+    // Format as full ISO-8601 DateTime string expected by Prisma (e.g. "2003-01-27T00:00:00.000Z")
+    const dobDate = new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
+    const dobIsoString = dobDate.toISOString();
 
-      // Resolve ISO 2-letter country code for Prisma countryCode relation
-      let resolvedCountryCode = selectedCountryCode.trim().toUpperCase();
-      if (!resolvedCountryCode || resolvedCountryCode.length > 3) {
-        const matched = Country.getAllCountries().find(
-          (c) => nationality.toLowerCase().includes(c.name.toLowerCase()) || c.isoCode === resolvedCountryCode
-        );
-        resolvedCountryCode = matched?.isoCode || 'IN';
-      }
-
-      const formData = new FormData();
-      formData.append('about', bio.trim());
-      formData.append('dateOfBirth', dobIsoString);
-      formData.append('nationality', resolvedCountryCode);
-      formData.append('state', stateName.trim());
-      formData.append('city', cityName.trim());
-      formData.append('gender', gender);
-      formData.append('travelSkills', JSON.stringify(selectedSkills));
-      formData.append('languages', JSON.stringify(selectedLanguages));
-
-      // Append Avatar File
-      const avatarName = avatarUri!.split('/').pop() || 'avatar.jpg';
-      const avatarExt = avatarName.split('.').pop()?.toLowerCase() || 'jpg';
-      formData.append('image', {
-        uri: avatarUri!,
-        name: avatarName,
-        type: `image/${avatarExt === 'png' ? 'png' : 'jpeg'}`,
-      } as any);
-
-      // Append Cover File
-      const coverName = coverUri!.split('/').pop() || 'cover.jpg';
-      const coverExt = coverName.split('.').pop()?.toLowerCase() || 'jpg';
-      formData.append('coverImage', {
-        uri: coverUri!,
-        name: coverName,
-        type: `image/${coverExt === 'png' ? 'png' : 'jpeg'}`,
-      } as any);
-
-      await apiClient.post(ENDPOINTS.ONBOARDING.PROFILE, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      haptics.success();
-      setOnboarding(3, false);
-      navigation.navigate('TravelStyle');
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        'Could not save your profile. Please check your information.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
+    // Resolve ISO 2-letter country code for Prisma countryCode relation
+    let resolvedCountryCode = selectedCountryCode.trim().toUpperCase();
+    if (!resolvedCountryCode || resolvedCountryCode.length > 3) {
+      const matched = Country.getAllCountries().find(
+        (c) =>
+          nationality.toLowerCase().includes(c.name.toLowerCase()) ||
+          c.isoCode === resolvedCountryCode
+      );
+      resolvedCountryCode = matched?.isoCode || 'IN';
     }
+
+    const formData = new FormData();
+    formData.append('about', bio.trim());
+    formData.append('dateOfBirth', dobIsoString);
+    formData.append('nationality', resolvedCountryCode);
+    formData.append('state', stateName.trim());
+    formData.append('city', cityName.trim());
+    formData.append('gender', gender);
+    formData.append('travelSkills', JSON.stringify(selectedSkills));
+    formData.append('languages', JSON.stringify(selectedLanguages));
+
+    // Append Avatar File
+    const avatarName = avatarUri!.split('/').pop() || 'avatar.jpg';
+    const avatarExt = avatarName.split('.').pop()?.toLowerCase() || 'jpg';
+    formData.append('image', {
+      uri: avatarUri!,
+      name: avatarName,
+      type: `image/${avatarExt === 'png' ? 'png' : 'jpeg'}`,
+    } as any);
+
+    // Append Cover File
+    const coverName = coverUri!.split('/').pop() || 'cover.jpg';
+    const coverExt = coverName.split('.').pop()?.toLowerCase() || 'jpg';
+    formData.append('coverImage', {
+      uri: coverUri!,
+      name: coverName,
+      type: `image/${coverExt === 'png' ? 'png' : 'jpeg'}`,
+    } as any);
+
+    setProfileMutation.mutate(formData);
   };
 
   // Skill toggling
@@ -541,7 +499,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       </View>
                     )}
                     <View style={styles.coverBadge}>
-                      <Camera size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+                      <Camera size={13} color={theme.colors.white} style={{ marginRight: 4 }} />
                       <Text style={styles.coverBadgeText}>{coverUri ? 'Change' : 'Add Cover'}</Text>
                     </View>
                   </TouchableOpacity>
@@ -563,7 +521,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                         )}
                       </View>
                       <View style={styles.cameraBadge}>
-                        <Camera size={15} color="#FFFFFF" strokeWidth={2.2} />
+                        <Camera size={15} color={theme.colors.white} strokeWidth={2.2} />
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -587,7 +545,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     <View style={styles.statusPillsRow}>
                       <View style={[styles.statusPill, coverUri ? styles.statusPillDone : null]}>
                         {coverUri ? (
-                          <Check size={12} color="#FFFFFF" strokeWidth={3} />
+                          <Check size={12} color={theme.colors.white} strokeWidth={3} />
                         ) : (
                           <ImageIcon size={12} color={theme.colors.textMuted} />
                         )}
@@ -597,7 +555,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       </View>
                       <View style={[styles.statusPill, avatarUri ? styles.statusPillDone : null]}>
                         {avatarUri ? (
-                          <Check size={12} color="#FFFFFF" strokeWidth={3} />
+                          <Check size={12} color={theme.colors.white} strokeWidth={3} />
                         ) : (
                           <User size={12} color={theme.colors.textMuted} />
                         )}
@@ -904,7 +862,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                         onPress={() => toggleSkill(skill)}
                         activeOpacity={0.7}
                       >
-                        {isSelected && <Check size={14} color="#FFFFFF" style={{ marginRight: 4 }} />}
+                        {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
                         <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
                           {skill}
                         </Text>
@@ -928,7 +886,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     onPress={handleAddCustomSkill}
                     activeOpacity={0.7}
                   >
-                    <Plus size={16} color="#FFFFFF" />
+                    <Plus size={16} color={theme.colors.white} />
                   </TouchableOpacity>
                 </View>
 
@@ -944,7 +902,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                         onPress={() => toggleLanguage(lang)}
                         activeOpacity={0.7}
                       >
-                        {isSelected && <Check size={14} color="#FFFFFF" style={{ marginRight: 4 }} />}
+                        {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
                         <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
                           {lang}
                         </Text>
@@ -968,7 +926,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     onPress={handleAddCustomLanguage}
                     activeOpacity={0.7}
                   >
-                    <Plus size={16} color="#FFFFFF" />
+                    <Plus size={16} color={theme.colors.white} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1201,7 +1159,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   coverBadgeText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 11,
     fontWeight: '600',
   },
@@ -1219,9 +1177,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#EBF3EF',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.white,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1247,8 +1205,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000',
+    borderColor: theme.colors.white,
+    shadowColor: theme.colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.22,
     shadowRadius: 4,
@@ -1280,7 +1238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(0, 84, 64, 0.06)',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 5,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -1294,13 +1252,13 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   statusPillTextDone: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   bioBox: {
     backgroundColor: theme.colors.surface,
     borderRadius: 18,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     padding: 16,
     ...theme.shadows.subtle,
   },
@@ -1336,7 +1294,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   promptText: {
@@ -1355,7 +1313,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: theme.colors.surface,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadows.subtle,
@@ -1370,7 +1328,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   genderLabelSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   dobContainer: {
     flexDirection: 'row',
@@ -1382,7 +1340,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     height: 54,
     justifyContent: 'center',
     ...theme.shadows.subtle,
@@ -1411,7 +1369,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(0, 84, 64, 0.15)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   currentLocationIconBox: {
@@ -1442,7 +1400,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(0, 84, 64, 0.08)',
+    backgroundColor: theme.colors.borderSubtle,
   },
   dividerText: {
     fontSize: 12,
@@ -1460,14 +1418,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     paddingHorizontal: 16,
     height: 54,
     ...theme.shadows.subtle,
   },
   dropdownDisabled: {
     opacity: 0.55,
-    backgroundColor: 'rgba(0, 84, 64, 0.03)',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   selectorIcon: {
     marginRight: 12,
@@ -1496,7 +1454,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: theme.colors.surface,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.12)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   chipSelected: {
@@ -1509,7 +1467,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   chipTextSelected: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontWeight: '600',
   },
   addCustomRow: {
@@ -1522,7 +1480,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 14,
     borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     paddingHorizontal: 14,
     height: 46,
     fontSize: 13,
@@ -1548,7 +1506,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 84, 64, 0.06)',
+    borderTopColor: theme.colors.borderSubtle,
   },
   actionButton: {
     borderRadius: 16,

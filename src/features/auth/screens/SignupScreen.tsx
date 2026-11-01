@@ -18,9 +18,8 @@ import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { GoogleIcon } from '../../../components/ui/GoogleIcon';
 import { Mail, Lock, User, ArrowLeft, AlertCircle } from 'lucide-react-native';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useRegister } from '../hooks/auth.hooks';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -35,10 +34,19 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const haptics = useHaptics();
+  const registerMutation = useRegister({
+    onSuccess: () => {
+      navigation.navigate('VerifyEmail', {
+        email: email.trim().toLowerCase(),
+        password,
+      });
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = registerMutation.isPending;
 
   const handleNameChange = (text: string) => {
     setFullName(text);
@@ -55,7 +63,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     if (errorMessage) setErrorMessage(null);
   };
 
-  const handleSignup = async () => {
+  const handleSignup = () => {
     Keyboard.dismiss();
 
     if (!fullName.trim() || !email.trim() || !password) {
@@ -79,31 +87,12 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.REGISTER, {
-        fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-      });
-
-      haptics.success();
-      navigation.navigate('VerifyEmail', { email: email.trim().toLowerCase(), password });
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.error?.message ||
-        err.response?.data?.message ||
-        (err.message === 'Network Error'
-          ? 'Unable to connect to the server. Please check your internet connection and try again.'
-          : null) ||
-        'Unable to create account. Please check your details.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    registerMutation.mutate({
+      fullName: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+    });
   };
 
   return (
@@ -158,7 +147,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                   autoCorrect={false}
                   textContentType="name"
                   returnKeyType="next"
-                  leftIcon={<User size={18} color="#7A8B84" />}
+                  leftIcon={<User size={18} color={theme.colors.textMuted} />}
                   containerStyle={styles.inputContainer}
                 />
 
@@ -172,7 +161,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                   autoComplete="email"
                   textContentType="emailAddress"
                   returnKeyType="next"
-                  leftIcon={<Mail size={18} color="#7A8B84" />}
+                  leftIcon={<Mail size={18} color={theme.colors.textMuted} />}
                   containerStyle={styles.inputContainer}
                 />
 
@@ -185,7 +174,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                   textContentType="newPassword"
                   returnKeyType="done"
                   onSubmitEditing={handleSignup}
-                  leftIcon={<Lock size={18} color="#7A8B84" />}
+                  leftIcon={<Lock size={18} color={theme.colors.textMuted} />}
                   containerStyle={styles.inputContainer}
                 />
 
@@ -276,7 +265,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
+    borderColor: theme.colors.border,
     ...theme.shadows.subtle,
   },
   header: {
@@ -303,7 +292,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
+    borderColor: theme.colors.error,
   },
   errorIcon: {
     marginRight: 8,
@@ -347,12 +336,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(0, 84, 64, 0.08)',
+    backgroundColor: theme.colors.border,
   },
   dividerText: {
     marginHorizontal: 14,
     fontSize: 12,
-    color: '#8A9791',
+    color: theme.colors.textMuted,
     fontWeight: '500',
     letterSpacing: 0.2,
   },
@@ -362,7 +351,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.1)',
+    borderColor: theme.colors.border,
     borderRadius: 16,
     height: 52,
     ...theme.shadows.subtle,

@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import { theme } from '../../../config/theme';
 import { UserTrip } from '../../trips/types';
@@ -21,8 +20,6 @@ import {
   Globe2,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface HomeEmptyStateProps {
   activeTrip?: UserTrip | null;
@@ -71,7 +68,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           {/* Destination & Meta */}
           <View style={styles.tripInfoRow}>
             <View style={styles.tripIconBox}>
-              <MapPin size={22} color="#A0F3D4" />
+              <MapPin size={22} color={theme.colors.primaryLight} />
             </View>
             <View style={styles.tripTextCol}>
               <Text style={styles.tripDestination} numberOfLines={1}>
@@ -79,14 +76,14 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               </Text>
               <View style={styles.tripMetaRow}>
                 <View style={styles.metaPill}>
-                  <Calendar size={11} color="#C9EADB" />
+                  <Calendar size={11} color={theme.colors.primaryLight} />
                   <Text style={styles.metaPillText}>
                     {formatDateRange(activeTrip.dateFrom, activeTrip.dateTo)}
                   </Text>
                 </View>
                 {activeTrip.travelStyle && (
                   <View style={styles.metaPill}>
-                    <Flame size={11} color="#C9EADB" />
+                    <Flame size={11} color={theme.colors.primaryLight} />
                     <Text style={styles.metaPillText}>
                       {activeTrip.travelStyle}
                     </Text>
@@ -151,9 +148,9 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
                 onViewMatchesPress();
               }}
             >
-              <Users size={17} color="#FFFFFF" strokeWidth={2.2} />
+              <Users size={17} color={theme.colors.white} strokeWidth={2.2} />
               <Text style={styles.primaryBtnText}>View Trip Matches</Text>
-              <ArrowRight size={16} color="#FFFFFF" />
+              <ArrowRight size={16} color={theme.colors.white} />
             </TouchableOpacity>
 
             <View style={styles.secondaryBtnRow}>
@@ -210,7 +207,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         <View style={styles.heroIconBadge}>
           <Compass size={32} color={theme.colors.primary} strokeWidth={2.2} />
           <View style={styles.heroSparkleWrap}>
-            <Sparkles size={14} color="#0F6E56" />
+            <Sparkles size={14} color={theme.colors.primaryDark} />
           </View>
         </View>
 
@@ -279,10 +276,10 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           }}
         >
           <View style={styles.heroActionContent}>
-            <Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
+            <Plus size={18} color={theme.colors.white} strokeWidth={2.5} />
             <Text style={styles.heroActionBtnText}>Create Travel Plan</Text>
           </View>
-          <ArrowRight size={17} color="#A0F3D4" strokeWidth={2.2} />
+          <ArrowRight size={17} color={theme.colors.primaryLight} strokeWidth={2.2} />
         </TouchableOpacity>
 
         {/* Secondary Gentle Discovery Link */}
@@ -315,17 +312,17 @@ const styles = StyleSheet.create({
   // Scenario 1: Active Trip Styles
   // -------------------------------------------------------------
   activeTripCard: {
-    backgroundColor: '#004736',
+    backgroundColor: theme.colors.textPrimary,
     borderRadius: 24,
     padding: 20,
     marginBottom: 14,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#004736',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.12,
     shadowRadius: 14,
-    elevation: 5,
+    elevation: 4,
   },
   ambientGlowTop: {
     position: 'absolute',
@@ -334,7 +331,7 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: 'rgba(160, 243, 212, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   ambientGlowBottom: {
     position: 'absolute',
@@ -354,19 +351,19 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: 'rgba(160, 243, 212, 0.14)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(160, 243, 212, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
   tripTextCol: {
     flex: 1,
   },
   tripDestination: {
     fontSize: 19,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
     letterSpacing: -0.3,
   },
   tripMetaRow: {
@@ -388,15 +385,15 @@ const styles = StyleSheet.create({
   metaPillText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#C9EADB',
+    color: theme.colors.primaryLight,
   },
   bodyCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 22,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
-    shadowColor: '#000000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 10,
@@ -412,19 +409,19 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeCategoryText: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '600',
     color: theme.colors.primary,
     letterSpacing: 0.5,
   },
   headline: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     letterSpacing: -0.3,
     lineHeight: 24,
@@ -439,11 +436,11 @@ const styles = StyleSheet.create({
   tipsList: {
     gap: 12,
     marginBottom: 20,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     padding: 14,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#EDF2EE',
+    borderColor: theme.colors.border,
   },
   tipItem: {
     flexDirection: 'row',
@@ -454,7 +451,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
@@ -494,8 +491,8 @@ const styles = StyleSheet.create({
   },
   primaryBtnText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.onPrimary,
     letterSpacing: 0.1,
   },
   secondaryBtnRow: {
@@ -507,27 +504,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 11,
     borderRadius: 14,
     gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.12)',
+    borderColor: theme.colors.border,
   },
   secondaryBtnText: {
     fontSize: 12.5,
-    fontWeight: '700',
-    color: theme.colors.primary,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   proTipBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF8EE',
+    backgroundColor: theme.colors.accentGoldLight,
     padding: 12,
     borderRadius: 14,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FDE4C3',
+    borderColor: 'rgba(245, 158, 11, 0.25)',
   },
   proTipEmoji: {
     fontSize: 14,
@@ -535,7 +532,7 @@ const styles = StyleSheet.create({
   proTipText: {
     flex: 1,
     fontSize: 11.5,
-    color: '#7C4A03',
+    color: theme.colors.textPrimary,
     lineHeight: 16,
   },
   proTipBold: {
@@ -546,19 +543,19 @@ const styles = StyleSheet.create({
   // Scenario 2: Activation (No Active Trip) Styles
   // -------------------------------------------------------------
   activationCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 26,
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: '#005440',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 16,
-    elevation: 3,
+    elevation: 2,
   },
   activationGlowOne: {
     position: 'absolute',
@@ -567,7 +564,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(160, 243, 212, 0.18)',
+    backgroundColor: theme.colors.primaryMist,
   },
   activationGlowTwo: {
     position: 'absolute',
@@ -576,17 +573,17 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: 'rgba(0, 84, 64, 0.03)',
+    backgroundColor: theme.colors.surfaceSubtle,
   },
   heroIconBadge: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#C9EADB',
+    borderColor: theme.colors.primaryBorder,
     marginBottom: 16,
     position: 'relative',
   },
@@ -597,16 +594,16 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#A0F3D4',
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   motivationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -614,14 +611,14 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   motivationPillText: {
-    fontSize: 10,
-    fontWeight: '800',
+    fontSize: 10.5,
+    fontWeight: '600',
     color: theme.colors.primary,
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   activationTitle: {
     fontSize: 21,
-    fontWeight: '900',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     textAlign: 'center',
     letterSpacing: -0.4,
@@ -644,23 +641,23 @@ const styles = StyleSheet.create({
   valuePropCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 11,
     paddingHorizontal: 14,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#EDF2EE',
+    borderColor: theme.colors.border,
     gap: 12,
   },
   valuePropIconCircle: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
   },
   valuePropEmoji: {
     fontSize: 15,
@@ -670,7 +667,7 @@ const styles = StyleSheet.create({
   },
   valuePropHeading: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
     color: theme.colors.textPrimary,
   },
   valuePropDesc: {
@@ -702,8 +699,8 @@ const styles = StyleSheet.create({
   },
   heroActionBtnText: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.onPrimary,
     letterSpacing: 0.2,
   },
   exploreLinkBtn: {
@@ -715,7 +712,7 @@ const styles = StyleSheet.create({
   },
   exploreLinkText: {
     fontSize: 12.5,
-    fontWeight: '700',
+    fontWeight: '600',
     color: theme.colors.primary,
   },
 });

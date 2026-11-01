@@ -30,7 +30,6 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
-  TravelerDetail: { userId: string };
   UserProfile: {
     userId: string;
     matchId?: string;
@@ -50,9 +49,6 @@ export type RootStackParamList = {
     targetUserName: string;
     targetUserAvatar?: string;
   };
-  CreateTrip: undefined;
-  EditProfile: undefined;
-  KycVerification: undefined;
   Trips: {
     initialTab?: 'active' | 'past';
   };

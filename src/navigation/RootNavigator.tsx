@@ -49,11 +49,6 @@ export const RootNavigator: React.FC = () => {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
-            name="TravelerDetail"
-            component={UserProfileScreen as any}
-            options={{ animation: 'slide_from_right' }}
-          />
-          <Stack.Screen
             name="Connections"
             component={ConnectionsScreen}
             options={{ animation: 'slide_from_right' }}

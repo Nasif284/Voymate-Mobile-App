@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import { X, Lock, Eye, EyeOff } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { profileService } from '../services/profile.service';
+import { useProfileResetPassword } from '../hooks/profile.hooks';
+import { theme } from '../../../config/theme';
 
 interface ResetPasswordModalProps {
   visible: boolean;
@@ -32,13 +33,14 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const resetPasswordMutation = useProfileResetPassword();
+  const isSubmitting = resetPasswordMutation.isPending;
 
   const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword;
   const isLengthValid = newPassword.length >= 8;
   const hasComplexity = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!isLengthValid) {
       Alert.alert('Password too short', 'Password must be at least 8 characters long.');
       return;
@@ -55,25 +57,19 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    try {
-      await profileService.resetPassword(newPassword, userEmail);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Password Updated', 'Your password has been changed successfully.');
-      setNewPassword('');
-      setConfirmPassword('');
-      onClose();
-    } catch (err: any) {
-      const errMsg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error?.message ||
-        'Could not update password. Please try again.';
-      Alert.alert('Error', errMsg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    resetPasswordMutation.mutate(
+      { password: newPassword, email: userEmail },
+      {
+        onSuccess: () => {
+          Alert.alert('Password Updated', 'Your password has been changed successfully.');
+          setNewPassword('');
+          setConfirmPassword('');
+          onClose();
+        },
+      }
+    );
   };
 
   const handleClose = () => {
@@ -102,13 +98,13 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                 onPress={handleClose}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <X size={20} color="#151D19" />
+                <X size={20} color={theme.colors.textPrimary} />
               </TouchableOpacity>
 
               {/* Header Icon & Title */}
               <View style={styles.header}>
                 <View style={styles.iconCircle}>
-                  <Lock size={22} color="#005440" />
+                  <Lock size={22} color={theme.colors.primary} />
                 </View>
                 <Text style={styles.title}>Reset Password</Text>
                 <Text style={styles.subtitle}>
@@ -126,7 +122,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       style={styles.input}
                       secureTextEntry={!showNewPassword}
                       placeholder="••••••••"
-                      placeholderTextColor="#88978E"
+                      placeholderTextColor={theme.colors.textPlaceholder}
                       value={newPassword}
                       onChangeText={setNewPassword}
                       autoCapitalize="none"
@@ -136,9 +132,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       onPress={() => setShowNewPassword((prev) => !prev)}
                     >
                       {showNewPassword ? (
-                        <EyeOff size={18} color="#5C6B64" />
+                        <EyeOff size={18} color={theme.colors.textSecondary} />
                       ) : (
-                        <Eye size={18} color="#5C6B64" />
+                        <Eye size={18} color={theme.colors.textSecondary} />
                       )}
                     </TouchableOpacity>
                   </View>
@@ -152,7 +148,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       style={styles.input}
                       secureTextEntry={!showConfirmPassword}
                       placeholder="••••••••"
-                      placeholderTextColor="#88978E"
+                      placeholderTextColor={theme.colors.textPlaceholder}
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
                       autoCapitalize="none"
@@ -162,9 +158,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       onPress={() => setShowConfirmPassword((prev) => !prev)}
                     >
                       {showConfirmPassword ? (
-                        <EyeOff size={18} color="#5C6B64" />
+                        <EyeOff size={18} color={theme.colors.textSecondary} />
                       ) : (
-                        <Eye size={18} color="#5C6B64" />
+                        <Eye size={18} color={theme.colors.textSecondary} />
                       )}
                     </TouchableOpacity>
                   </View>
@@ -194,7 +190,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                     disabled={!newPassword || !confirmPassword || !passwordsMatch || isSubmitting}
                   >
                     {isSubmitting ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <ActivityIndicator size="small" color={theme.colors.white} />
                     ) : (
                       <Text style={styles.submitBtnText}>Update Password</Text>
                     )}
@@ -212,7 +208,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -224,11 +220,11 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 400,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 24,
     position: 'relative',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -243,7 +239,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     zIndex: 10,
   },
   header: {
@@ -255,20 +251,20 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   title: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 12,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 17,
     paddingHorizontal: 8,
@@ -281,16 +277,16 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.6,
   },
   inputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
@@ -298,7 +294,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: '#151D19',
+    color: theme.colors.textPrimary,
     fontWeight: '600',
   },
   eyeBtn: {
@@ -306,7 +302,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: '#DC2626',
+    color: theme.colors.error,
     fontWeight: '600',
     marginTop: -4,
   },
@@ -321,24 +317,24 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    backgroundColor: '#F8FAF8',
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surfaceSubtle,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelBtnText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#5C6B64',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
   submitBtn: {
     flex: 1.5,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005440',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -349,7 +345,7 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
   },
 });

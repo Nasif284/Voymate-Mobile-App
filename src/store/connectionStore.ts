@@ -25,16 +25,16 @@ interface ConnectionStoreState {
   ) => void;
 
   seedFromUsers: (
-    users: Array<{
+    users: {
       id: string;
       connectionStatus?: ConnectionStatusType;
       requestId?: string | null;
       connectionId?: string | null;
-    }>
+    }[]
   ) => void;
 
   seedFromMatches: (
-    matches: Array<{
+    matches: {
       user: { id: string };
       connectionStatus?: ConnectionStatusType;
       requestId?: string | null;
@@ -42,7 +42,7 @@ interface ConnectionStoreState {
         connectionStatus?: ConnectionStatusType;
         requestId?: string | null;
       };
-    }>
+    }[]
   ) => void;
 
   syncFromServerFallback: (

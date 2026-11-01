@@ -16,10 +16,9 @@ import { AuthStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
 import { OtpInput } from '../../../components/ui/OtpInput';
-import { ArrowLeft, AlertCircle, CheckCircle, KeyRound, ShieldCheck } from 'lucide-react-native';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
+import { ArrowLeft, AlertCircle, CheckCircle, ShieldCheck } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useVerifyOtp, useSendOtp } from '../hooks/auth.hooks';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPasswordVerify'>;
 
@@ -28,13 +27,27 @@ const RESEND_COOLDOWN_SECONDS = 45;
 export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route }) => {
   const { email } = route.params;
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN_SECONDS);
 
   const haptics = useHaptics();
+  const verifyOtpMutation = useVerifyOtp({
+    onSuccess: (cleanEmail) => {
+      navigation.navigate('ResetPassword', { email: cleanEmail });
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const sendOtpMutation = useSendOtp({
+    onSuccess: () => {
+      setStatusMessage('A new verification code has been sent to your email.');
+      setCountdown(RESEND_COOLDOWN_SECONDS);
+      setCode('');
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = verifyOtpMutation.isPending;
+  const resending = sendOtpMutation.isPending;
 
   // Resend Countdown Timer
   useEffect(() => {
@@ -55,7 +68,7 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
     if (statusMessage) setStatusMessage(null);
   };
 
-  const handleVerify = async (codeToVerify?: string) => {
+  const handleVerify = (codeToVerify?: string) => {
     if (loading) return;
     Keyboard.dismiss();
     const finalCode = (codeToVerify || code).trim();
@@ -66,57 +79,23 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.VERIFY_OTP, {
-        email: email.trim().toLowerCase(),
-        code: finalCode,
-        purpose: 'password_reset',
-      });
-
-      haptics.success();
-      navigation.navigate('ResetPassword', { email: email.trim().toLowerCase() });
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        'Invalid or expired code. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    verifyOtpMutation.mutate({
+      email: email.trim().toLowerCase(),
+      code: finalCode,
+      purpose: 'password_reset',
+    });
   };
 
-  const handleResend = async () => {
+  const handleResend = () => {
     if (countdown > 0 || resending) return;
 
-    try {
-      setResending(true);
-      setErrorMessage(null);
-      setStatusMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.SEND_OTP, {
-        email: email.trim().toLowerCase(),
-        purpose: 'password_reset',
-      });
-
-      haptics.success();
-      setStatusMessage('A new verification code has been sent to your email.');
-      setCountdown(RESEND_COOLDOWN_SECONDS);
-      setCode('');
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        'Unable to resend code right now. Please try again later.';
-      setErrorMessage(message);
-    } finally {
-      setResending(false);
-    }
+    setErrorMessage(null);
+    setStatusMessage(null);
+    sendOtpMutation.mutate({
+      email: email.trim().toLowerCase(),
+      purpose: 'password_reset',
+    });
   };
 
   return (

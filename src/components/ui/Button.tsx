@@ -3,7 +3,6 @@ import {
   TouchableOpacity,
   Text,
   ActivityIndicator,
-  StyleSheet,
   ViewStyle,
   TextStyle,
 } from 'react-native';
@@ -24,8 +23,36 @@ interface ButtonProps {
   iconPosition?: 'left' | 'right';
   style?: ViewStyle;
   textStyle?: TextStyle;
+  className?: string;
+  textClassName?: string;
   hapticFeedback?: boolean;
 }
+
+const SIZE_CONTAINER_CLASSES: Record<ButtonSize, string> = {
+  sm: 'py-2 px-3.5 rounded-xl',
+  md: 'py-3.5 px-5 rounded-2xl',
+  lg: 'py-4 px-6 rounded-2xl',
+};
+
+const VARIANT_CONTAINER_CLASSES: Record<ButtonVariant, string> = {
+  primary: 'bg-primary shadow-sm',
+  secondary: 'bg-surface-subtle border border-border-subtle',
+  outline: 'bg-transparent border-[1.5px] border-primary',
+  ghost: 'bg-transparent',
+};
+
+const SIZE_TEXT_CLASSES: Record<ButtonSize, string> = {
+  sm: 'text-xs font-semibold',
+  md: 'text-[15px] font-semibold',
+  lg: 'text-base font-bold',
+};
+
+const VARIANT_TEXT_CLASSES: Record<ButtonVariant, string> = {
+  primary: 'text-white',
+  secondary: 'text-textPrimary',
+  outline: 'text-primary',
+  ghost: 'text-primary',
+};
 
 export const Button: React.FC<ButtonProps> = ({
   title,
@@ -38,6 +65,8 @@ export const Button: React.FC<ButtonProps> = ({
   iconPosition = 'left',
   style,
   textStyle,
+  className,
+  textClassName,
   hapticFeedback = true,
 }) => {
   const haptics = useHaptics();
@@ -50,84 +79,37 @@ export const Button: React.FC<ButtonProps> = ({
     onPress();
   };
 
-  const getContainerStyle = (): ViewStyle => {
-    const base: ViewStyle = {
-      ...styles.base,
-      ...styles[`size_${size}`],
-    };
+  const containerClasses = [
+    'flex-row items-center justify-center',
+    SIZE_CONTAINER_CLASSES[size],
+    VARIANT_CONTAINER_CLASSES[variant],
+    disabled ? 'opacity-50' : '',
+    className || '',
+  ].filter(Boolean).join(' ');
 
-    switch (variant) {
-      case 'secondary':
-        return {
-          ...base,
-          backgroundColor: theme.colors.surfaceContainer,
-          borderWidth: 1,
-          borderColor: theme.colors.borderSubtle,
-        };
-      case 'outline':
-        return {
-          ...base,
-          backgroundColor: 'transparent',
-          borderWidth: 1.5,
-          borderColor: theme.colors.primary,
-        };
-      case 'ghost':
-        return {
-          ...base,
-          backgroundColor: 'transparent',
-        };
-      case 'primary':
-      default:
-        return {
-          ...base,
-          backgroundColor: theme.colors.primary,
-          ...theme.shadows.subtle,
-        };
-    }
-  };
+  const textClasses = [
+    SIZE_TEXT_CLASSES[size],
+    disabled ? 'text-textMuted' : VARIANT_TEXT_CLASSES[variant],
+    icon ? (iconPosition === 'left' ? 'ml-2' : 'mr-2') : '',
+    textClassName || '',
+  ].filter(Boolean).join(' ');
 
-  const getTextColor = (): string => {
-    if (disabled) return theme.colors.textMuted;
-    switch (variant) {
-      case 'secondary':
-        return theme.colors.textPrimary;
-      case 'outline':
-      case 'ghost':
-        return theme.colors.primary;
-      case 'primary':
-      default:
-        return theme.colors.onPrimary;
-    }
-  };
+  const loaderColor = variant === 'primary' ? theme.colors.white : theme.colors.primary;
 
   return (
     <TouchableOpacity
       activeOpacity={0.82}
       onPress={handlePress}
       disabled={disabled || loading}
-      style={[
-        getContainerStyle(),
-        disabled && styles.disabled,
-        style,
-      ]}
+      className={containerClasses}
+      style={style}
     >
       {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'primary' ? theme.colors.onPrimary : theme.colors.primary}
-        />
+        <ActivityIndicator size="small" color={loaderColor} />
       ) : (
         <>
           {icon && iconPosition === 'left' ? icon : null}
-          <Text
-            style={[
-              styles.text,
-              styles[`textSize_${size}`],
-              { color: getTextColor() },
-              icon ? (iconPosition === 'left' ? styles.iconLeftText : styles.iconRightText) : null,
-              textStyle,
-            ]}
-          >
+          <Text className={textClasses} style={textStyle}>
             {title}
           </Text>
           {icon && iconPosition === 'right' ? icon : null}
@@ -136,50 +118,3 @@ export const Button: React.FC<ButtonProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  base: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radius.lg,
-  },
-  size_sm: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: theme.radius.md,
-  },
-  size_md: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: theme.radius.lg,
-  },
-  size_lg: {
-    paddingVertical: 16,
-    paddingHorizontal: 26,
-    borderRadius: theme.radius.xl,
-  },
-  text: {
-    fontWeight: theme.typography.weights.semibold,
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-  textSize_sm: {
-    fontSize: theme.typography.sizes.sm,
-  },
-  textSize_md: {
-    fontSize: theme.typography.sizes.base,
-  },
-  textSize_lg: {
-    fontSize: theme.typography.sizes.md,
-  },
-  iconLeftText: {
-    marginLeft: 8,
-  },
-  iconRightText: {
-    marginRight: 8,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});

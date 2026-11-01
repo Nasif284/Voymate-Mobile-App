@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Sparkles, Check } from 'lucide-react-native';
+import { theme } from '../../../config/theme';
 
 interface MatchCompatibilityCardProps {
   score: number;
@@ -26,7 +27,7 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
         {/* Gauge Intro Text */}
         <View style={styles.introWrapper}>
           <View style={styles.titleRow}>
-            <Sparkles size={16} color="#005440" />
+            <Sparkles size={16} color={theme.colors.primary} />
             <Text style={styles.title}>Why You Match</Text>
           </View>
           <Text style={styles.subtitle}>
@@ -41,7 +42,7 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
           {reasons.map((reason, index) => (
             <View key={index} style={styles.reasonItem}>
               <View style={styles.checkCircle}>
-                <Check size={11} color="#005440" strokeWidth={3} />
+                <Check size={11} color={theme.colors.primary} strokeWidth={3} />
               </View>
               <Text style={styles.reasonText}>{reason}</Text>
             </View>
@@ -54,14 +55,14 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: 20,
     marginHorizontal: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    shadowColor: '#000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F4F1',
+    borderBottomColor: theme.colors.border,
   },
   gaugeWrapper: {
     alignItems: 'center',
@@ -84,25 +85,25 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: 38,
     borderWidth: 4,
-    borderColor: '#005440',
-    backgroundColor: '#E8F5EE',
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#005440',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   gaugeScore: {
     fontSize: 22,
-    fontWeight: '900',
-    color: '#005440',
+    fontWeight: '700',
+    color: theme.colors.primary,
     letterSpacing: -0.5,
   },
   gaugeLabel: {
     fontSize: 8,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
     letterSpacing: 0.8,
     opacity: 0.85,
     marginTop: -1,
@@ -118,13 +119,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   subtitle: {
     fontSize: 12,
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
     lineHeight: 16,
     fontWeight: '500',
   },
@@ -136,18 +137,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#F7FAF6',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E8EFEA',
+    borderColor: theme.colors.border,
   },
   checkCircle: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#C9EADB',
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '600',
-    color: '#181D1A',
+    color: theme.colors.textPrimary,
     lineHeight: 18,
   },
 });

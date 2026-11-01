@@ -17,20 +17,25 @@ import { theme } from '../../../config/theme';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { ArrowLeft, Mail, AlertCircle, CheckCircle, KeyRound } from 'lucide-react-native';
-import { apiClient } from '../../../api/client';
-import { ENDPOINTS } from '../../../api/endpoints';
 import { useHaptics } from '../../../hooks/useHaptics';
+import { useForgotPassword } from '../hooks/auth.hooks';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
 
 export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const haptics = useHaptics();
+  const forgotPasswordMutation = useForgotPassword({
+    onSuccess: (cleanEmail) => {
+      navigation.navigate('ForgotPasswordVerify', { email: cleanEmail });
+    },
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = forgotPasswordMutation.isPending;
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     Keyboard.dismiss();
     const cleanEmail = email.trim().toLowerCase();
 
@@ -47,27 +52,9 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      setErrorMessage(null);
-      setSuccessMessage(null);
-
-      await apiClient.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, {
-        email: cleanEmail,
-      });
-
-      haptics.success();
-      navigation.navigate('ForgotPasswordVerify', { email: cleanEmail });
-    } catch (err: any) {
-      haptics.error();
-      const message =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        'Unable to process password reset. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setLoading(false);
-    }
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    forgotPasswordMutation.mutate({ email: cleanEmail });
   };
 
   return (

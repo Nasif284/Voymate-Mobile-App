@@ -83,7 +83,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
         >
           <SlidersHorizontal
             size={16}
-            color={activeFilterCount > 0 ? '#FFFFFF' : theme.colors.textPrimary}
+            color={activeFilterCount > 0 ? theme.colors.white : theme.colors.textPrimary}
           />
           {activeFilterCount > 0 && (
             <View style={styles.badge}>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
     letterSpacing: -0.4,
   },
@@ -169,14 +169,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
     gap: 10,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
@@ -192,13 +192,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
@@ -212,19 +212,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#BA1A1A',
+    backgroundColor: theme.colors.error,
     width: 18,
     height: 18,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
   },
   badgeText: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   chipsScroll: {
     flexDirection: 'row',
@@ -235,17 +235,17 @@ const styles = StyleSheet.create({
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.2)',
+    borderColor: theme.colors.primaryBorder,
     gap: 5,
   },
   filterChipText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
     color: theme.colors.primary,
     textTransform: 'capitalize',
   },
@@ -253,11 +253,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 12,
-    backgroundColor: 'rgba(186, 26, 26, 0.08)',
+    backgroundColor: theme.colors.errorLight,
   },
   clearAllText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#BA1A1A',
+    fontWeight: '600',
+    color: theme.colors.error,
   },
 });

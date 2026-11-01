@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Compass, Calendar, MapPin } from 'lucide-react-native';
+import { theme } from '../../../config/theme';
 import { ProfileUpcomingTrip } from '../types';
 
 interface ProfileUpcomingTripsProps {
@@ -48,7 +49,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.headerIcon}>
-            <Compass size={16} color="#005440" />
+            <Compass size={16} color={theme.colors.primary} />
           </View>
           <Text style={styles.headerTitle}>Upcoming Travel Plans</Text>
         </View>
@@ -109,7 +110,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
                 )}
                 <View style={styles.imageGradient} />
                 <View style={styles.destBadge}>
-                  <MapPin size={10} color="#FFFFFF" />
+                  <MapPin size={10} color={theme.colors.white} />
                   <Text style={styles.destBadgeText} numberOfLines={1}>
                     {destinationName}
                   </Text>
@@ -124,7 +125,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
 
                 {dateRange ? (
                   <View style={styles.dateRow}>
-                    <Calendar size={12} color="#005440" />
+                    <Calendar size={12} color={theme.colors.primary} />
                     <Text style={styles.dateText} numberOfLines={1}>
                       {dateRange}
                     </Text>
@@ -150,14 +151,14 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 24,
     paddingVertical: 18,
     marginHorizontal: 16,
     marginTop: 14,
     borderWidth: 1,
-    borderColor: '#E6EFE9',
-    shadowColor: '#000',
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -179,14 +180,14 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   headerRight: {
@@ -196,40 +197,40 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   countBadge: {
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
   countText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#005440',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
-  emptyTripsPrompt: { marginHorizontal: 16, padding: 14, borderRadius: 14, backgroundColor: '#F8FAF8', borderWidth: 1, borderColor: '#E8EFEA', gap: 6 },
-  emptyTripsText: { fontSize: 13, color: '#5C6B64', lineHeight: 19 },
-  emptyTripsAction: { fontSize: 12, fontWeight: '700', color: '#005440', marginTop: 2 },
+  emptyTripsPrompt: { marginHorizontal: 16, padding: 14, borderRadius: 14, backgroundColor: theme.colors.surfaceSubtle, borderWidth: 1, borderColor: theme.colors.border, gap: 6 },
+  emptyTripsText: { fontSize: 13, color: theme.colors.textSecondary, lineHeight: 19 },
+  emptyTripsAction: { fontSize: 12, fontWeight: '600', color: theme.colors.primary, marginTop: 2 },
   scrollList: {
     paddingHorizontal: 16,
     gap: 12,
   },
   tripCard: {
     width: 210,
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E8EFEA',
+    borderColor: theme.colors.border,
   },
   imageWrapper: {
     width: '100%',
     height: 100,
     position: 'relative',
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
   },
   tripImage: {
     width: '100%',
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   imageFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   imageGradient: {
     ...StyleSheet.absoluteFill,
@@ -255,8 +256,8 @@ const styles = StyleSheet.create({
   },
   destBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: theme.colors.white,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
@@ -267,8 +268,8 @@ const styles = StyleSheet.create({
   },
   tripTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#151D19',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
   dateRow: {
     flexDirection: 'row',
@@ -278,11 +279,11 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   styleBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
@@ -291,6 +292,6 @@ const styles = StyleSheet.create({
   styleBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
 });

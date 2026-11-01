@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,12 @@ import {
 } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { theme } from '../../../config/theme';
-import { placesService, PlaceSuggestion, PlaceDetails } from '../../../services/places/places.service';
-import { tripService } from '../services/trip.service';
+import { PlaceSuggestion, PlaceDetails } from '../../../services/places/places.service';
+import {
+  usePlacesAutocomplete,
+  usePlaceDetailsMutation,
+} from '../../../services/places/places.hooks';
+import { useCreateTripPlan } from '../hooks/trip.hooks';
 import {
   X,
   MapPin,
@@ -73,9 +77,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
 }) => {
   // Destination
   const [destinationSearch, setDestinationSearch] = useState('');
-  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
-  const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
 
   // Dates (Native Picker State)
   const today = new Date();
@@ -91,57 +93,63 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
   const [travelStyle, setTravelStyle] = useState('ADVENTURE');
   const [budgetStyle, setBudgetStyle] = useState('MODERATE');
 
-  // Submit
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // TanStack Query Hooks
+  const {
+    data: fetchedSuggestions = [],
+    isFetching: isFetchingAutocomplete,
+  } = usePlacesAutocomplete(destinationSearch, !selectedPlace);
+
+  const placeDetailsMutation = usePlaceDetailsMutation();
+  const createTripMutation = useCreateTripPlan();
+
+  const suggestions = selectedPlace ? [] : fetchedSuggestions;
+  const isSearchingPlaces = isFetchingAutocomplete || placeDetailsMutation.isPending;
+  const isSubmitting = createTripMutation.isPending;
 
   // Formatted date values
   const fromFormatted = formatClassyDate(dateFrom);
   const toFormatted = formatClassyDate(dateTo);
   const durationDays = getTripDurationDays(dateFrom, dateTo);
 
-  // Debounced search for places
-  useEffect(() => {
-    if (!destinationSearch.trim() || selectedPlace) {
-      setSuggestions([]);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearchingPlaces(true);
-      const results = await placesService.searchPlaces(destinationSearch);
-      setSuggestions(results);
-      setIsSearchingPlaces(false);
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [destinationSearch, selectedPlace]);
-
   // Select place from suggestions
-  const handleSelectPlace = async (suggestion: PlaceSuggestion) => {
+  const handleSelectPlace = (suggestion: PlaceSuggestion) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setIsSearchingPlaces(true);
-    setSuggestions([]);
 
-    const details = await placesService.getPlaceDetails(suggestion.placeId);
-    setIsSearchingPlaces(false);
-
-    if (details) {
-      setSelectedPlace(details);
-      setDestinationSearch(details.formattedAddress || details.displayName);
-    } else {
-      setSelectedPlace({
-        placeId: suggestion.placeId,
-        displayName: suggestion.displayName,
-        formattedAddress: suggestion.displayName,
-        city: suggestion.displayName.split(',')[0],
-        state: null,
-        country: null,
-        countryCode: 'IN',
-        latitude: null,
-        longitude: null,
-      });
-      setDestinationSearch(suggestion.displayName);
-    }
+    placeDetailsMutation.mutate(suggestion.placeId, {
+      onSuccess: (details) => {
+        if (details) {
+          setSelectedPlace(details);
+          setDestinationSearch(details.formattedAddress || details.displayName);
+        } else {
+          setSelectedPlace({
+            placeId: suggestion.placeId,
+            displayName: suggestion.displayName,
+            formattedAddress: suggestion.displayName,
+            city: suggestion.displayName.split(',')[0],
+            state: null,
+            country: null,
+            countryCode: 'IN',
+            latitude: null,
+            longitude: null,
+          });
+          setDestinationSearch(suggestion.displayName);
+        }
+      },
+      onError: () => {
+        setSelectedPlace({
+          placeId: suggestion.placeId,
+          displayName: suggestion.displayName,
+          formattedAddress: suggestion.displayName,
+          city: suggestion.displayName.split(',')[0],
+          state: null,
+          country: null,
+          countryCode: 'IN',
+          latitude: null,
+          longitude: null,
+        });
+        setDestinationSearch(suggestion.displayName);
+      },
+    });
   };
 
   // Departure date change
@@ -169,7 +177,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
   };
 
   // Submit
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!selectedPlace) {
       Alert.alert(
         'Destination Required',
@@ -183,13 +191,12 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const cityName =
-        selectedPlace.city || selectedPlace.displayName.split(',')[0];
-      const autoTripName = `${cityName} Trip`;
+    const cityName =
+      selectedPlace.city || selectedPlace.displayName.split(',')[0];
+    const autoTripName = `${cityName} Trip`;
 
-      await tripService.createTrip({
+    createTripMutation.mutate(
+      {
         name: autoTripName,
         destinationName:
           selectedPlace.formattedAddress || selectedPlace.displayName,
@@ -203,20 +210,14 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
         dateTo: dateTo.toISOString(),
         travelStyleCode: travelStyle.toLowerCase(),
         budgetStyle,
-      });
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      onTripCreated();
-      onClose();
-    } catch (error: any) {
-      Alert.alert(
-        'Could Not Create Trip',
-        error?.response?.data?.message ||
-          'Something went wrong. Please check your dates and try again.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          onTripCreated();
+          onClose();
+        },
+      }
+    );
   };
 
   return (
@@ -262,7 +263,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                   <View style={styles.selectedDestinationCard}>
                     <View style={styles.selectedDestLeft}>
                       <View style={styles.checkCircle}>
-                        <Check size={14} color="#FFFFFF" />
+                        <Check size={14} color={theme.colors.white} />
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.selectedDestName} numberOfLines={1}>
@@ -567,13 +568,13 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                 activeOpacity={0.85}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
                   <>
                     <Text style={styles.submitBtnText}>
                       Create Plan & Find Mates
                     </Text>
-                    <ArrowRight size={16} color="#FFFFFF" />
+                    <ArrowRight size={16} color={theme.colors.white} />
                   </>
                 )}
               </TouchableOpacity>
@@ -613,13 +614,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '90%',
     paddingTop: 20,
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
@@ -632,11 +633,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2EF',
+    borderBottomColor: theme.colors.border,
   },
   title: {
     fontSize: 19,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textPrimary,
   },
   subtitle: {
@@ -646,7 +647,7 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     padding: 6,
-    backgroundColor: '#F1F4F1',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
   },
   scrollContent: {
@@ -673,10 +674,10 @@ const styles = StyleSheet.create({
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F7FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
@@ -688,13 +689,13 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   suggestionsContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     marginTop: 6,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
@@ -706,7 +707,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F4F1',
+    borderBottomColor: theme.colors.border,
     gap: 10,
   },
   suggestionText: {
@@ -719,10 +720,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.25)',
+    borderColor: theme.colors.primaryBorder,
     padding: 12,
   },
   selectedDestLeft: {
@@ -743,7 +744,7 @@ const styles = StyleSheet.create({
   selectedDestName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#181D1A',
+    color: theme.colors.textPrimary,
   },
   selectedDestFull: {
     fontSize: 11,
@@ -754,9 +755,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.2)',
+    borderColor: theme.colors.primaryBorder,
   },
   changeDestText: {
     fontSize: 11,
@@ -768,13 +769,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.surfaceSubtle,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
     shadowRadius: 6,
@@ -795,7 +796,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   journeyColActive: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   journeyLabel: {
@@ -808,8 +809,8 @@ const styles = StyleSheet.create({
   },
   journeyDateText: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#181D1A',
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
   journeyYearText: {
@@ -828,27 +829,27 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   journeyCenterBadge: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.15)',
+    borderColor: theme.colors.primaryBorder,
     borderRadius: 12,
     paddingVertical: 3,
     paddingHorizontal: 8,
   },
   journeyCenterBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '600',
     color: theme.colors.primary,
   },
   // iOS Inline Calendar
   iosInlinePickerContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8E4',
+    borderColor: theme.colors.border,
     padding: 12,
     marginTop: 10,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -860,7 +861,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2EF',
+    borderBottomColor: theme.colors.border,
     marginBottom: 4,
   },
   iosInlinePickerTitle: {
@@ -872,7 +873,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
   },
   iosInlineDoneText: {
     fontSize: 12,
@@ -890,14 +891,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   durationPillActive: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   durationPillText: {
@@ -918,7 +919,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderRadius: 14,
@@ -927,7 +928,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   travelChipActive: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   travelEmoji: {
@@ -949,7 +950,7 @@ const styles = StyleSheet.create({
   },
   budgetCard: {
     width: '48.5%',
-    backgroundColor: '#F3F6F4',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingVertical: 9,
     paddingHorizontal: 11,
     borderRadius: 14,
@@ -957,7 +958,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   budgetCardActive: {
-    backgroundColor: '#EEF8F4',
+    backgroundColor: theme.colors.primaryMist,
     borderColor: theme.colors.primary,
   },
   budgetCardTop: {
@@ -1009,6 +1010,6 @@ const styles = StyleSheet.create({
   submitBtnText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
 });

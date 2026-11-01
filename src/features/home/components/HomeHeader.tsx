@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Image,
   ActivityIndicator,
@@ -46,20 +45,31 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
     onToggleTraveling();
   };
 
+  const travelPillClasses = [
+    'flex-row items-center py-[7px] px-[11px] rounded-full border gap-1.5',
+    isTraveling ? 'bg-primary-mist border-primary-border' : 'bg-surface border-border',
+  ].join(' ');
+
+  const statusDotClasses = [
+    'w-[7px] h-[7px] rounded-full',
+    isTraveling ? 'bg-success shadow-sm' : 'bg-surface-dim',
+  ].join(' ');
+
   return (
-    <View style={styles.container}>
-      {/* Main Header Row */}
-      <View style={styles.headerRow}>
+    <View className="px-5 pt-2 pb-3.5">
+      <View className="flex-row justify-between items-center">
         {/* Left: Greeting & Name */}
-        <View style={styles.leftCol}>
-          <Text style={styles.timeGreeting}>{greeting},</Text>
-          <Text style={styles.userName} numberOfLines={1}>
+        <View className="flex-1 pr-3">
+          <Text className="text-xs font-medium text-textMuted capitalize tracking-wide">
+            {greeting},
+          </Text>
+          <Text className="text-[22px] font-bold text-textPrimary mt-0.5 tracking-tight" numberOfLines={1}>
             {firstName} 👋
           </Text>
           {location && (
-            <View style={styles.locationPill}>
+            <View className="flex-row items-center bg-surface-subtle self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1">
               <MapPin size={10} color={theme.colors.primary} />
-              <Text style={styles.locationText} numberOfLines={1}>
+              <Text className="text-[11px] font-medium text-textSecondary" numberOfLines={1}>
                 {location}
               </Text>
             </View>
@@ -67,13 +77,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         </View>
 
         {/* Right: Traveling Toggle Button & User Avatar */}
-        <View style={styles.rightCol}>
-          {/* Creative Compact Traveling Pill */}
+        <View className="flex-row items-center gap-2.5">
           <TouchableOpacity
-            style={[
-              styles.travelPill,
-              isTraveling ? styles.travelPillActive : styles.travelPillInactive,
-            ]}
+            className={travelPillClasses}
             onPress={handleToggle}
             activeOpacity={0.7}
             disabled={isUpdatingStatus}
@@ -90,17 +96,11 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               />
             ) : (
               <>
-                <View
-                  style={[
-                    styles.statusDot,
-                    isTraveling ? styles.statusDotActive : styles.statusDotInactive,
-                  ]}
-                />
+                <View className={statusDotClasses} />
                 <Text
-                  style={[
-                    styles.travelPillText,
-                    isTraveling ? styles.travelPillTextActive : styles.travelPillTextInactive,
-                  ]}
+                  className={`text-[11px] font-semibold ${
+                    isTraveling ? 'text-primary' : 'text-textSecondary'
+                  }`}
                 >
                   {isTraveling ? 'Traveling' : 'At Home'}
                 </Text>
@@ -114,156 +114,24 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
 
           {/* User Avatar */}
           <TouchableOpacity
-            style={styles.avatarWrapper}
+            className="relative"
             onPress={onAvatarPress}
             activeOpacity={onAvatarPress ? 0.8 : 1}
             disabled={!onAvatarPress}
           >
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+              <Image source={{ uri: avatarUrl }} className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle" />
             ) : (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarFallbackText}>
+              <View className="w-11 h-11 rounded-full bg-primary items-center justify-center border-2 border-surface">
+                <Text className="text-base font-semibold text-white">
                   {firstName.charAt(0).toUpperCase()}
                 </Text>
               </View>
             )}
-            {isTraveling && <View style={styles.onlineBadge} />}
+            {isTraveling && <View className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-surface" />}
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 14,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  leftCol: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  timeGreeting: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.textMuted,
-    textTransform: 'capitalize',
-    letterSpacing: 0.2,
-  },
-  userName: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-    marginTop: 2,
-    letterSpacing: -0.4,
-  },
-  locationPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EEF8F4',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
-    borderRadius: 10,
-    marginTop: 5,
-    gap: 3.5,
-  },
-  locationText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  rightCol: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  travelPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 5.5,
-  },
-  travelPillActive: {
-    backgroundColor: '#EBF6F1',
-    borderColor: 'rgba(15, 110, 86, 0.3)',
-  },
-  travelPillInactive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8E4',
-  },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-  },
-  statusDotActive: {
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  statusDotInactive: {
-    backgroundColor: '#BEC9C3',
-  },
-  travelPillText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  travelPillTextActive: {
-    color: theme.colors.primary,
-  },
-  travelPillTextInactive: {
-    color: theme.colors.textSecondary,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#EAEAEA',
-  },
-  avatarFallback: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  avatarFallbackText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  onlineBadge: {
-    position: 'absolute',
-    bottom: -1,
-    right: -1,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#10B981',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-});

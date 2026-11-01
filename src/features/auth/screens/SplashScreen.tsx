@@ -3,17 +3,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../../../store/authStore';
 import { theme } from '../../../config/theme';
-import { Compass } from 'lucide-react-native';
+import { VoymateLogo } from '../../../components/ui/VoymateLogo';
 
 export const SplashScreen: React.FC = () => {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
 
   useEffect(() => {
-    // Slight pause to ensure pleasant splash brand transition
-    const timer = setTimeout(() => {
-      initializeAuth();
-    }, 600);
-    return () => clearTimeout(timer);
+    initializeAuth();
   }, [initializeAuth]);
 
   return (
@@ -21,7 +17,7 @@ export const SplashScreen: React.FC = () => {
       <StatusBar style="light" />
       <View style={styles.logoContainer}>
         <View style={styles.iconCircle}>
-          <Compass size={44} color={theme.colors.onPrimary} />
+          <VoymateLogo size={76} withBackground={false} />
         </View>
         <Text style={styles.brandTitle}>VOYMATE</Text>
         <Text style={styles.brandSubtitle}>Find Your Journey. Never Travel Alone.</Text>

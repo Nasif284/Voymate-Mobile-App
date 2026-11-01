@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 const ACCESS_TOKEN_KEY = 'voymate_access_token';
 const REFRESH_TOKEN_KEY = 'voymate_refresh_token';
 const USER_DATA_KEY = 'voymate_user_data';
+const MAX_SECURE_STORE_BYTES = 1900;
 
 export const storageService = {
   async getAccessToken(): Promise<string | null> {
@@ -46,9 +47,27 @@ export const storageService = {
     }
   },
 
+  /**
+   * Stores lightweight user session metadata within SecureStore's 2,048-byte limit.
+   * Full profile details are hydrated from `/auth/me` or React Query cache.
+   */
   async setUserData<T>(data: T): Promise<void> {
     try {
-      await SecureStore.setItemAsync(USER_DATA_KEY, JSON.stringify(data));
+      let serialized = JSON.stringify(data);
+      if (serialized.length > MAX_SECURE_STORE_BYTES && data && typeof data === 'object') {
+        const record = data as Record<string, unknown>;
+        const compactUser = {
+          id: record.id,
+          fullName: record.fullName,
+          email: record.email,
+          avatarUrl: record.avatarUrl,
+          role: record.role,
+          isTraveling: record.isTraveling,
+          travelPersonality: record.travelPersonality,
+        };
+        serialized = JSON.stringify(compactUser);
+      }
+      await SecureStore.setItemAsync(USER_DATA_KEY, serialized);
     } catch (error) {
       console.warn('Failed to store user data:', error);
     }

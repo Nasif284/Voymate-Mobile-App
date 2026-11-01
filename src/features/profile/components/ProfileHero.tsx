@@ -5,10 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Dimensions,
   Platform,
 } from 'react-native';
-import { theme } from '../../../config/theme';
 import { UserProfileData, ProfileVariant } from '../types';
 import {
   ChevronLeft,
@@ -19,9 +17,10 @@ import {
   UserPlus,
   Check,
   Clock,
-  Radio,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { theme } from '../../../config/theme';
+import { formatDistanceKm } from '../../../utils/formatters';
 
 interface ProfileHeroProps {
   user: UserProfileData;
@@ -38,8 +37,6 @@ interface ProfileHeroProps {
   onAvatarPress?: () => void;
   onCoverPress?: () => void;
 }
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const formatMemberDate = (dateVal?: string | Date) => {
   if (!dateVal) return '';
@@ -71,7 +68,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
     .join(', ');
 
   const memberSince = formatMemberDate(user.createdAt);
-  const firstName = user.fullName?.split(' ')[0] || 'Traveler';
 
   return (
     <View style={styles.container}>
@@ -104,7 +100,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <ChevronLeft size={22} color="#FFFFFF" strokeWidth={2.5} />
+            <ChevronLeft size={22} color={theme.colors.white} strokeWidth={2.5} />
           </TouchableOpacity>
         )}
 
@@ -112,9 +108,9 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         <View style={styles.topRightBadges}>
           {distanceKm !== undefined && (
             <View style={styles.distanceBadge}>
-              <MapPin size={11} color="#FFFFFF" />
+              <MapPin size={11} color={theme.colors.white} />
               <Text style={styles.distanceText}>
-                {distanceKm < 1 ? '< 1 km away' : `${distanceKm.toFixed(1)} km away`}
+                {formatDistanceKm(distanceKm)}
               </Text>
             </View>
           )}
@@ -157,7 +153,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           {/* Quick Match / Status Pill */}
           {matchScore !== undefined && matchScore !== null ? (
             <View style={styles.matchScorePill}>
-              <Sparkles size={13} color="#005440" />
+              <Sparkles size={13} color={theme.colors.primary} />
               <Text style={styles.matchScoreText}>{matchScore}% Match</Text>
             </View>
           ) : user.travelPersonality ? (
@@ -174,7 +170,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <View style={styles.nameRow}>
             <Text style={styles.nameText} numberOfLines={1}>
               {user.fullName}
-              {user.age ? `, ${user.age}` : ''}
             </Text>
           </View>
 
@@ -182,7 +177,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <View style={styles.metaRow}>
             {locationString ? (
               <View style={styles.metaItem}>
-                <MapPin size={13} color="#005440" />
+                <MapPin size={13} color={theme.colors.primary} />
                 <Text style={styles.metaText} numberOfLines={1}>
                   {locationString}
                 </Text>
@@ -191,7 +186,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
             {memberSince ? (
               <View style={styles.metaItem}>
-                <Calendar size={13} color="#5C6B64" />
+                <Calendar size={13} color={theme.colors.textSecondary} />
                 <Text style={styles.metaMutedText}>Member since {memberSince}</Text>
               </View>
             ) : null}
@@ -219,14 +214,14 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                 }}
                 activeOpacity={0.8}
               >
-                <MessageSquare size={16} color="#005440" />
+                <MessageSquare size={16} color={theme.colors.primary} />
                 <Text style={styles.messageButtonText}>Message</Text>
               </TouchableOpacity>
 
               {/* Dynamic Connection Button */}
               {connectionStatus === 'CONNECTED' ? (
                 <View style={styles.connectedBadge}>
-                  <Check size={14} color="#005440" strokeWidth={2.5} />
+                  <Check size={14} color={theme.colors.primary} strokeWidth={2.5} />
                   <Text style={styles.connectedBadgeText}>Connected</Text>
                 </View>
               ) : connectionStatus === 'REQUEST_RECEIVED' ? (
@@ -238,12 +233,12 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   }}
                   activeOpacity={0.8}
                 >
-                  <Check size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <Check size={16} color={theme.colors.white} strokeWidth={2.5} />
                   <Text style={styles.acceptButtonText}>Accept Request</Text>
                 </TouchableOpacity>
               ) : connectionStatus === 'REQUEST_SENT' ? (
                 <View style={styles.requestSentBadge}>
-                  <Clock size={14} color="#5C6B64" />
+                  <Clock size={14} color={theme.colors.textSecondary} />
                   <Text style={styles.requestSentText}>Request Sent</Text>
                 </View>
               ) : (
@@ -255,7 +250,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   }}
                   activeOpacity={0.8}
                 >
-                  <UserPlus size={16} color="#FFFFFF" />
+                  <UserPlus size={16} color={theme.colors.white} />
                   <Text style={styles.connectButtonText}>Connect</Text>
                 </TouchableOpacity>
               )}
@@ -270,12 +265,12 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: '#F8FAF8',
+    backgroundColor: theme.colors.background,
   },
   coverContainer: {
     width: '100%',
     height: 220,
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
     position: 'relative',
   },
   coverImage: {
@@ -285,16 +280,16 @@ const styles = StyleSheet.create({
   coverFallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primaryDark,
   },
   coverGradientSim: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#003E2F',
+    backgroundColor: theme.colors.primaryDark,
     opacity: 0.8,
   },
   coverDarkGradient: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    backgroundColor: theme.colors.overlay,
   },
   backButton: {
     position: 'absolute',
@@ -303,7 +298,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(21, 29, 25, 0.45)',
+    backgroundColor: theme.colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -323,7 +318,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: theme.colors.overlay,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
@@ -331,7 +326,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   distanceText: {
-    color: '#FFFFFF',
+    color: theme.colors.white,
     fontSize: 11,
     fontWeight: '700',
   },
@@ -339,33 +334,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(0, 84, 64, 0.85)',
+    backgroundColor: theme.colors.overlay,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(160, 243, 212, 0.4)',
+    borderColor: theme.colors.primaryBorder,
   },
   pulseDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#34D399',
+    backgroundColor: theme.colors.success,
   },
   travelingLiveText: {
-    color: '#A0F3D4',
+    color: theme.colors.white,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
   profileCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.surface,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     marginTop: -32,
     paddingHorizontal: 20,
     paddingBottom: 20,
-    shadowColor: '#000',
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -383,9 +378,9 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 45,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
-    backgroundColor: '#E8F5EE',
-    shadowColor: '#000',
+    borderColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceSubtle,
+    shadowColor: theme.colors.cardShadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
@@ -403,14 +398,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 45,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
     fontSize: 34,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: theme.colors.white,
   },
   avatarEditBadge: {
     position: 'absolute',
@@ -419,9 +414,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -432,22 +427,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#C9EADB',
+    borderColor: theme.colors.primaryBorder,
     marginBottom: 4,
   },
   matchScoreText: {
-    color: '#005440',
+    color: theme.colors.primary,
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '600',
     letterSpacing: 0.3,
   },
   personalityPill: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -455,9 +450,9 @@ const styles = StyleSheet.create({
     maxWidth: 160,
   },
   personalityText: {
-    color: '#374151',
+    color: theme.colors.textSecondary,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   infoSection: {
     marginBottom: 16,
@@ -469,8 +464,8 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 24,
-    fontWeight: '900',
-    color: '#151D19',
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
     letterSpacing: -0.4,
   },
   metaRow: {
@@ -487,12 +482,12 @@ const styles = StyleSheet.create({
   metaText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   metaMutedText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#5C6B64',
+    color: theme.colors.textSecondary,
   },
   actionRow: {
     flexDirection: 'row',
@@ -504,9 +499,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     borderWidth: 1,
-    borderColor: '#C9EADB',
+    borderColor: theme.colors.primaryBorder,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -515,18 +510,18 @@ const styles = StyleSheet.create({
   messageButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   connectButton: {
     flex: 1.3,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    shadowColor: '#005440',
+    shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -535,13 +530,13 @@ const styles = StyleSheet.create({
   connectButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   acceptButton: {
     flex: 1.3,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -550,15 +545,15 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
   connectedBadge: {
     flex: 1.3,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#E8F5EE',
+    backgroundColor: theme.colors.primaryMist,
     borderWidth: 1,
-    borderColor: '#A0F3D4',
+    borderColor: theme.colors.primaryBorder,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -567,13 +562,13 @@ const styles = StyleSheet.create({
   connectedBadgeText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#005440',
+    color: theme.colors.primary,
   },
   requestSentBadge: {
     flex: 1.3,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: theme.colors.surfaceSubtle,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -582,19 +577,19 @@ const styles = StyleSheet.create({
   requestSentText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   editProfileButton: {
     flex: 1,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#005440',
+    backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   editProfileButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.white,
   },
 });
