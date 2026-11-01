@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
+import { useConnectionStore } from '../../../store/connectionStore';
 import { matchesService } from '../../matches/services/matches.service';
 import { connectionService } from '../../connections/services/connection.service';
 import { TripMatchItem } from '../../matches/types';
@@ -49,9 +50,13 @@ export const ExploreScreen: React.FC = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const [matches, setMatches] = useState<TripMatchItem[]>([]);
-  const [connectionsMap, setConnectionsMap] = useState<
-    Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'>
-  >({});
+  const {
+    relationships,
+    setRelationship,
+    seedFromMatches,
+    syncFromServerFallback,
+    acceptUserRequest,
+  } = useConnectionStore();
 
   // Connect Modal state
   const [selectedMatchForConnect, setSelectedMatchForConnect] = useState<TripMatchItem | null>(null);
@@ -63,41 +68,7 @@ export const ExploreScreen: React.FC = () => {
     filters.budgetStyle
   );
 
-  // 1. Fetch connection statuses in background
-  const fetchConnections = async () => {
-    try {
-      const [connectionsRes, requestsRes] = await Promise.allSettled([
-        connectionService.getConnections(),
-        connectionService.getAllRequests(),
-      ]);
-
-      const newMap: Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'> = {};
-
-      if (connectionsRes.status === 'fulfilled' && Array.isArray(connectionsRes.value)) {
-        connectionsRes.value.forEach((conn) => {
-          const targetId = conn.userId || conn.id;
-          if (targetId) newMap[targetId] = 'CONNECTED';
-        });
-      }
-
-      if (requestsRes.status === 'fulfilled' && requestsRes.value?.requests) {
-        const currentUserId = authUser?.id;
-        requestsRes.value.requests.forEach((req: any) => {
-          if (req.senderId === currentUserId) {
-            newMap[req.receiverId] = 'REQUEST_SENT';
-          } else if (req.receiverId === currentUserId) {
-            newMap[req.senderId] = 'REQUEST_RECEIVED';
-          }
-        });
-      }
-
-      setConnectionsMap(newMap);
-    } catch {
-      // Non-blocking
-    }
-  };
-
-  // 2. Fetch matches ONLY when a search query or filter is active
+  // Fetch matches ONLY when a search query or filter is active
   const fetchExploreResults = async (activeFilters: ExploreFilters, query: string) => {
     const destination = query.trim();
     const hasQueryOrFilter = Boolean(
@@ -119,20 +90,25 @@ export const ExploreScreen: React.FC = () => {
         page: 1,
         limit: 15,
       });
-      setMatches(res.matches || []);
+      const matchItems = res.matches || [];
+      setMatches(matchItems);
+      seedFromMatches(matchItems);
+
+      if (
+        matchItems.some(
+          (m) => !m.connectionStatus && !m.tripMatch?.connectionStatus
+        )
+      ) {
+        await syncFromServerFallback(authUser?.id);
+      }
     } catch {
       setMatches([]);
     }
   };
 
-  useEffect(() => {
-    fetchConnections();
-  }, []);
-
   // Pull-to-refresh
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchConnections();
     if (hasActiveSearch) {
       await fetchExploreResults(filters, appliedQuery);
     }
@@ -229,10 +205,7 @@ export const ExploreScreen: React.FC = () => {
         message,
       });
 
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [targetId]: 'REQUEST_SENT',
-      }));
+      setRelationship(targetId, 'REQUEST_SENT');
     } catch (error: any) {
       Alert.alert(
         'Request Error',
@@ -244,11 +217,11 @@ export const ExploreScreen: React.FC = () => {
   // Accept Handler
   const handleAcceptPress = async (item: TripMatchItem) => {
     try {
-      await connectionService.acceptRequest(item.user.id);
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [item.user.id]: 'CONNECTED',
-      }));
+      await acceptUserRequest(
+        item.user.id,
+        item.requestId || item.tripMatch?.requestId,
+        authUser?.id
+      );
     } catch {
       Alert.alert('Error', 'Could not accept connection request.');
     }
@@ -370,7 +343,12 @@ export const ExploreScreen: React.FC = () => {
                   <MatchCard
                     key={`${item.user.id}-${item.tripMatch?.id || ''}`}
                     match={item}
-                    connectionStatus={connectionsMap[item.user.id] || 'NONE'}
+                    connectionStatus={
+                      relationships[item.user.id]?.status ||
+                      item.connectionStatus ||
+                      item.tripMatch?.connectionStatus ||
+                      'NONE'
+                    }
                     onPress={handleMatchCardPress}
                     onConnectPress={handleConnectPress}
                     onAcceptPress={handleAcceptPress}

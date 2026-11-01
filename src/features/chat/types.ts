@@ -1,17 +1,8 @@
-export interface ChatAttachment {
-  id?: string;
-  storageKey: string;
-  fileName?: string;
-  mimeType: string;
-  fileSize?: number;
-  url?: string;
-}
-
 export interface ChatMessage {
   id: string;
   conversationId: string;
   senderId: string;
-  type: 'TEXT' | 'IMAGE';
+  type: 'TEXT';
   status?: 'SENT' | 'DELIVERED' | 'READ';
   readAt?: Date | string | null;
   sender?: {
@@ -19,7 +10,6 @@ export interface ChatMessage {
     avatarUrl: string | null;
   };
   content?: string;
-  attachment?: ChatAttachment;
   createdAt: string | Date;
   updatedAt?: string | Date;
 }
@@ -39,7 +29,7 @@ export interface Conversation {
     createdAt: string | Date;
     senderId?: string;
     status?: 'SENT' | 'DELIVERED' | 'READ';
-    type?: 'TEXT' | 'IMAGE';
+    type?: 'TEXT';
   };
   unreadCount?: number;
   updatedAt: string | Date;

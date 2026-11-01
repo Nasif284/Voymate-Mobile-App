@@ -38,21 +38,4 @@ export const chatService = {
       return [];
     }
   },
-
-  uploadImage: async (imageUri: string, mimeType: string = 'image/jpeg'): Promise<any> => {
-    const formData = new FormData();
-    const filename = imageUri.split('/').pop() || 'chat_upload.jpg';
-    formData.append('image', {
-      uri: imageUri,
-      name: filename,
-      type: mimeType,
-    } as any);
-
-    const res = await apiClient.post(ENDPOINTS.CHAT.UPLOAD_IMAGE, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return res.data?.data || res.data;
-  },
 };

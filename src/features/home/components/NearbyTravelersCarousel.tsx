@@ -14,6 +14,8 @@ import { MapPin, UserPlus, Check, MessageSquare } from 'lucide-react-native';
 interface NearbyTravelersCarouselProps {
   users: UserWithDetails[];
   onConnectPress: (user: UserWithDetails) => void;
+  onAcceptPress?: (user: UserWithDetails) => void;
+  onMessagePress?: (user: UserWithDetails) => void;
   onUserPress?: (user: UserWithDetails) => void;
   connectionsMap: Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'>;
 }
@@ -21,6 +23,8 @@ interface NearbyTravelersCarouselProps {
 export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = ({
   users,
   onConnectPress,
+  onAcceptPress,
+  onMessagePress,
   onUserPress,
   connectionsMap,
 }) => {
@@ -54,7 +58,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
         snapToAlignment="start"
       >
         {users.map((user) => {
-          const status = connectionsMap[user.id] || 'NONE';
+          const status = connectionsMap[user.id] || user.connectionStatus || 'NONE';
           const distance = user.distanceKm ? `${user.distanceKm} km away` : 'Nearby';
 
           return (
@@ -120,7 +124,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                   {status === 'CONNECTED' ? (
                     <TouchableOpacity
                       style={[styles.actionBtn, styles.btnConnected]}
-                      onPress={() => onConnectPress(user)}
+                      onPress={() => onMessagePress ? onMessagePress(user) : onConnectPress(user)}
                     >
                       <MessageSquare size={13} color="#FFFFFF" />
                       <Text style={styles.btnTextLight}>Message</Text>
@@ -132,7 +136,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                   ) : status === 'REQUEST_RECEIVED' ? (
                     <TouchableOpacity
                       style={[styles.actionBtn, styles.btnAccept]}
-                      onPress={() => onConnectPress(user)}
+                      onPress={() => onAcceptPress ? onAcceptPress(user) : onConnectPress(user)}
                     >
                       <Check size={13} color="#FFFFFF" />
                       <Text style={styles.btnTextLight}>Accept</Text>

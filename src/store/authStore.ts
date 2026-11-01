@@ -3,6 +3,7 @@ import { User, AuthTokens } from '../types/auth.types';
 import { storageService } from '../services/storage/storage.service';
 import { apiClient } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
+import { useConnectionStore } from './connectionStore';
 
 interface AuthState {
   user: User | null;
@@ -122,6 +123,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await apiClient.post(ENDPOINTS.AUTH.LOGOUT, { refreshToken }).catch(() => {});
     } finally {
       await storageService.clearSession();
+      useConnectionStore.getState().reset();
       set({
         user: null,
         isAuthenticated: false,

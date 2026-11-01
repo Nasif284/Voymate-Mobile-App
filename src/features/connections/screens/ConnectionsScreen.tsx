@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
 import { connectionService } from '../services/connection.service';
+import { useConnectionStore } from '../../../store/connectionStore';
 import { ConnectionUser, IncomingRequest, SentRequest } from '../types';
 import {
   ChevronLeft,
@@ -40,6 +41,7 @@ type RequestSubTab = 'incoming' | 'sent';
 export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const { initialTab = 'connections', initialSubTab = 'incoming' } = route.params || {};
+  const { setRelationship } = useConnectionStore();
 
   const [activeTab, setActiveTab] = useState<MainTab>(initialTab);
   const [requestSubTab, setRequestSubTab] = useState<RequestSubTab>(initialSubTab);
@@ -86,6 +88,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       await connectionService.acceptRequest(request.id);
+      setRelationship(request.sender.id, 'CONNECTED', null, null);
       setIncomingRequests((prev) => prev.filter((r) => r.id !== request.id));
       // Add to connections list
       setConnections((prev) => [
@@ -110,7 +113,11 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleReject = async (requestId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
+      const targetReq = incomingRequests.find((r) => r.id === requestId);
       await connectionService.rejectRequest(requestId);
+      if (targetReq?.sender?.id) {
+        setRelationship(targetReq.sender.id, 'NONE', null, null);
+      }
       setIncomingRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch {
       Alert.alert('Error', 'Could not decline this request.');
@@ -121,7 +128,11 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleCancelSent = async (requestId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
+      const targetReq = sentRequests.find((r) => r.id === requestId);
       await connectionService.withdrawRequest(requestId);
+      if (targetReq?.receiver?.id) {
+        setRelationship(targetReq.receiver.id, 'NONE', null, null);
+      }
       setSentRequests((prev) => prev.filter((r) => r.id !== requestId));
     } catch {
       Alert.alert('Error', 'Could not cancel this request.');
@@ -142,6 +153,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             try {
               await connectionService.disconnect(conn.id);
+              if (conn.userId) {
+                setRelationship(conn.userId, 'NONE', null, null);
+              }
               setConnections((prev) => prev.filter((c) => c.id !== conn.id));
             } catch {
               Alert.alert('Error', 'Could not remove connection.');

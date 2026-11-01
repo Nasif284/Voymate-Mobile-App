@@ -1,3 +1,5 @@
+import { ConnectionStatusType } from '../../store/connectionStore';
+
 export interface UserActiveTrip {
   id: string;
   name?: string;
@@ -28,6 +30,9 @@ export interface UserWithDetails {
   isTraveling?: boolean;
   matchScore?: number;
   activeTrip?: UserActiveTrip | null;
+  connectionStatus?: ConnectionStatusType;
+  connectionId?: string | null;
+  requestId?: string | null;
 }
 
 export interface NearbyUsersResponse {

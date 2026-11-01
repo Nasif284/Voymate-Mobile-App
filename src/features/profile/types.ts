@@ -28,6 +28,8 @@ export interface UserProfileData {
   tripCount?: number;
   connectionsCount?: number;
   connectionStatus?: 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE';
+  connectionId?: string | null;
+  requestId?: string | null;
   match?: {
     totalPoints: number;
     reasons: string[];
@@ -35,6 +37,9 @@ export interface UserProfileData {
 }
 
 export interface MatchProfileData {
+  connectionStatus?: 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE';
+  connectionId?: string | null;
+  requestId?: string | null;
   user: UserProfileData;
   match: {
     id: string;

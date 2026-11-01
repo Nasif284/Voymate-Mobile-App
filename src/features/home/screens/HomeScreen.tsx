@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
+import { useConnectionStore, ConnectionStatusType } from '../../../store/connectionStore';
 import { homeService } from '../services/home.service';
 import { connectionService } from '../../connections/services/connection.service';
 import { UserWithDetails } from '../types';
@@ -54,21 +55,31 @@ export const HomeScreen: React.FC = () => {
   const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [nearbyUsers, setNearbyUsers] = useState<UserWithDetails[]>([]);
   const [buddyUsers, setBuddyUsers] = useState<UserWithDetails[]>([]);
-  const [connectionsMap, setConnectionsMap] = useState<
-    Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'>
-  >({});
+  const {
+    relationships,
+    setRelationship,
+    seedFromUsers,
+    syncFromServerFallback,
+    acceptUserRequest,
+  } = useConnectionStore();
+
+  const connectionsMap = React.useMemo(() => {
+    const map: Record<string, ConnectionStatusType> = {};
+    Object.entries(relationships).forEach(([uid, rel]) => {
+      map[uid] = rel.status;
+    });
+    return map;
+  }, [relationships]);
 
   // Connect Modal State
   const [selectedUserForConnect, setSelectedUserForConnect] = useState<UserWithDetails | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 1. Fetch user profile, active trip & connection statuses
+  // 1. Fetch user profile & active trip
   const fetchProfileAndConnections = async () => {
     try {
-      const [profileRes, connectionsRes, requestsRes, activeTripRes] = await Promise.allSettled([
+      const [profileRes, activeTripRes] = await Promise.allSettled([
         homeService.getMyProfile(),
-        connectionService.getConnections(),
-        connectionService.getAllRequests(),
         tripService.getActiveTrip(),
       ]);
 
@@ -81,28 +92,6 @@ export const HomeScreen: React.FC = () => {
       if (activeTripRes.status === 'fulfilled') {
         setActiveTrip(activeTripRes.value);
       }
-
-      const newMap: Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'> = {};
-
-      if (connectionsRes.status === 'fulfilled' && Array.isArray(connectionsRes.value)) {
-        connectionsRes.value.forEach((conn) => {
-          const targetId = conn.userId || conn.id;
-          if (targetId) newMap[targetId] = 'CONNECTED';
-        });
-      }
-
-      if (requestsRes.status === 'fulfilled' && requestsRes.value?.requests) {
-        const currentUserId = authUser?.id;
-        requestsRes.value.requests.forEach((req: any) => {
-          if (req.senderId === currentUserId) {
-            newMap[req.receiverId] = 'REQUEST_SENT';
-          } else if (req.receiverId === currentUserId) {
-            newMap[req.senderId] = 'REQUEST_RECEIVED';
-          }
-        });
-      }
-
-      setConnectionsMap(newMap);
     } catch {
       // Non-blocking error
     }
@@ -118,22 +107,36 @@ export const HomeScreen: React.FC = () => {
       }
 
       const results = await Promise.allSettled(promises);
+      let needsFallbackSync = false;
 
       // Buddy users looking for companions across the platform
       if (results[0].status === 'fulfilled' && results[0].value?.users) {
-        setBuddyUsers(results[0].value.users);
+        const loadedUsers: UserWithDetails[] = results[0].value.users;
+        setBuddyUsers(loadedUsers);
+        seedFromUsers(loadedUsers);
+        if (loadedUsers.some((u) => u.connectionStatus === undefined)) {
+          needsFallbackSync = true;
+        }
         setPage(1);
         setTotalPages(results[0].value.totalPages || 1);
       }
 
       // Nearby users (only when user is in traveling state)
       if (travelingState && results[1]?.status === 'fulfilled' && results[1].value?.users) {
-        const activeNearby = results[1].value.users.filter(
+        const activeNearby: UserWithDetails[] = results[1].value.users.filter(
           (u: UserWithDetails) => u.isTraveling !== false
         );
         setNearbyUsers(activeNearby);
+        seedFromUsers(activeNearby);
+        if (activeNearby.some((u) => u.connectionStatus === undefined)) {
+          needsFallbackSync = true;
+        }
       } else {
         setNearbyUsers([]);
+      }
+
+      if (needsFallbackSync) {
+        await syncFromServerFallback(authUser?.id);
       }
     } catch {
       // Non-blocking
@@ -215,6 +218,7 @@ export const HomeScreen: React.FC = () => {
       const res = await homeService.getUsersForCards(nextPage, PAGE_SIZE, true);
 
       if (res?.users && res.users.length > 0) {
+        seedFromUsers(res.users);
         setBuddyUsers((prev) => {
           const existingIds = new Set(prev.map((u) => u.id));
           const uniqueNew = res.users.filter((u) => !existingIds.has(u.id));
@@ -286,10 +290,7 @@ export const HomeScreen: React.FC = () => {
         message,
       });
 
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [targetId]: 'REQUEST_SENT',
-      }));
+      setRelationship(targetId, 'REQUEST_SENT');
     } catch (error: any) {
       Alert.alert(
         'Request Error',
@@ -301,11 +302,7 @@ export const HomeScreen: React.FC = () => {
   // Accept Connection Request
   const handleAcceptPress = async (user: UserWithDetails) => {
     try {
-      await connectionService.acceptRequest(user.id);
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [user.id]: 'CONNECTED',
-      }));
+      await acceptUserRequest(user.id, user.requestId, authUser?.id);
     } catch {
       Alert.alert('Error', 'Could not accept connection request.');
     }
@@ -364,6 +361,8 @@ export const HomeScreen: React.FC = () => {
           users={nearbyUsers}
           onUserPress={(user) => handleUserCardPress(user, true)}
           onConnectPress={handleConnectPress}
+          onAcceptPress={handleAcceptPress}
+          onMessagePress={handleMessagePress}
           connectionsMap={connectionsMap}
         />
       )}
@@ -436,7 +435,7 @@ export const HomeScreen: React.FC = () => {
           <View style={styles.cardWrapper}>
             <BuddyTravelerCard
               user={item}
-              connectionStatus={connectionsMap[item.id] || 'NONE'}
+              connectionStatus={connectionsMap[item.id] || item.connectionStatus || 'NONE'}
               onPress={handleUserCardPress}
               onConnectPress={handleConnectPress}
               onAcceptPress={handleAcceptPress}

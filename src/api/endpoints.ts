@@ -75,7 +75,6 @@ export const ENDPOINTS = {
     CONVERSATIONS: '/chat/conversations',
     DIRECT: (userId: string) => `/chat/direct/${userId}`,
     MESSAGES: (conversationId: string) => `/chat/${conversationId}/messages`,
-    UPLOAD_IMAGE: '/chat/upload/image',
     START_CONVERSATION: '/chat/conversations',
   },
 

@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
+import { useConnectionStore } from '../../../store/connectionStore';
 import { matchesService } from '../services/matches.service';
 import { connectionService } from '../../connections/services/connection.service';
 import { ActiveTrip, TripMatchItem } from '../types';
@@ -48,54 +49,35 @@ export const MatchesScreen: React.FC = () => {
 
   const [matches, setMatches] = useState<TripMatchItem[]>([]);
   const [buddiesOnRoad, setBuddiesOnRoad] = useState<TripMatchItem[]>([]);
-  const [connectionsMap, setConnectionsMap] = useState<
-    Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'>
-  >({});
+  const {
+    relationships,
+    setRelationship,
+    seedFromMatches,
+    syncFromServerFallback,
+    acceptUserRequest,
+  } = useConnectionStore();
 
   // Connect Modal state
   const [selectedMatchForConnect, setSelectedMatchForConnect] = useState<TripMatchItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 1. Fetch connection statuses
-  const fetchConnections = async () => {
-    try {
-      const [connectionsRes, requestsRes] = await Promise.allSettled([
-        connectionService.getConnections(),
-        connectionService.getAllRequests(),
-      ]);
-
-      const newMap: Record<string, 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'> = {};
-
-      if (connectionsRes.status === 'fulfilled' && Array.isArray(connectionsRes.value)) {
-        connectionsRes.value.forEach((conn) => {
-          const targetId = conn.userId || conn.id;
-          if (targetId) newMap[targetId] = 'CONNECTED';
-        });
-      }
-
-      if (requestsRes.status === 'fulfilled' && requestsRes.value?.requests) {
-        const currentUserId = authUser?.id;
-        requestsRes.value.requests.forEach((req: any) => {
-          if (req.senderId === currentUserId) {
-            newMap[req.receiverId] = 'REQUEST_SENT';
-          } else if (req.receiverId === currentUserId) {
-            newMap[req.senderId] = 'REQUEST_RECEIVED';
-          }
-        });
-      }
-
-      setConnectionsMap(newMap);
-    } catch {
-      // Non-blocking
-    }
-  };
-
-  // 2. Fetch matches for selected Trip
+  // Fetch matches for selected Trip
   const fetchTripMatches = async (tripId: string) => {
     try {
       const res = await matchesService.getTripMatches(tripId, 1, 15);
-      setMatches(res.matches || []);
-      setBuddiesOnRoad(res.buddiesOnRoad || []);
+      const matchItems = res.matches || [];
+      const roadBuddies = res.buddiesOnRoad || [];
+      setMatches(matchItems);
+      setBuddiesOnRoad(roadBuddies);
+      seedFromMatches([...matchItems, ...roadBuddies]);
+
+      if (
+        matchItems.some(
+          (m) => !m.connectionStatus && !m.tripMatch?.connectionStatus
+        )
+      ) {
+        await syncFromServerFallback(authUser?.id);
+      }
     } catch {
       setMatches([]);
       setBuddiesOnRoad([]);
@@ -105,7 +87,6 @@ export const MatchesScreen: React.FC = () => {
   // Initial loading
   const loadData = async () => {
     setIsLoading(true);
-    await fetchConnections();
 
     try {
       const [primaryTrip, userTrips] = await Promise.all([
@@ -139,7 +120,6 @@ export const MatchesScreen: React.FC = () => {
   // Pull-to-refresh
   const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchConnections();
 
     try {
       const [primaryTrip, userTrips] = await Promise.all([
@@ -187,10 +167,7 @@ export const MatchesScreen: React.FC = () => {
         message,
       });
 
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [targetId]: 'REQUEST_SENT',
-      }));
+      setRelationship(targetId, 'REQUEST_SENT');
     } catch (error: any) {
       Alert.alert(
         'Request Error',
@@ -202,11 +179,11 @@ export const MatchesScreen: React.FC = () => {
   // Accept Handler
   const handleAcceptPress = async (item: TripMatchItem) => {
     try {
-      await connectionService.acceptRequest(item.user.id);
-      setConnectionsMap((prev) => ({
-        ...prev,
-        [item.user.id]: 'CONNECTED',
-      }));
+      await acceptUserRequest(
+        item.user.id,
+        item.requestId || item.tripMatch?.requestId,
+        authUser?.id
+      );
     } catch {
       Alert.alert('Error', 'Could not accept connection request.');
     }
@@ -346,7 +323,12 @@ export const MatchesScreen: React.FC = () => {
                 <MatchCard
                   key={`${item.user.id}-${item.tripMatch?.id || ''}`}
                   match={item}
-                  connectionStatus={connectionsMap[item.user.id] || 'NONE'}
+                  connectionStatus={
+                    relationships[item.user.id]?.status ||
+                    item.connectionStatus ||
+                    item.tripMatch?.connectionStatus ||
+                    'NONE'
+                  }
                   onPress={handleMatchCardPress}
                   onConnectPress={handleConnectPress}
                   onAcceptPress={handleAcceptPress}

@@ -30,7 +30,6 @@ import {
   Check,
   CheckCheck,
   ChevronRight,
-  Image as ImageIcon,
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
@@ -256,9 +255,6 @@ export const MessagesScreen: React.FC = () => {
 
           <View style={styles.convBottomRow}>
             <View style={styles.lastMessageWrap}>
-              {item.lastMessage?.type === 'IMAGE' && (
-                <ImageIcon size={13} color="#5C6B64" style={styles.msgTypeIcon} />
-              )}
               <Text
                 style={[
                   styles.lastMessageText,
@@ -266,9 +262,7 @@ export const MessagesScreen: React.FC = () => {
                 ]}
                 numberOfLines={1}
               >
-                {item.lastMessage?.type === 'IMAGE'
-                  ? 'Photo'
-                  : item.lastMessage?.content || 'Started a conversation'}
+                {item.lastMessage?.content || 'Started a conversation'}
               </Text>
             </View>
 

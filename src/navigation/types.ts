@@ -50,13 +50,6 @@ export type RootStackParamList = {
     targetUserName: string;
     targetUserAvatar?: string;
   };
-  ActiveCall: {
-    callId: string;
-    targetUserId: string;
-    targetUserName: string;
-    mediaType: 'audio' | 'video';
-    isIncoming?: boolean;
-  };
   CreateTrip: undefined;
   EditProfile: undefined;
   KycVerification: undefined;

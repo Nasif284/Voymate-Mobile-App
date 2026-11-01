@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,16 +18,11 @@ import { chatService } from '../services/chat.service';
 import { socketService } from '../services/socket.service';
 import { ChatMessage } from '../types';
 import { useAuthStore } from '../../../store/authStore';
-import * as ImagePicker from 'expo-image-picker';
 import {
   ChevronLeft,
   Send,
-  Image as ImageIcon,
   Check,
   CheckCheck,
-  Phone,
-  Video,
-  User as UserIcon,
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
@@ -74,7 +68,6 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSending, setIsSending] = useState(false);
   const [isTargetOnline, setIsTargetOnline] = useState(false);
 
   // Initialize and load conversation
@@ -150,7 +143,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
   // Send Text Message
   const handleSendText = async () => {
     const trimmed = inputText.trim();
-    if (!trimmed || isSending) return;
+    if (!trimmed) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setInputText('');
@@ -180,51 +173,6 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     } catch (err) {
       console.warn('Send error:', err);
     }
-  };
-
-  // Pick and Send Image
-  const handlePickImage = async () => {
-    try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('Permission Denied', 'Please allow gallery access to share photos.');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets[0]?.uri) {
-        setIsSending(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-        const uploadRes = await chatService.uploadImage(result.assets[0].uri);
-        if (uploadRes?.storageKey) {
-          socketService.sendImageMessage(
-            {
-              conversationId: conversationId || undefined,
-              recipientId: !conversationId ? targetUserId : undefined,
-            },
-            uploadRes
-          );
-        }
-      }
-    } catch {
-      Alert.alert('Upload Failed', 'Could not upload photo.');
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  // Call Placeholders
-  const handleCall = (type: 'audio' | 'video') => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      type === 'audio' ? 'Audio Call' : 'Video Call',
-      `${type === 'audio' ? 'Audio' : 'Video'} calling will be available in the upcoming release.`
-    );
   };
 
   const renderMessageItem = ({ item, index }: { item: ChatMessage; index: number }) => {
@@ -259,14 +207,6 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
               isMe ? styles.bubbleMe : styles.bubbleOther,
             ]}
           >
-            {item.type === 'IMAGE' && item.attachment?.url ? (
-              <Image
-                source={{ uri: item.attachment.url }}
-                style={styles.attachedImage}
-                resizeMode="cover"
-              />
-            ) : null}
-
             {item.content ? (
               <Text
                 style={[
@@ -352,25 +292,6 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* Action icons */}
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.headerActionBtn}
-            onPress={() => handleCall('audio')}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <Phone size={19} color="#005440" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.headerActionBtn}
-            onPress={() => handleCall('video')}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <Video size={20} color="#005440" />
-          </TouchableOpacity>
-        </View>
       </View>
 
       {/* Messages FlatList */}
@@ -405,15 +326,6 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Input Bar */}
         <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-          <TouchableOpacity
-            style={styles.attachBtn}
-            onPress={handlePickImage}
-            disabled={isSending}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <ImageIcon size={22} color="#005440" />
-          </TouchableOpacity>
-
           <TextInput
             style={styles.textInput}
             placeholder="Type a message..."
@@ -522,19 +434,6 @@ const styles = StyleSheet.create({
     color: '#5C6B64',
     marginTop: 1,
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerActionBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F6F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   chatArea: {
     flex: 1,
   },
@@ -543,9 +442,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyChatContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
-  emptyChatTitle: { fontSize: 16, fontWeight: '800', color: '#151D19', textAlign: 'center', marginBottom: 6 },
-  emptyChatSubtitle: { fontSize: 13, color: '#5C6B64', textAlign: 'center', lineHeight: 19 },
+  emptyChatContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyChatTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#151D19',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  emptyChatSubtitle: {
+    fontSize: 13,
+    color: '#5C6B64',
+    textAlign: 'center',
+    lineHeight: 19,
+  },
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -600,12 +515,6 @@ const styles = StyleSheet.create({
   messageTextOther: {
     color: '#151D19',
   },
-  attachedImage: {
-    width: 200,
-    height: 150,
-    borderRadius: 12,
-    marginBottom: 6,
-  },
   timeStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -634,13 +543,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#EEF3F0',
     gap: 8,
-  },
-  attachBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   textInput: {
     flex: 1,

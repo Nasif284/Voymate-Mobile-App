@@ -74,19 +74,6 @@ export const socketService = {
     });
   },
 
-  sendImageMessage: (
-    target: { conversationId?: string; recipientId?: string },
-    attachment: any
-  ) => {
-    if (!socket?.connected) return;
-    socket.emit('chat:send', {
-      ...(target.conversationId ? { conversationId: target.conversationId } : {}),
-      ...(target.recipientId ? { recipientId: target.recipientId } : {}),
-      type: 'IMAGE',
-      attachment,
-    });
-  },
-
   markAsRead: (conversationId: string) => {
     if (!socket?.connected || !conversationId) return;
     socket.emit('chat:read', { conversationId });

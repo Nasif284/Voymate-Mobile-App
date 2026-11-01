@@ -13,6 +13,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
 import { profileService } from '../services/profile.service';
 import { connectionService } from '../../connections/services/connection.service';
+import { useAuthStore } from '../../../store/authStore';
+import { useConnectionStore } from '../../../store/connectionStore';
 import {
   UserProfileData,
   MatchProfileData,
@@ -42,14 +44,25 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     initialAvatar,
   } = route.params;
 
+  const { user: authUser } = useAuthStore();
+  const {
+    relationships,
+    setRelationship,
+    syncFromServerFallback,
+    acceptUserRequest,
+  } = useConnectionStore();
+
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserProfileData | null>(null);
   const [matchData, setMatchData] = useState<MatchProfileData['match'] | null>(null);
   const [matchedTrip, setMatchedTrip] = useState<MatchProfileData['matchedTrip'] | null>(null);
   const [upcomingTrips, setUpcomingTrips] = useState<ProfileUpcomingTrip[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<
-    'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE'
-  >('NONE');
+
+  const effectiveTargetId = user?.id || userId;
+  const connectionStatus =
+    relationships[effectiveTargetId]?.status ||
+    user?.connectionStatus ||
+    'NONE';
 
   const [showConnectModal, setShowConnectModal] = useState(false);
 
@@ -66,8 +79,25 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         if (matchRes.matchedTrip) {
           setMatchedTrip(matchRes.matchedTrip);
         }
-        if (matchRes.user?.connectionStatus) {
-          setConnectionStatus(matchRes.user.connectionStatus);
+        const serverStatus =
+          matchRes.connectionStatus || matchRes.user?.connectionStatus;
+        const serverReqId =
+          matchRes.requestId || matchRes.user?.requestId || null;
+        const serverConnId =
+          matchRes.connectionId || matchRes.user?.connectionId || null;
+
+        if (serverStatus && matchRes.user?.id) {
+          setRelationship(
+            matchRes.user.id,
+            serverStatus,
+            serverReqId,
+            serverConnId
+          );
+        } else if (
+          matchRes.user?.id &&
+          !useConnectionStore.getState().relationships[matchRes.user.id]
+        ) {
+          await syncFromServerFallback(authUser?.id);
         }
       } else {
         // Fetch regular user profile
@@ -81,13 +111,24 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           });
         }
         if (userRes.connectionStatus) {
-          setConnectionStatus(userRes.connectionStatus);
+          setRelationship(
+            userRes.id,
+            userRes.connectionStatus,
+            userRes.requestId,
+            userRes.connectionId
+          );
+        } else if (
+          userRes.id &&
+          !useConnectionStore.getState().relationships[userRes.id]
+        ) {
+          await syncFromServerFallback(authUser?.id);
         }
       }
 
       // Fetch user's upcoming trips in parallel
       try {
-        const trips = await profileService.getUserUpcomingTrips(userId);
+        const targetIdForTrips = userId;
+        const trips = await profileService.getUserUpcomingTrips(targetIdForTrips);
         setUpcomingTrips(trips);
       } catch {
         // Soft-fail for upcoming trips
@@ -102,7 +143,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, matchId, navigation]);
+  }, [userId, matchId, navigation, authUser?.id, setRelationship, syncFromServerFallback]);
 
   useEffect(() => {
     loadProfile();
@@ -116,7 +157,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         receiverId: user.id,
         message,
       });
-      setConnectionStatus('REQUEST_SENT');
+      setRelationship(user.id, 'REQUEST_SENT');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Mate Request Sent', `Your request was sent to ${user.fullName}!`);
     } catch (err) {
@@ -129,8 +170,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleAcceptConnection = async () => {
     if (!user) return;
     try {
-      await connectionService.acceptRequest(user.id);
-      setConnectionStatus('CONNECTED');
+      await acceptUserRequest(user.id, user.requestId, authUser?.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert('Connected!', `You and ${user.fullName} are now travel mates.`);
     } catch {
