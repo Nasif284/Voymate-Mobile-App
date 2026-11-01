@@ -81,9 +81,9 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                 {trips.length === 0 ? (
                   <View style={styles.emptyContainer}>
                     <Luggage size={32} color={theme.colors.primary} />
-                    <Text style={styles.emptyTitle}>No Trips Found</Text>
+                    <Text style={styles.emptyTitle}>No Upcoming Trips</Text>
                     <Text style={styles.emptyText}>
-                      You haven't scheduled any upcoming trips yet.
+                      Create a trip plan to start matching with travel mates.
                     </Text>
                   </View>
                 ) : (
@@ -160,7 +160,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                     activeOpacity={0.85}
                   >
                     <Plus size={16} color="#FFFFFF" />
-                    <Text style={styles.planBtnText}>Plan a New Trip</Text>
+                    <Text style={styles.planBtnText}>Create Travel Plan</Text>
                   </TouchableOpacity>
                 </View>
               )}

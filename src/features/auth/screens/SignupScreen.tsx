@@ -97,7 +97,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
         err.response?.data?.error?.message ||
         err.response?.data?.message ||
         (err.message === 'Network Error'
-          ? 'Cannot connect to server. Ensure your phone and PC are on the same Wi-Fi.'
+          ? 'Unable to connect to the server. Please check your internet connection and try again.'
           : null) ||
         'Unable to create account. Please check your details.';
       setErrorMessage(message);
@@ -136,7 +136,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               <View style={styles.header}>
                 <Text style={styles.title}>Create account</Text>
                 <Text style={styles.subtitle}>
-                  Join a verified global community of solo explorers.
+                  Create an account to find travel mates for your next trip.
                 </Text>
               </View>
 

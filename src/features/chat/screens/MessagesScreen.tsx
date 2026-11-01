@@ -292,8 +292,8 @@ export const MessagesScreen: React.FC = () => {
       return (
         <View style={styles.emptyContainer}>
           <Search size={36} color="#88978E" />
-          <Text style={styles.emptyTitle}>No conversations found</Text>
-          <Text style={styles.emptySubtitle}>Try searching for a different mate.</Text>
+          <Text style={styles.emptyTitle}>No Matching Chats</Text>
+          <Text style={styles.emptySubtitle}>Check the spelling or search for another name.</Text>
         </View>
       );
     }
@@ -303,20 +303,20 @@ export const MessagesScreen: React.FC = () => {
         <View style={styles.emptyIconCircle}>
           <MessageSquare size={32} color="#005440" />
         </View>
-        <Text style={styles.emptyTitle}>No messages yet</Text>
+        <Text style={styles.emptyTitle}>No Messages Yet</Text>
         <Text style={styles.emptySubtitle}>
-          Connect with travel mates to plan trips and chat in real-time.
+          Once a travel mate accepts your connection request, you can chat and plan your trip here.
         </Text>
         <TouchableOpacity
           style={styles.emptyCta}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            navigation.navigate('Connections', { initialTab: 'connections' });
+            if (connections.length > 0) { navigation.navigate('Connections', { initialTab: 'connections' }); } else { navigation.navigate('Main', { screen: 'HomeTab' } as any); }
           }}
           activeOpacity={0.8}
         >
           <Users size={16} color="#FFFFFF" />
-          <Text style={styles.emptyCtaText}>View My Connections</Text>
+          <Text style={styles.emptyCtaText}>{connections.length > 0 ? 'View My Connections' : 'Find Travel Mates'}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -341,7 +341,7 @@ export const MessagesScreen: React.FC = () => {
           style={styles.newChatBtn}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            navigation.navigate('Connections', { initialTab: 'connections' });
+            if (connections.length > 0) { navigation.navigate('Connections', { initialTab: 'connections' }); } else { navigation.navigate('Main', { screen: 'HomeTab' } as any); }
           }}
           activeOpacity={0.8}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

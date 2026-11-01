@@ -134,7 +134,7 @@ const MATCH_PREFERENCES: MatchOption[] = [
   {
     id: 'WOMEN',
     title: 'Women Only',
-    subtitle: 'Prioritize connecting with verified female solo travelers 👩',
+    subtitle: 'Prioritize connecting with female solo travelers 👩',
     icon: (color) => <Heart size={22} color={color} strokeWidth={2} />,
   },
   {

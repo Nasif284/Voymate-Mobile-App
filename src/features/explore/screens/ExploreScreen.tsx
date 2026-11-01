@@ -313,9 +313,9 @@ export const ExploreScreen: React.FC = () => {
                 <View style={styles.starterIconCircle}>
                   <Compass size={32} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.starterTitle}>Where will you wander next?</Text>
+                <Text style={styles.starterTitle}>Search by Destination</Text>
                 <Text style={styles.starterText}>
-                  Search any city or region above to discover solo travelers heading your way on the road.
+                  Enter a city above or tap a popular destination below to see travelers going there.
                 </Text>
 
                 {/* Popular Inspiration Chips */}
@@ -344,10 +344,10 @@ export const ExploreScreen: React.FC = () => {
                   <Search size={26} color={theme.colors.primary} />
                 </View>
                 <Text style={styles.emptyTitle}>
-                  No matches for "{appliedQuery || 'selected filters'}"
+                  No Travelers Going to "{appliedQuery || 'Selected Filters'}" Yet
                 </Text>
                 <Text style={styles.emptyText}>
-                  No travelers are currently scheduled for this destination with your selected criteria. Try another city or clear filters.
+                  No one has posted a trip here with these filters yet. Plan a trip here so other travelers can find you, or clear your filters.
                 </Text>
                 <TouchableOpacity
                   style={styles.clearBtn}

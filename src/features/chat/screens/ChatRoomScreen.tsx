@@ -383,6 +383,15 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.centerLoading}>
             <ActivityIndicator size="large" color="#005440" />
           </View>
+        ) : messages.length === 0 ? (
+          <View style={styles.emptyChatContainer}>
+            <Text style={styles.emptyChatTitle}>
+              Start planning with {targetUserName || 'your travel mate'}
+            </Text>
+            <Text style={styles.emptyChatSubtitle}>
+              Say hello and share your travel dates or itinerary ideas.
+            </Text>
+          </View>
         ) : (
           <FlatList
             data={messages}
@@ -534,6 +543,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyChatContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  emptyChatTitle: { fontSize: 16, fontWeight: '800', color: '#151D19', textAlign: 'center', marginBottom: 6 },
+  emptyChatSubtitle: { fontSize: 13, color: '#5C6B64', textAlign: 'center', lineHeight: 19 },
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 14,

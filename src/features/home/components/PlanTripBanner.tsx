@@ -37,17 +37,17 @@ export const PlanTripBanner: React.FC<PlanTripBannerProps> = ({
           <View style={styles.textContainer}>
             <View style={styles.tagRow}>
               <Sparkles size={10} color="#A0F3D4" />
-              <Text style={styles.tagText}>NEXT EXPEDITION</Text>
+              <Text style={styles.tagText}>NO ACTIVE TRIP</Text>
             </View>
-            <Text style={styles.title}>Where to next?</Text>
+            <Text style={styles.title}>Planning a trip?</Text>
             <Text style={styles.subtitle}>
-              Set a destination to unlock travel buddy matches
+              Add your destination and dates to match with travel mates
             </Text>
           </View>
 
           {/* Classy Action Pill */}
           <View style={styles.actionPill}>
-            <Text style={styles.actionText}>Plan</Text>
+            <Text style={styles.actionText}>Plan Trip</Text>
             <ArrowRight size={13} color="#004736" strokeWidth={2.5} />
           </View>
         </View>

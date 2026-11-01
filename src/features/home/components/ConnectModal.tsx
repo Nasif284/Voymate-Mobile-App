@@ -75,7 +75,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
               <View style={styles.header}>
                 <View>
                   <Text style={styles.title}>Connect with {recipientName}</Text>
-                  <Text style={styles.subtitle}>Send a warm note to break the ice</Text>
+                  <Text style={styles.subtitle}>Add a short note with your request</Text>
                 </View>
                 <TouchableOpacity
                   onPress={onClose}
@@ -89,7 +89,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
               <View style={styles.quickStarters}>
                 <View style={styles.startersHeader}>
                   <Sparkles size={13} color={theme.colors.primary} />
-                  <Text style={styles.startersLabel}>Quick Starters</Text>
+                  <Text style={styles.startersLabel}>Suggested Messages</Text>
                 </View>
                 {QUICK_STARTERS.map((starter, idx) => (
                   <TouchableOpacity

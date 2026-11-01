@@ -47,7 +47,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
       <View style={styles.titleRow}>
         <Text style={styles.title}>Explore Destinations</Text>
         <Text style={styles.subtitle}>
-          Find travel companions heading to places on your bucket list
+          Find solo travelers by city, travel dates, and budget
         </Text>
       </View>
 

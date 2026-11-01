@@ -329,7 +329,7 @@ export const ProfileScreen: React.FC = () => {
               <Text style={styles.statNumber}>
                 {profile?.tripCount !== undefined ? profile.tripCount : upcomingTrips.length}
               </Text>
-              <Text style={styles.statLabel}>JOURNEYS</Text>
+              <Text style={styles.statLabel}>TRIPS</Text>
             </TouchableOpacity>
 
             <View style={styles.statDivider} />
@@ -400,12 +400,12 @@ export const ProfileScreen: React.FC = () => {
 
             <View style={styles.travelingTextWrap}>
               <Text style={styles.travelingTitle}>
-                {profile?.isTraveling ? 'Traveling Now' : 'Not Traveling'}
+                {profile?.isTraveling ? 'Currently Traveling' : 'Not Traveling'}
               </Text>
               <Text style={styles.travelingSubtitle}>
                 {profile?.isTraveling
-                  ? 'Active. Other travelers nearby can find you.'
-                  : 'Off. Turn on when traveling to see nearby mates.'}
+                  ? 'Visible to travelers near your current location.'
+                  : 'Turn on during your trip to meet travelers nearby.'}
               </Text>
             </View>
 
@@ -427,6 +427,7 @@ export const ProfileScreen: React.FC = () => {
         <ProfileBioCard
           name={profile?.fullName || authUser?.fullName || 'You'}
           bio={profile?.bio}
+          onAddBio={() => setShowEditModal(true)}
         />
 
         {/* Travel Attributes & Preferences */}

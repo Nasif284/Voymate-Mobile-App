@@ -615,9 +615,9 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
             {currentSubStep === 1 && (
               <View style={styles.subStepContainer}>
                 <View style={styles.header}>
-                  <Text style={styles.title}>Tell your story</Text>
+                  <Text style={styles.title}>About You</Text>
                   <Text style={styles.subtitle}>
-                    What kind of adventures do you love? What's your travel vibe?
+                    Write a short bio so potential travel mates know what kind of trips you enjoy.
                   </Text>
                 </View>
 
@@ -888,7 +888,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 <View style={styles.header}>
                   <Text style={styles.title}>Skills & Languages</Text>
                   <Text style={styles.subtitle}>
-                    What travel superpowers do you bring, and what languages do you speak?
+                    Select your travel skills and the languages you speak.
                   </Text>
                 </View>
 

@@ -272,9 +272,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                 <View style={styles.emptyIconCircle}>
                   <Users size={32} color="#005440" />
                 </View>
-                <Text style={styles.emptyTitle}>No connections yet</Text>
+                <Text style={styles.emptyTitle}>No Travel Mates Yet</Text>
                 <Text style={styles.emptySubtitle}>
-                  Connect with other travelers on the Home or Matches tab.
+                  Send connection requests to travelers on Home or Matches to build your travel circle.
                 </Text>
               </View>
             }
@@ -396,9 +396,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   <View style={styles.emptyIconCircle}>
                     <Users size={32} color="#005440" />
                   </View>
-                  <Text style={styles.emptyTitle}>No pending requests</Text>
+                  <Text style={styles.emptyTitle}>No Incoming Requests</Text>
                   <Text style={styles.emptySubtitle}>
-                    When someone sends you a request, you will see it here.
+                    Keep an active trip on your profile so travelers heading to your destination can find and connect with you.
                   </Text>
                 </View>
               }
@@ -488,9 +488,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   <View style={styles.emptyIconCircle}>
                     <Clock size={32} color="#005440" />
                   </View>
-                  <Text style={styles.emptyTitle}>No sent requests</Text>
+                  <Text style={styles.emptyTitle}>No Sent Requests</Text>
                   <Text style={styles.emptySubtitle}>
-                    Requests you send to other travelers will appear here.
+                    Browse travelers on Home or Explore and send a request to plan a trip together.
                   </Text>
                 </View>
               }

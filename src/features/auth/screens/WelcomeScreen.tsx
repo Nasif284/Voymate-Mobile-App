@@ -34,7 +34,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           <Text style={styles.brandEyebrow}>WELCOME TO VOYMATE</Text>
           <Text style={styles.headline}>Never travel alone again.</Text>
           <Text style={styles.subheadline}>
-            Connect with verified solo travelers who share your destination, dates, and spirit of adventure.
+            Connect with solo travelers who share your destination, dates, and travel style.
           </Text>
         </View>
 
@@ -69,9 +69,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
               <ShieldCheck size={18} color={theme.colors.primary} />
             </View>
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Verified & Safe</Text>
+              <Text style={styles.featureTitle}>Direct Messaging</Text>
               <Text style={styles.featureDescription}>
-                Identity-verified profiles with P2P audio & video calling.
+                Chat in real time and coordinate trip plans before you go.
               </Text>
             </View>
           </View>

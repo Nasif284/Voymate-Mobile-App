@@ -91,7 +91,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         err.response?.data?.error?.message ||
         err.response?.data?.message ||
         (err.message === 'Network Error'
-          ? 'Cannot connect to server. Ensure your phone and PC are on the same Wi-Fi.'
+          ? 'Unable to connect to the server. Please check your internet connection and try again.'
           : null) ||
         'Incorrect email or password. Please try again.';
       setErrorMessage(message);
@@ -127,7 +127,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               <View style={styles.header}>
                 <Text style={styles.welcomeText}>Welcome back</Text>
                 <Text style={styles.subtext}>
-                  Sign in to pick up where your journey left off.
+                  Sign in to view your trips, matches, and messages.
                 </Text>
               </View>
 

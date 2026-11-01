@@ -35,8 +35,8 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
             <MapPin size={15} color={theme.colors.primary} />
           </View>
           <View>
-            <Text style={styles.sectionTitle}>Traveling Near You</Text>
-            <Text style={styles.sectionSubtitle}>Solo wanderers within 50 km</Text>
+            <Text style={styles.sectionTitle}>Travelers Near You</Text>
+            <Text style={styles.sectionSubtitle}>Solo travelers within 50 km</Text>
           </View>
         </View>
         <View style={styles.countBadge}>

@@ -265,8 +265,10 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.emptyIconCircle}>
             <Search size={32} color="#005440" />
           </View>
-          <Text style={styles.emptyTitle}>No matching trips</Text>
-          <Text style={styles.emptySubtitle}>Try searching for a different destination.</Text>
+          <Text style={styles.emptyTitle}>No Trips Found</Text>
+          <Text style={styles.emptySubtitle}>
+            No trips match your search. Try another destination name.
+          </Text>
         </View>
       );
     }
@@ -277,9 +279,9 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.emptyIconCircle}>
             <Compass size={32} color="#005440" />
           </View>
-          <Text style={styles.emptyTitle}>No active trip plans</Text>
+          <Text style={styles.emptyTitle}>No Active Trips</Text>
           <Text style={styles.emptySubtitle}>
-            Plan your next journey to find and connect with travel companions.
+            Create a trip plan so we can match you with travelers going to the same destination.
           </Text>
           <TouchableOpacity
             style={styles.emptyCta}
@@ -290,7 +292,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             activeOpacity={0.85}
           >
             <Plus size={16} color="#FFFFFF" strokeWidth={2.5} />
-            <Text style={styles.emptyCtaText}>Plan a Trip</Text>
+            <Text style={styles.emptyCtaText}>Create Trip Plan</Text>
           </TouchableOpacity>
         </View>
       );
@@ -301,8 +303,8 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.emptyIconCircle}>
           <Clock size={32} color="#005440" />
         </View>
-        <Text style={styles.emptyTitle}>No past trips</Text>
-        <Text style={styles.emptySubtitle}>Trips you have completed will appear here.</Text>
+        <Text style={styles.emptyTitle}>No Past Trips</Text>
+        <Text style={styles.emptySubtitle}>Your completed trips will be saved here.</Text>
       </View>
     );
   };

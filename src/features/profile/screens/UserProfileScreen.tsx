@@ -153,7 +153,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       <View style={styles.loadingContainer}>
         <StatusBar style="light" />
         <ActivityIndicator size="large" color="#005440" />
-        <Text style={styles.loadingText}>Discovering traveler details...</Text>
+        <Text style={styles.loadingText}>Loading traveler profile...</Text>
       </View>
     );
   }

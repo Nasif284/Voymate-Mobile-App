@@ -41,7 +41,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
   onTripPress,
   onSeeAll,
 }) => {
-  if (!trips || trips.length === 0) return null;
+  if ((!trips || trips.length === 0) && !onSeeAll) return null;
 
   return (
     <View style={styles.card}>
@@ -64,6 +64,12 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
         </View>
       </View>
 
+      {trips.length === 0 ? (
+        <TouchableOpacity style={styles.emptyTripsPrompt} onPress={onSeeAll} activeOpacity={0.8}>
+          <Text style={styles.emptyTripsText}>No upcoming trips yet. Add a trip to start getting matched.</Text>
+          <Text style={styles.emptyTripsAction}>Create Trip Plan →</Text>
+        </TouchableOpacity>
+      ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -137,6 +143,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
           );
         })}
       </ScrollView>
+      )}
     </View>
   );
 };
@@ -203,6 +210,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#005440',
   },
+  emptyTripsPrompt: { marginHorizontal: 16, padding: 14, borderRadius: 14, backgroundColor: '#F8FAF8', borderWidth: 1, borderColor: '#E8EFEA', gap: 6 },
+  emptyTripsText: { fontSize: 13, color: '#5C6B64', lineHeight: 19 },
+  emptyTripsAction: { fontSize: 12, fontWeight: '700', color: '#005440', marginTop: 2 },
   scrollList: {
     paddingHorizontal: 16,
     gap: 12,

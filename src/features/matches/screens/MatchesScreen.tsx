@@ -263,9 +263,9 @@ export const MatchesScreen: React.FC = () => {
               <View style={styles.emptyIconCircle}>
                 <Compass size={30} color={theme.colors.primary} />
               </View>
-              <Text style={styles.emptyTitle}>Where Will You Go Next?</Text>
+              <Text style={styles.emptyTitle}>Create a Trip to See Your Matches</Text>
               <Text style={styles.emptyText}>
-                Plan your next trip to automatically discover and connect with companions heading to the same destination on overlapping dates.
+                Add your destination and travel dates to see travelers going to the same place at the same time.
               </Text>
               <View style={styles.emptyActionRow}>
                 <TouchableOpacity
@@ -274,7 +274,7 @@ export const MatchesScreen: React.FC = () => {
                   activeOpacity={0.85}
                 >
                   <Sparkles size={14} color="#FFFFFF" />
-                  <Text style={styles.planTripBtnText}>Plan a Trip</Text>
+                  <Text style={styles.planTripBtnText}>Create Travel Plan</Text>
                   <ArrowRight size={14} color="#FFFFFF" />
                 </TouchableOpacity>
 
@@ -313,18 +313,33 @@ export const MatchesScreen: React.FC = () => {
                 <View style={styles.emptyIconCircle}>
                   <Compass size={28} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.emptyTitle}>No Matches Found Yet</Text>
-                <Text style={styles.emptyText}>
-                  We haven't found other travelers with overlapping dates to {destinationTitle || 'your destination'} just yet. Check back soon or search other destinations!
+                <Text style={styles.emptyTitle}>
+                  No Matches for {destinationTitle || 'Your Trip'} Yet
                 </Text>
-                <TouchableOpacity
-                  style={styles.exploreBtnSecondary}
-                  onPress={() => navigation.navigate('ExploreTab')}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.exploreBtnSecondaryText}>Explore Other Destinations</Text>
-                  <ArrowRight size={14} color={theme.colors.primary} />
-                </TouchableOpacity>
+                <Text style={styles.emptyText}>
+                  No travelers match your exact dates yet. Your trip is visible to others, and new matches will appear here automatically.
+                </Text>
+                <View style={styles.emptyActionRow}>
+                  <TouchableOpacity
+                    style={styles.planTripBtn}
+                    onPress={() => navigation.navigate('ExploreTab')}
+                    activeOpacity={0.85}
+                  >
+                    <Compass size={14} color="#FFFFFF" />
+                    <Text style={styles.planTripBtnText}>Explore Other Destinations</Text>
+                    <ArrowRight size={14} color="#FFFFFF" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.exploreBtnSecondary}
+                    onPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
+                    activeOpacity={0.85}
+                  >
+                    <Luggage size={14} color={theme.colors.primary} />
+                    <Text style={styles.exploreBtnSecondaryText}>View My Trips</Text>
+                    <ArrowRight size={13} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : (
               matches.map((item) => (

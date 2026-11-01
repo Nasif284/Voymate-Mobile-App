@@ -103,15 +103,15 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
             <View style={styles.sparkleCircle}>
               <Sparkles size={16} color={theme.colors.primary} />
             </View>
-            <Text style={styles.badgeCategoryText}>SCOUTING IN PROGRESS</Text>
+            <Text style={styles.badgeCategoryText}>TRIP ACTIVE</Text>
           </View>
 
           <Text style={styles.headline}>
-            We're searching for travel companions heading your way
+            Looking for travel mates for {destinationTitle}
           </Text>
 
           <Text style={styles.persuasiveText}>
-            Your trip to {destinationTitle} is on the map! While new wanderers join and post journeys every day, check your current match compatibility or explore community explorers.
+            Your trip is live. New travelers add trips every day—check your trip matches or browse other destinations while we find people heading to {destinationTitle}.
           </Text>
 
           {/* Value Highlights */}
@@ -123,7 +123,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               <View style={styles.tipContent}>
                 <Text style={styles.tipTitle}>Smart Destination Matches</Text>
                 <Text style={styles.tipDesc}>
-                  We cross-reference travelers visiting {destinationTitle} during overlapping dates.
+                  We match you with travelers visiting {destinationTitle} on overlapping dates.
                 </Text>
               </View>
             </View>
@@ -133,9 +133,9 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
                 <ShieldCheck size={14} color={theme.colors.primary} />
               </View>
               <View style={styles.tipContent}>
-                <Text style={styles.tipTitle}>Verified Social Connections</Text>
+                <Text style={styles.tipTitle}>Direct Trip Planning</Text>
                 <Text style={styles.tipDesc}>
-                  Connect directly before departure to plan transport, stays, and activities.
+                  Chat directly before your trip to coordinate transport, stays, and activities.
                 </Text>
               </View>
             </View>
@@ -152,7 +152,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               }}
             >
               <Users size={17} color="#FFFFFF" strokeWidth={2.2} />
-              <Text style={styles.primaryBtnText}>Check Trip Matches</Text>
+              <Text style={styles.primaryBtnText}>View Trip Matches</Text>
               <ArrowRight size={16} color="#FFFFFF" />
             </TouchableOpacity>
 
@@ -178,7 +178,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
                 }}
               >
                 <Plus size={14} color={theme.colors.primary} />
-                <Text style={styles.secondaryBtnText}>Plan Another</Text>
+                <Text style={styles.secondaryBtnText}>Add Another Trip</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -187,8 +187,8 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           <View style={styles.proTipBox}>
             <Text style={styles.proTipEmoji}>💡</Text>
             <Text style={styles.proTipText}>
-              <Text style={styles.proTipBold}>Traveler Tip: </Text>
-              Explorers who list interests and travel personality get 3x higher companion match response rates.
+              <Text style={styles.proTipBold}>Tip: </Text>
+              Complete your bio and travel interests to get 3x more connection requests.
             </Text>
           </View>
         </View>
@@ -217,17 +217,17 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         {/* Motivational Tag */}
         <View style={styles.motivationPill}>
           <Globe2 size={11} color={theme.colors.primary} />
-          <Text style={styles.motivationPillText}>START YOUR TRAVEL CIRCLE</Text>
+          <Text style={styles.motivationPillText}>GET STARTED</Text>
         </View>
 
         {/* Core Psychological Headline */}
         <Text style={styles.activationTitle}>
-          Where Will Your Compass Point Next?
+          Plan a Trip to Find Travel Mates
         </Text>
 
         {/* Empathetic & Persuasive Copy */}
         <Text style={styles.activationSubtitle}>
-          Solo travel doesn't mean journeying alone. Share your destination, and Voymate will connect you with vetted explorers heading the same way.
+          Add your destination and travel dates. We will match you with solo travelers going to the same place.
         </Text>
 
         {/* 3 Core Value Props to Reduce Hesitation */}
@@ -237,21 +237,21 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               <Text style={styles.valuePropEmoji}>🎯</Text>
             </View>
             <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Vibe Compatibility</Text>
+              <Text style={styles.valuePropHeading}>Smart Matching</Text>
               <Text style={styles.valuePropDesc}>
-                Match by travel pace, budget style, and mutual interests.
+                Match by destination, travel dates, and budget.
               </Text>
             </View>
           </View>
 
           <View style={styles.valuePropCard}>
             <View style={styles.valuePropIconCircle}>
-              <Text style={styles.valuePropEmoji}>🛡️</Text>
+              <Text style={styles.valuePropEmoji}>💬</Text>
             </View>
             <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Verified Companions</Text>
+              <Text style={styles.valuePropHeading}>Chat Before You Go</Text>
               <Text style={styles.valuePropDesc}>
-                Chat safely, get to know each other, and align plans before you go.
+                Message potential travel mates and align plans before your trip.
               </Text>
             </View>
           </View>
@@ -261,9 +261,9 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               <Text style={styles.valuePropEmoji}>🚗</Text>
             </View>
             <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Shared Adventures</Text>
+              <Text style={styles.valuePropHeading}>Share the Trip</Text>
               <Text style={styles.valuePropDesc}>
-                Split road trips, dinners, and create memories that last.
+                Split costs, share rides, and explore together.
               </Text>
             </View>
           </View>
@@ -280,7 +280,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         >
           <View style={styles.heroActionContent}>
             <Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
-            <Text style={styles.heroActionBtnText}>Plan a Trip & Find Mates</Text>
+            <Text style={styles.heroActionBtnText}>Create Travel Plan</Text>
           </View>
           <ArrowRight size={17} color="#A0F3D4" strokeWidth={2.2} />
         </TouchableOpacity>
@@ -295,7 +295,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           }}
         >
           <Text style={styles.exploreLinkText}>
-            Or explore popular destinations around you
+            Explore Destinations
           </Text>
           <ArrowRight size={13} color={theme.colors.primary} />
         </TouchableOpacity>

@@ -376,9 +376,9 @@ export const HomeScreen: React.FC = () => {
               <Users size={16} color={theme.colors.primary} />
             </View>
             <View>
-              <Text style={styles.feedTitle}>Looking for Travel Buddies</Text>
+              <Text style={styles.feedTitle}>Travelers Looking for Mates</Text>
               <Text style={styles.feedSubtitle}>
-                Solo travelers seeking companions for upcoming journeys
+                Connect with solo travelers planning upcoming trips
               </Text>
             </View>
           </View>
@@ -393,7 +393,7 @@ export const HomeScreen: React.FC = () => {
       return (
         <View style={styles.footerLoader}>
           <ActivityIndicator size="small" color={theme.colors.primary} />
-          <Text style={styles.footerLoaderText}>Finding more travelers...</Text>
+          <Text style={styles.footerLoaderText}>Loading more travelers...</Text>
         </View>
       );
     }
@@ -402,7 +402,7 @@ export const HomeScreen: React.FC = () => {
       return (
         <View style={styles.caughtUpContainer}>
           <Sparkles size={13} color={theme.colors.primary} />
-          <Text style={styles.caughtUpText}>You're all caught up with travelers</Text>
+          <Text style={styles.caughtUpText}>You have seen all travelers for now</Text>
         </View>
       );
     }
