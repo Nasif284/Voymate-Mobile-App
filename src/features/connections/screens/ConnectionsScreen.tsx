@@ -273,7 +273,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
             }
             ListEmptyComponent={
               <View className="py-16 items-center justify-center gap-2 px-6">
-                <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+                <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
                   <Users size={32} color={theme.colors.primary} />
                 </View>
                 <Text className="text-base font-bold text-text-primary">No Travel Mates Yet</Text>
@@ -397,7 +397,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               }
               ListEmptyComponent={
                 <View className="py-16 items-center justify-center gap-2 px-6">
-                  <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+                  <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
                     <Users size={32} color={theme.colors.primary} />
                   </View>
                   <Text className="text-base font-bold text-text-primary">No Incoming Requests</Text>
@@ -489,7 +489,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               }
               ListEmptyComponent={
                 <View className="py-16 items-center justify-center gap-2 px-6">
-                  <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+                  <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
                     <Clock size={32} color={theme.colors.primary} />
                   </View>
                   <Text className="text-base font-bold text-text-primary">No Sent Requests</Text>

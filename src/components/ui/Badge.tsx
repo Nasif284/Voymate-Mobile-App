@@ -19,7 +19,7 @@ const VARIANT_CONTAINER_CLASSES: Record<BadgeVariant, string> = {
   warning: 'bg-warning-light',
   error: 'bg-error-light',
   neutral: 'bg-surface-container',
-  mint: 'bg-primary-light',
+  mint: 'bg-surface border border-primary',
 };
 
 const VARIANT_TEXT_CLASSES: Record<BadgeVariant, string> = {

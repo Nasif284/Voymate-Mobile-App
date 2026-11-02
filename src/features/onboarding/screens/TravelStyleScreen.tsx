@@ -296,7 +296,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       <View
                         className={cn(
                           'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
-                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                          isSelected ? 'bg-surface border border-primary' : 'bg-surface-subtle'
                         )}
                       >
                         {type.icon(
@@ -363,7 +363,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       <View
                         className={cn(
                           'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
-                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                          isSelected ? 'bg-surface border border-primary' : 'bg-surface-subtle'
                         )}
                       >
                         {p.icon(
@@ -480,7 +480,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       <View
                         className={cn(
                           'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
-                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                          isSelected ? 'bg-surface border border-primary' : 'bg-surface-subtle'
                         )}
                       >
                         {pref.icon(

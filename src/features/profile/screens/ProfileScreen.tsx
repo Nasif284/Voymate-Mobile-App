@@ -317,14 +317,14 @@ export const ProfileScreen: React.FC = () => {
           onPress={() => handleToggleTraveling(!profile?.isTraveling)}
           className={cn(
             'mx-4 mt-3.5 rounded-[22px] p-4 border',
-            profile?.isTraveling ? 'bg-primary-mist border-primary-border' : 'bg-surface border-border'
+            profile?.isTraveling ? 'bg-surface border-primary' : 'bg-surface border-border'
           )}
         >
           <View className="flex-row items-center gap-3">
             <View
               className={cn(
                 'w-10 h-10 rounded-[14px] items-center justify-center',
-                profile?.isTraveling ? 'bg-primary-light' : 'bg-surface-subtle'
+                profile?.isTraveling ? 'bg-surface border border-primary' : 'bg-surface-subtle'
               )}
             >
               <Radio

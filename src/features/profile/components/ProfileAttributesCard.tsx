@@ -30,7 +30,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
   return (
     <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border gap-4">
       <View className="flex-row items-center gap-2 pb-3 border-b border-border">
-        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
+        <View className="w-7 h-7 rounded-full bg-surface-subtle items-center justify-center">
           <Compass size={16} color={theme.colors.primary} />
         </View>
         <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Travel Preferences</Text>
@@ -42,7 +42,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
           {travelType ? (
             <View className="flex-1 min-w-[130px] gap-1.5">
               <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">TRAVEL STYLE</Text>
-              <View className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-[7px] rounded-[14px] border border-primary-border self-start">
+              <View className="flex-row items-center gap-1.5 bg-surface px-3 py-[7px] rounded-[14px] border border-primary self-start">
                 <Sparkles size={12} color={theme.colors.primary} />
                 <Text className="text-[13px] font-bold text-primary">{travelType}</Text>
               </View>
@@ -86,7 +86,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
           </View>
           <View className="flex-row flex-wrap gap-2">
             {skills.map((skill, idx) => (
-              <View key={idx} className="bg-primary-mist px-3 py-1.5 rounded-xl border border-primary-border">
+              <View key={idx} className="bg-surface px-3 py-1.5 rounded-xl border border-primary">
                 <Text className="text-xs font-bold text-primary">{skill}</Text>
               </View>
             ))}

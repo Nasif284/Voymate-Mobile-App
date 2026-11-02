@@ -35,7 +35,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
       {/* Section Header */}
       <View className="flex-row justify-between items-center px-5 mb-3">
         <View className="flex-row items-center gap-2.5">
-          <View className="w-8 h-8 rounded-full bg-primary-mist items-center justify-center">
+          <View className="w-8 h-8 rounded-full bg-surface-subtle items-center justify-center">
             <MapPin size={15} color={theme.colors.primary} />
           </View>
           <View>

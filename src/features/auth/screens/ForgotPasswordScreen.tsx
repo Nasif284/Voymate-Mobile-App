@@ -85,7 +85,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
 
               {/* Header */}
               <View className="mb-7">
-                <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
+                <View className="w-11 h-11 rounded-full bg-surface-subtle items-center justify-center mb-3.5">
                   <KeyRound size={22} color={theme.colors.primary} />
                 </View>
                 <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Reset password</Text>

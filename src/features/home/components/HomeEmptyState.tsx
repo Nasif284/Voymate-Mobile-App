@@ -67,7 +67,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           {/* Destination & Meta */}
           <View className="flex-row items-center gap-3.5">
             <View className="w-12 h-12 rounded-2xl bg-white/10 items-center justify-center border border-white/20">
-              <MapPin size={22} color={theme.colors.primaryLight} />
+              <MapPin size={22} color="#FFFFFF" />
             </View>
             <View className="flex-1">
               <Text className="text-[19px] font-semibold text-white tracking-tight" numberOfLines={1}>
@@ -75,15 +75,15 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               </Text>
               <View className="flex-row items-center gap-2 mt-1.5 flex-wrap">
                 <View className="flex-row items-center bg-white/10 px-2 py-1 rounded-lg gap-1">
-                  <Calendar size={11} color={theme.colors.primaryLight} />
-                  <Text className="text-[11px] font-semibold text-primary-light">
+                  <Calendar size={11} color="rgba(255, 255, 255, 0.85)" />
+                  <Text className="text-[11px] font-semibold text-white/90">
                     {formatDateRange(activeTrip.dateFrom, activeTrip.dateTo)}
                   </Text>
                 </View>
                 {activeTrip.travelStyle && (
                   <View className="flex-row items-center bg-white/10 px-2 py-1 rounded-lg gap-1">
-                    <Flame size={11} color={theme.colors.primaryLight} />
-                    <Text className="text-[11px] font-semibold text-primary-light">
+                    <Flame size={11} color="rgba(255, 255, 255, 0.85)" />
+                    <Text className="text-[11px] font-semibold text-white/90">
                       {activeTrip.travelStyle}
                     </Text>
                   </View>
@@ -96,7 +96,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         {/* Psychological Reassurance Body */}
         <View className="bg-surface rounded-3xl p-5 border border-border shadow-subtle">
           <View className="flex-row items-center gap-2 mb-2.5">
-            <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
+            <View className="w-7 h-7 rounded-full bg-surface-subtle items-center justify-center">
               <Sparkles size={16} color={theme.colors.primary} />
             </View>
             <Text className="text-[11px] font-semibold text-primary tracking-wider uppercase">
@@ -201,19 +201,19 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
     <View className="px-5 pt-1 pb-6">
       <View className="bg-surface rounded-3xl p-6 items-center border border-border relative overflow-hidden shadow-subtle">
         {/* Soft Background Geometry */}
-        <View className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-primary-mist" />
+        <View className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-surface-subtle" />
         <View className="absolute -bottom-14 -left-10 w-36 h-36 rounded-full bg-surface-subtle" />
 
         {/* Hero Visual Icon Badge */}
-        <View className="w-[72px] h-[72px] rounded-full bg-primary-mist items-center justify-center border border-primary/20 mb-4 relative">
+        <View className="w-[72px] h-[72px] rounded-full bg-surface-subtle items-center justify-center border border-border mb-4 relative">
           <Compass size={32} color={theme.colors.primary} strokeWidth={2.2} />
-          <View className="absolute -top-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary-light items-center justify-center border-2 border-surface">
-            <Sparkles size={14} color={theme.colors.primaryDark} />
+          <View className="absolute -top-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary items-center justify-center border-2 border-surface">
+            <Sparkles size={14} color="#FFFFFF" />
           </View>
         </View>
 
         {/* Motivational Tag */}
-        <View className="flex-row items-center bg-primary-mist px-2.5 py-1.5 rounded-xl mb-3 gap-1">
+        <View className="flex-row items-center bg-surface border border-primary px-2.5 py-1.5 rounded-xl mb-3 gap-1">
           <Globe2 size={11} color={theme.colors.primary} />
           <Text className="text-[10.5px] font-semibold text-primary uppercase tracking-wider">
             GET STARTED
@@ -284,7 +284,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               Create Travel Plan
             </Text>
           </View>
-          <ArrowRight size={17} color={theme.colors.primaryLight} strokeWidth={2.2} />
+          <ArrowRight size={17} color={theme.colors.white} strokeWidth={2.2} />
         </TouchableOpacity>
 
         {/* Secondary Gentle Discovery Link */}

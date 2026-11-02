@@ -144,7 +144,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
                 <TouchableOpacity
                   className={cn(
                     'flex-row items-center justify-between py-3.5 px-2 border-b border-border-subtle',
-                    isSelected && 'bg-primary-mist rounded-xl px-2'
+                    isSelected && 'bg-surface border border-primary rounded-xl px-2'
                   )}
                   onPress={() => handleSelectItem(item)}
                   activeOpacity={0.7}

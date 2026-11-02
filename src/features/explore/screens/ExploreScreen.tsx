@@ -237,7 +237,7 @@ export const ExploreScreen: React.FC = () => {
       return (
         <View className="flex-1 px-5">
           <View className="bg-surface rounded-3xl py-8 px-5 items-center border border-border mt-1.5 shadow-subtle">
-            <View className="w-[68px] h-[68px] rounded-full bg-primary-mist items-center justify-center mb-4">
+            <View className="w-[68px] h-[68px] rounded-full bg-surface-subtle items-center justify-center mb-4">
               <Compass size={32} color={theme.colors.primary} />
             </View>
             <Text className="text-lg font-semibold text-text-primary text-center">
@@ -274,7 +274,7 @@ export const ExploreScreen: React.FC = () => {
     return (
       <View className="flex-1 px-5">
         <View className="bg-surface rounded-2xl py-9 px-6 items-center border border-border mt-1.5">
-          <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-3.5">
+          <View className="w-[60px] h-[60px] rounded-full bg-surface-subtle items-center justify-center mb-3.5">
             <Search size={26} color={theme.colors.primary} />
           </View>
           <Text className="text-base font-semibold text-text-primary text-center">

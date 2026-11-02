@@ -176,7 +176,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 <View className="flex-row items-center gap-2">
                   <Calendar size={16} color={theme.colors.primary} />
                   <Text className="text-sm font-semibold text-text-primary flex-1">Travel Dates</Text>
-                  <View className="flex-row items-center gap-1 bg-primary-mist px-2 py-0.5 rounded-lg">
+                  <View className="flex-row items-center gap-1 bg-surface border border-primary px-2 py-0.5 rounded-lg">
                     <Clock size={11} color={theme.colors.primary} />
                     <Text className="text-[11px] font-semibold text-primary">{durationDays} days</Text>
                   </View>
@@ -334,7 +334,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                         <Text
                           className={cn(
                             'text-[11px] text-text-secondary mt-0.5',
-                            isSelected && 'text-primary-light'
+                            isSelected && 'text-primary'
                           )}
                         >
                           {b.description}

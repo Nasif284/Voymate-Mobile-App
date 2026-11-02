@@ -31,14 +31,14 @@ export const PlanTripBanner: React.FC<PlanTripBannerProps> = ({
         <View className="flex-row items-center gap-3">
           {/* Evocative Icon Badge */}
           <View className="w-11 h-11 rounded-2xl bg-white/10 items-center justify-center border border-white/20">
-            <Compass size={22} color={theme.colors.primaryLight} strokeWidth={2.2} />
+            <Compass size={22} color={theme.colors.white} strokeWidth={2.2} />
           </View>
 
           {/* Text Container */}
           <View className="flex-1">
             <View className="flex-row items-center gap-1 mb-0.5">
-              <Sparkles size={10} color={theme.colors.primaryLight} />
-              <Text className="text-[10px] font-semibold text-primary-light uppercase tracking-wider">
+              <Sparkles size={10} color="rgba(255, 255, 255, 0.9)" />
+              <Text className="text-[10px] font-semibold text-white/90 uppercase tracking-wider">
                 NO ACTIVE TRIP
               </Text>
             </View>

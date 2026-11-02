@@ -47,13 +47,13 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
     <View className="bg-surface rounded-[24px] py-[18px] mx-4 mt-3.5 border border-border">
       <View className="flex-row items-center justify-between px-5 mb-3.5">
         <View className="flex-row items-center gap-2">
-          <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
+          <View className="w-7 h-7 rounded-full bg-surface-subtle items-center justify-center">
             <Compass size={16} color={theme.colors.primary} />
           </View>
           <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Upcoming Travel Plans</Text>
         </View>
         <View className="flex-row items-center gap-2.5">
-          <View className="bg-primary-mist px-2 py-[3px] rounded-[10px]">
+          <View className="bg-surface border border-primary px-2 py-[3px] rounded-[10px]">
             <Text className="text-[11px] font-semibold text-primary">{trips.length}</Text>
           </View>
           {onSeeAll && (
@@ -132,7 +132,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
                 ) : null}
 
                 {trip.travelStyle ? (
-                  <View className="self-start bg-primary-mist px-2 py-0.5 rounded-lg mt-0.5">
+                  <View className="self-start bg-surface border border-primary px-2 py-0.5 rounded-lg mt-0.5">
                     <Text className="text-[10px] font-bold text-primary">
                       {trip.travelStyle}
                     </Text>

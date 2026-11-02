@@ -122,7 +122,7 @@ export const VerifyEmailScreen: React.FC<Props> = ({ navigation, route }) => {
 
               {/* Header with Mail Icon Capsule */}
               <View className="mb-6">
-                <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
+                <View className="w-11 h-11 rounded-full bg-surface-subtle items-center justify-center mb-3.5">
                   <Mail size={22} color={theme.colors.primary} />
                 </View>
                 <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Verify your email</Text>

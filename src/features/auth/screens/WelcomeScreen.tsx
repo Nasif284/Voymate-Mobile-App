@@ -27,7 +27,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
       <View className="flex-1 px-6 py-4 justify-between">
         {/* Top Hero Brand Section */}
         <View className="mt-3">
-          <View className="w-[68px] h-[68px] rounded-full bg-primary-mist items-center justify-center mb-4">
+          <View className="w-[68px] h-[68px] rounded-full bg-surface-subtle items-center justify-center mb-4">
             <Compass size={36} color={theme.colors.primary} />
           </View>
           <Text className="text-xs font-bold text-primary tracking-[2px] mb-1.5">

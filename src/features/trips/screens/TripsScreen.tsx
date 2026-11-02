@@ -203,7 +203,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* Chips row */}
           <View className="flex-row items-center gap-2 mt-1">
             {item.travelStyle || item.travelStyleCode ? (
-              <View className="flex-row items-center gap-1 bg-primary-mist px-2.5 py-1 rounded-lg">
+              <View className="flex-row items-center gap-1 bg-surface border border-primary px-2.5 py-1 rounded-lg">
                 <Compass size={11} color={theme.colors.primary} />
                 <Text className="text-[11px] font-semibold text-primary">
                   {item.travelStyle || item.travelStyleCode}
@@ -258,7 +258,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     if (searchQuery.trim()) {
       return (
         <View className="py-14 items-center justify-center gap-2 px-6">
-          <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+          <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
             <Search size={32} color={theme.colors.primary} />
           </View>
           <Text className="text-base font-semibold text-text-primary">No Trips Found</Text>
@@ -272,7 +272,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     if (activeTab === 'active') {
       return (
         <View className="py-14 items-center justify-center gap-2 px-6">
-          <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+          <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
             <Compass size={32} color={theme.colors.primary} />
           </View>
           <Text className="text-base font-semibold text-text-primary">No Active Trips</Text>
@@ -296,7 +296,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
     return (
       <View className="py-14 items-center justify-center gap-2 px-6">
-        <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
+        <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-2">
           <Clock size={32} color={theme.colors.primary} />
         </View>
         <Text className="text-base font-semibold text-text-primary">No Past Trips</Text>

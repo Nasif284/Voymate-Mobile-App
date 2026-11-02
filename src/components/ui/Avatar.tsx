@@ -45,7 +45,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         />
       ) : (
         <View
-          className="items-center justify-center bg-primary-mist"
+          className="items-center justify-center bg-surface border border-primary"
           style={{
             width: size,
             height: size,

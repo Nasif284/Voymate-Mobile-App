@@ -194,7 +194,7 @@ export const MessagesScreen: React.FC = () => {
                 {item.avatarUrl ? (
                   <Image source={{ uri: item.avatarUrl }} className="w-full h-full rounded-full" />
                 ) : (
-                  <View className="w-full h-full rounded-full bg-primary-mist items-center justify-center">
+                  <View className="w-full h-full rounded-full bg-surface-subtle items-center justify-center">
                     <Text className="text-lg font-semibold text-primary">
                       {item.fullName?.charAt(0)?.toUpperCase() || 'M'}
                     </Text>
@@ -219,7 +219,7 @@ export const MessagesScreen: React.FC = () => {
       <TouchableOpacity
         className={cn(
           'flex-row items-center bg-surface p-3.5 rounded-2xl border border-border mb-2.5 gap-3 shadow-subtle',
-          hasUnread && 'bg-primary-mist border-primary/20'
+          hasUnread && 'bg-surface border-primary'
         )}
         onPress={() =>
           handleOpenChat(
@@ -310,7 +310,7 @@ export const MessagesScreen: React.FC = () => {
 
     return (
       <View className="py-16 px-5 items-center justify-center gap-2.5">
-        <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-1">
+        <View className="w-16 h-16 rounded-full bg-surface-subtle items-center justify-center mb-1">
           <MessageSquare size={32} color={theme.colors.primary} />
         </View>
         <Text className="text-base font-semibold text-text-primary">No Messages Yet</Text>

@@ -18,7 +18,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
   return (
     <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border">
       <View className="flex-row items-center gap-2 mb-3">
-        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
+        <View className="w-7 h-7 rounded-full bg-surface-subtle items-center justify-center">
           <User size={15} color={theme.colors.primary} />
         </View>
         <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">About {firstName}</Text>
@@ -28,7 +28,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
         <View className="relative pl-1">
           <Quote
             size={16}
-            color={theme.colors.primaryLight}
+            color={theme.colors.primary}
             className="mb-1"
           />
           <Text className="text-sm text-text-primary leading-[22px] font-medium">{bio!.trim()}</Text>

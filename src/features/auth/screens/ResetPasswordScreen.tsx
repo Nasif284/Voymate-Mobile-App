@@ -127,7 +127,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
               {isSuccess ? (
                 /* Success View matching Next app */
                 <View className="items-center py-10 px-4">
-                  <View className="w-[72px] h-[72px] rounded-full bg-primary-mist items-center justify-center mb-5">
+                  <View className="w-[72px] h-[72px] rounded-full bg-surface-subtle items-center justify-center mb-5">
                     <CheckCircle size={40} color={theme.colors.primary} />
                   </View>
                   <Text className="text-[22px] font-bold text-textPrimary text-center tracking-tight">Password updated successfully!</Text>
@@ -147,7 +147,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                 <>
                   {/* Header */}
                   <View className="mb-6">
-                    <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
+                    <View className="w-11 h-11 rounded-full bg-surface-subtle items-center justify-center mb-3.5">
                       <Lock size={22} color={theme.colors.primary} />
                     </View>
                     <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Reset your password</Text>

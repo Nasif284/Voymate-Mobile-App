@@ -49,7 +49,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
     <View className="bg-surface rounded-[24px] mx-4 mt-3.5 overflow-hidden border border-border">
       {/* Header */}
       <View className="flex-row items-center gap-2 px-[18px] py-3.5 border-b border-border">
-        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
+        <View className="w-7 h-7 rounded-full bg-surface-subtle items-center justify-center">
           <MapPin size={16} color={theme.colors.primary} />
         </View>
         <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Matched Trip Plan</Text>
@@ -81,7 +81,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
       <View className="p-4 gap-2.5">
         {dateRangeStr ? (
           <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
-            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
+            <View className="w-8 h-8 rounded-[10px] bg-surface border border-primary items-center justify-center">
               <Calendar size={14} color={theme.colors.primary} />
             </View>
             <View className="flex-1">
@@ -95,7 +95,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
 
         {trip.travelStyle ? (
           <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
-            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
+            <View className="w-8 h-8 rounded-[10px] bg-surface border border-primary items-center justify-center">
               <Compass size={14} color={theme.colors.primary} />
             </View>
             <View className="flex-1">
@@ -109,7 +109,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
 
         {trip.budgetStyle ? (
           <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
-            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
+            <View className="w-8 h-8 rounded-[10px] bg-surface border border-primary items-center justify-center">
               <Wallet size={14} color={theme.colors.primary} />
             </View>
             <View className="flex-1">

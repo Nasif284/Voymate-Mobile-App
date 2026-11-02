@@ -124,7 +124,7 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
                   <View
                     className={cn(
                       'w-[42px] h-[28px] rounded-full items-center justify-center',
-                      isFocused ? 'bg-primary-mist' : 'bg-transparent'
+                      isFocused ? 'bg-transparent' : 'bg-transparent'
                     )}
                   >
                     <IconComponent

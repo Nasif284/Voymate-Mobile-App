@@ -487,7 +487,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 <View className="bg-surface rounded-[22px] border border-border-subtle overflow-visible pb-5 shadow-subtle">
                   {/* Cover Banner */}
                   <TouchableOpacity
-                    className="w-full h-[150px] rounded-t-[20px] bg-primary-mist overflow-hidden relative items-center justify-center"
+                    className="w-full h-[150px] rounded-t-[20px] bg-surface-subtle overflow-hidden relative items-center justify-center"
                     onPress={handlePickCover}
                     activeOpacity={0.85}
                   >
@@ -772,7 +772,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   disabled={locating}
                   activeOpacity={0.8}
                 >
-                  <View className="w-[38px] h-[38px] rounded-full bg-primary-mist items-center justify-center mr-3.5">
+                  <View className="w-[38px] h-[38px] rounded-full bg-surface-subtle items-center justify-center mr-3.5">
                     {locating ? (
                       <ActivityIndicator size="small" color={theme.colors.primary} />
                     ) : (

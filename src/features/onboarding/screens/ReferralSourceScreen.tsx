@@ -147,7 +147,7 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
                   <View
                     className={cn(
                       'w-10 h-10 rounded-xl items-center justify-center mr-3.5',
-                      isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                      isSelected ? 'bg-surface border border-primary' : 'bg-surface-subtle'
                     )}
                   >
                     {opt.icon(

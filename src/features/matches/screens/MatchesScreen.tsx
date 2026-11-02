@@ -215,7 +215,7 @@ export const MatchesScreen: React.FC = () => {
       return (
         <View className="px-5 mt-2.5">
           <View className="bg-surface rounded-3xl p-8 items-center border border-border shadow-subtle">
-            <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-4">
+            <View className="w-[60px] h-[60px] rounded-full bg-surface-subtle items-center justify-center mb-4">
               <Compass size={30} color={theme.colors.primary} />
             </View>
             <Text className="text-lg font-semibold text-text-primary mb-2 text-center">
@@ -253,7 +253,7 @@ export const MatchesScreen: React.FC = () => {
     return (
       <View className="px-5">
         <View className="bg-surface rounded-3xl p-8 items-center border border-border shadow-subtle">
-          <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-4">
+          <View className="w-[60px] h-[60px] rounded-full bg-surface-subtle items-center justify-center mb-4">
             <Compass size={28} color={theme.colors.primary} />
           </View>
           <Text className="text-lg font-semibold text-text-primary mb-2 text-center">

@@ -126,7 +126,7 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
 
               {/* Header */}
               <View className="mb-6">
-                <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
+                <View className="w-11 h-11 rounded-full bg-surface-subtle items-center justify-center mb-3.5">
                   <ShieldCheck size={24} color={theme.colors.primary} />
                 </View>
                 <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Enter verification code</Text>

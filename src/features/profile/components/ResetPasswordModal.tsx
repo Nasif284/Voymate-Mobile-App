@@ -103,7 +103,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 
               {/* Header Icon & Title */}
               <View className="items-center mb-5 mt-1">
-                <View className="w-[50px] h-[50px] rounded-full bg-primary-mist items-center justify-center mb-3">
+                <View className="w-[50px] h-[50px] rounded-full bg-surface border border-primary items-center justify-center mb-3">
                   <Lock size={22} color={theme.colors.primary} />
                 </View>
                 <Text className="text-xl font-bold text-text-primary mb-1.5">Reset Password</Text>

@@ -18,7 +18,7 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
       <View className="flex-row items-center gap-4 pb-4 border-b border-border">
         {/* Score Ring Gauge */}
         <View className="items-center justify-center">
-          <View className="w-[76px] h-[76px] rounded-full border-4 border-primary bg-primary-mist items-center justify-center">
+          <View className="w-[76px] h-[76px] rounded-full border-4 border-primary bg-surface items-center justify-center">
             <Text className="text-[22px] font-bold text-primary tracking-[-0.5px]">{score}%</Text>
             <Text className="text-[8px] font-semibold text-primary tracking-[0.8px] opacity-85 -mt-0.5">SCORE</Text>
           </View>
@@ -41,7 +41,7 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
         <View className="pt-3.5 gap-2">
           {reasons.map((reason, index) => (
             <View key={index} className="flex-row items-center gap-2.5 bg-surface-subtle px-3 py-2.5 rounded-[14px] border border-border">
-              <View className="w-5 h-5 rounded-full bg-primary-mist items-center justify-center">
+              <View className="w-5 h-5 rounded-full bg-surface border border-primary items-center justify-center">
                 <Check size={11} color={theme.colors.primary} strokeWidth={3} />
               </View>
               <Text className="flex-1 text-[13px] font-semibold text-text-primary leading-[18px]">{reason}</Text>

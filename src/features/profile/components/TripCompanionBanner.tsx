@@ -42,7 +42,7 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
       {/* Decorative accent top bar */}
       <View className="flex-row items-center gap-3 mb-3">
         <View className="w-9 h-9 rounded-xl bg-white/10 justify-center items-center border border-white/20">
-          <Luggage size={18} color={theme.colors.primaryLight} />
+          <Luggage size={18} color={theme.colors.primary} />
         </View>
 
         <View className="flex-1 flex-row items-center flex-wrap gap-1.5">

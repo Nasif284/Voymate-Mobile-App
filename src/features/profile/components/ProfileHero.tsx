@@ -154,7 +154,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
           {/* Quick Match / Status Pill */}
           {matchScore !== undefined && matchScore !== null ? (
-            <View className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-1.5 rounded-full border border-primary-border mb-1">
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1">
               <Sparkles size={13} color={theme.colors.primary} />
               <Text className="text-primary text-xs font-semibold tracking-[0.3px]">{matchScore}% Match</Text>
             </View>
