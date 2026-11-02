@@ -158,12 +158,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
               <Sparkles size={13} color={theme.colors.primary} />
               <Text className="text-primary text-xs font-semibold tracking-[0.3px]">{matchScore}% Match</Text>
             </View>
-          ) : user.travelPersonality ? (
-            <View className="bg-surface-subtle px-3 py-1.5 rounded-full mb-1 max-w-[160px]">
-              <Text className="text-text-secondary text-[11px] font-semibold" numberOfLines={1}>
-                {user.travelPersonality}
-              </Text>
-            </View>
           ) : null}
         </View>
 
