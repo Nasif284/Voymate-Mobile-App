@@ -154,7 +154,7 @@ export const ProfileScreen: React.FC = () => {
     .filter(Boolean)
     .join(', ');
 
-  const tabBarHeight = 82 + insets.bottom;
+  const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
 
   return (
     <View className="flex-1 bg-background">
@@ -162,7 +162,7 @@ export const ProfileScreen: React.FC = () => {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 24 }}
+        contentContainerStyle={{ paddingBottom: bottomNavPadding }}
         showsVerticalScrollIndicator={false}
       >
         {/* Cover Photo Header */}
@@ -384,7 +384,7 @@ export const ProfileScreen: React.FC = () => {
         />
 
         {/* Log Out Button at Very Bottom */}
-        <View className="mt-6 mb-3 items-center">
+        <View className="mt-6 items-center">
           <TouchableOpacity
             className="flex-row items-center justify-center gap-1.5 py-[7px] px-4 rounded-full bg-error-light border border-error-light"
             onPress={handleLogout}

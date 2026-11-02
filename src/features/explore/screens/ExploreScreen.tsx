@@ -178,7 +178,7 @@ export const ExploreScreen: React.FC = () => {
     [navigation]
   );
 
-  const tabBarHeight = 82 + insets.bottom;
+  const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
 
   const renderMatchItem = useCallback(
     ({ item }: { item: TripMatchItem }) => (
@@ -306,7 +306,7 @@ export const ExploreScreen: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
           paddingTop: insets.top + 8,
-          paddingBottom: tabBarHeight + 24,
+          paddingBottom: bottomNavPadding,
         }}
         showsVerticalScrollIndicator={false}
         initialNumToRender={6}

@@ -153,7 +153,7 @@ export const MatchesScreen: React.FC = () => {
     [navigation]
   );
 
-  const tabBarHeight = 82 + insets.bottom;
+  const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
   const destinationTitle = activeTrip?.destination?.name || activeTrip?.name;
 
   const renderMatchItem = useCallback(
@@ -298,7 +298,7 @@ export const MatchesScreen: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
           paddingTop: insets.top + 8,
-          paddingBottom: tabBarHeight + 24,
+          paddingBottom: bottomNavPadding,
         }}
         showsVerticalScrollIndicator={false}
         initialNumToRender={6}

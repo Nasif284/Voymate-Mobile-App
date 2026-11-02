@@ -338,7 +338,7 @@ export const MessagesScreen: React.FC = () => {
     );
   };
 
-  const tabBarHeight = 82 + insets.bottom;
+  const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
 
   return (
     <View className="flex-1 bg-background">
@@ -408,7 +408,7 @@ export const MessagesScreen: React.FC = () => {
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 4,
-            paddingBottom: tabBarHeight + 24,
+            paddingBottom: bottomNavPadding,
           }}
           showsVerticalScrollIndicator={false}
           refreshControl={

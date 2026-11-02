@@ -191,7 +191,7 @@ export const HomeScreen: React.FC = () => {
       ? `${currentUserProfile.city}, ${currentUserProfile.state}`
       : currentUserProfile?.state || currentUserProfile?.country || null;
 
-  const tabBarHeight = 82 + insets.bottom;
+  const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
 
   const renderHeader = () => (
     <View className="mb-1">
@@ -252,7 +252,7 @@ export const HomeScreen: React.FC = () => {
 
     if (!isLoading && !hasNextPage && buddyUsers.length > 0) {
       return (
-        <View className="flex-row items-center justify-center py-5 gap-1.5">
+        <View className="flex-row items-center justify-center pt-3 pb-1 gap-1.5">
           <Sparkles size={13} color={theme.colors.primary} />
           <Text className="text-xs font-semibold text-primary">You have seen all travelers for now</Text>
         </View>
@@ -300,7 +300,7 @@ export const HomeScreen: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
           paddingTop: insets.top + 8,
-          paddingBottom: tabBarHeight + 24,
+          paddingBottom: bottomNavPadding,
         }}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
