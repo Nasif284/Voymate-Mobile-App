@@ -27,6 +27,7 @@ import {
   User,
 } from 'lucide-react-native';
 import { useHaptics } from '../hooks/useHaptics';
+import { cn } from '../utils/cn';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -57,13 +58,11 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
 
   return (
     <View
-      style={[
-        styles.floatingShadowWrapper,
-        { bottom: bottomOffset },
-      ]}
+      className="absolute left-4 right-4 h-16 rounded-[34px] shadow-floating"
+      style={[{ bottom: bottomOffset }, theme.shadows.floating]}
       pointerEvents="box-none"
     >
-      <View style={styles.islandClipContainer}>
+      <View className="flex-1 rounded-[34px] overflow-hidden border border-border bg-surface">
         {/* Native Liquid Glass Blur Layer */}
         <BlurView
           tint={isIos ? 'systemChromeMaterialLight' : 'light'}
@@ -73,14 +72,12 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
 
         {/* Luminous Frosted Tint Overlay */}
         <View
-          style={[
-            StyleSheet.absoluteFill,
-            isIos ? styles.iosGlassTint : styles.androidGlassTint,
-          ]}
+          style={StyleSheet.absoluteFill}
+          className={isIos ? 'bg-white/90' : 'bg-surface'}
         />
 
         {/* Tab Items Row */}
-        <View style={styles.tabsRow}>
+        <View className="flex-1 flex-row items-center justify-around px-2">
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
             const isFocused = state.index === index;
@@ -121,14 +118,14 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
                 onPress={onPress}
                 onLongPress={onLongPress}
                 activeOpacity={0.7}
-                style={styles.tabSlot}
+                className="flex-1 h-full items-center justify-center"
               >
-                <View style={styles.tabContent}>
+                <View className="items-center justify-center gap-[3px]">
                   <View
-                    style={[
-                      styles.iconWrapper,
-                      isFocused && styles.iconWrapperActive,
-                    ]}
+                    className={cn(
+                      'w-[42px] h-[28px] rounded-full items-center justify-center',
+                      isFocused ? 'bg-primary-mist' : 'bg-transparent'
+                    )}
                   >
                     <IconComponent
                       size={20}
@@ -137,10 +134,10 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
                     />
                   </View>
                   <Text
-                    style={[
-                      styles.tabLabel,
-                      isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
-                    ]}
+                    className={cn(
+                      'text-[10.5px] tracking-[-0.1px]',
+                      isFocused ? 'font-semibold text-primary' : 'font-medium text-textMuted'
+                    )}
                     numberOfLines={1}
                   >
                     {config.label}
@@ -171,74 +168,3 @@ export const MainTabNavigator: React.FC = () => {
     </Tab.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  floatingShadowWrapper: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    height: 64,
-    borderRadius: 34,
-    // Floating ambient drop shadow
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  islandClipContainer: {
-    flex: 1,
-    borderRadius: 34,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
-  },
-  iosGlassTint: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-  },
-  androidGlassTint: {
-    backgroundColor: theme.colors.surface,
-  },
-  tabsRow: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 8,
-  },
-  tabSlot: {
-    flex: 1,
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
-  iconWrapper: {
-    width: 42,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  iconWrapperActive: {
-    backgroundColor: theme.colors.primaryMist,
-  },
-  tabLabel: {
-    fontSize: 10.5,
-    letterSpacing: -0.1,
-  },
-  tabLabelActive: {
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  tabLabelInactive: {
-    fontWeight: '500',
-    color: theme.colors.textMuted,
-  },
-});
