@@ -231,7 +231,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
         <View className="flex-1 bg-black/45 justify-end">
           <View className="bg-surface rounded-t-[28px] max-h-[90%] pt-5 pb-8 shadow-floating">
             {/* Header */}
-            <View className="flex-row justify-between items-center px-5.5 pb-4 border-b border-border">
+            <View className="flex-row justify-between items-center px-5 pb-4 border-b border-border">
               <View>
                 <Text className="text-lg font-semibold text-text-primary tracking-tight">
                   Plan a Trip
@@ -251,11 +251,11 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
 
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 16 }}
+              contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 }}
               keyboardShouldPersistTaps="handled"
             >
               {/* Step 1: Destination */}
-              <View className="mb-4.5">
+              <View className="mb-4">
                 <View className="flex-row items-center gap-1.5 mb-2">
                   <MapPin size={13} color={theme.colors.primary} />
                   <Text className="text-[11px] font-semibold uppercase tracking-wider text-primary">
@@ -337,7 +337,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
               </View>
 
               {/* Step 2: Trip Dates (Classy Symmetrical Itinerary Card) */}
-              <View className="mb-4.5">
+              <View className="mb-4">
                 <View className="flex-row items-center gap-1.5 mb-2">
                   <Calendar size={13} color={theme.colors.primary} />
                   <Text className="text-[11px] font-semibold uppercase tracking-wider text-primary">
@@ -477,7 +477,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
               </View>
 
               {/* Step 3: Travel Style (3 Verified Options) */}
-              <View className="mb-4.5">
+              <View className="mb-4">
                 <View className="flex-row items-center gap-1.5 mb-2">
                   <Compass size={13} color={theme.colors.primary} />
                   <Text className="text-[11px] font-semibold uppercase tracking-wider text-primary">
@@ -516,7 +516,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
               </View>
 
               {/* Step 4: Budget Style (4 Verified Options) */}
-              <View className="mb-4.5">
+              <View className="mb-4">
                 <View className="flex-row items-center gap-1.5 mb-2">
                   <Wallet size={13} color={theme.colors.primary} />
                   <Text className="text-[11px] font-semibold uppercase tracking-wider text-primary">
@@ -567,7 +567,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
             </ScrollView>
 
             {/* Footer Submit */}
-            <View className="px-5.5 pt-2.5">
+            <View className="px-5 pt-2.5">
               <TouchableOpacity
                 className={cn(
                   'flex-row items-center justify-center bg-primary py-3.5 rounded-2xl gap-2 shadow-card',

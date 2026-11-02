@@ -21,7 +21,7 @@ export const MatchesSkeleton: React.FC = () => {
       {[1, 2].map((i) => (
         <View key={i} className="bg-surface rounded-3xl border border-border overflow-hidden mb-5">
           <View className="w-full h-[120px] bg-surface-subtle" />
-          <View className="p-4.5">
+          <View className="p-5">
             <View className="w-[150px] h-5 rounded-lg bg-surface-subtle mb-2.5" />
             <View className="w-[100px] h-3.5 rounded-lg bg-surface-subtle mb-4" />
             <View className="w-full h-[50px] rounded-xl bg-surface-subtle mb-4" />

@@ -84,7 +84,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         <View className="flex-1 bg-black/50 justify-end">
           <View className="bg-surface rounded-t-[28px] max-h-[75%] pt-5 pb-8 shadow-floating">
             {/* Header */}
-            <View className="flex-row justify-between items-center px-5.5 pb-4 border-b border-border">
+            <View className="flex-row justify-between items-center px-5 pb-4 border-b border-border">
               <View className="flex-1">
                 <Text className="text-lg font-semibold text-text-primary tracking-tight">
                   Filter Companions
@@ -193,7 +193,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             </ScrollView>
 
             {/* Apply Button */}
-            <View className="px-5.5 pt-3">
+            <View className="px-5 pt-3">
               <TouchableOpacity
                 className="bg-primary py-3.5 items-center justify-center rounded-2xl shadow-card"
                 onPress={handleApply}

@@ -361,7 +361,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
           <TouchableOpacity
             className={cn(
-              'w-9.5 h-9.5 rounded-full items-center justify-center',
+              'w-9 h-9 rounded-full items-center justify-center',
               inputText.trim() ? 'bg-primary' : 'bg-border'
             )}
             onPress={handleSendText}

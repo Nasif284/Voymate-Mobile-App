@@ -219,7 +219,7 @@ export const ExploreScreen: React.FC = () => {
         onClearAllFilters={handleResetFilters}
       />
       {!isLoading && hasActiveSearch && matches.length > 0 && (
-        <View className="mb-2.5 px-5.5">
+        <View className="mb-2.5 px-5">
           <Text className="text-xs font-semibold text-text-muted uppercase tracking-wider">
             {matches.length} companion{matches.length !== 1 ? 's' : ''} found
           </Text>
@@ -236,7 +236,7 @@ export const ExploreScreen: React.FC = () => {
     if (!hasActiveSearch) {
       return (
         <View className="flex-1 px-5">
-          <View className="bg-surface rounded-3xl py-8 px-5.5 items-center border border-border mt-1.5 shadow-subtle">
+          <View className="bg-surface rounded-3xl py-8 px-5 items-center border border-border mt-1.5 shadow-subtle">
             <View className="w-[68px] h-[68px] rounded-full bg-primary-mist items-center justify-center mb-4">
               <Compass size={32} color={theme.colors.primary} />
             </View>
@@ -284,7 +284,7 @@ export const ExploreScreen: React.FC = () => {
             No one has posted a trip here with these filters yet. Plan a trip here so other travelers can find you, or clear your filters.
           </Text>
           <TouchableOpacity
-            className="flex-row items-center bg-primary py-2.5 px-4.5 rounded-2xl mt-4.5 gap-1.5 shadow-subtle"
+            className="flex-row items-center bg-primary py-2.5 px-5 rounded-2xl mt-4 gap-1.5 shadow-subtle"
             onPress={handleResetFilters}
             activeOpacity={0.85}
           >

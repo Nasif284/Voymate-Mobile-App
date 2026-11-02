@@ -790,7 +790,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 </TouchableOpacity>
 
                 {/* Divider */}
-                <View className="flex-row items-center my-4.5 gap-3 py-1">
+                <View className="flex-row items-center my-4 gap-3 py-1">
                   <View className="flex-1 h-[1px] bg-border-subtle" />
                   <Text className="text-xs font-semibold text-text-muted uppercase tracking-wider">
                     or select from list

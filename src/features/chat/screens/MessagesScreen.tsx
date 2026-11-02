@@ -314,7 +314,7 @@ export const MessagesScreen: React.FC = () => {
           Once a travel mate accepts your connection request, you can chat and plan your trip here.
         </Text>
         <TouchableOpacity
-          className="flex-row items-center gap-2 bg-primary px-4.5 py-2.5 rounded-2xl mt-3 shadow-card"
+          className="flex-row items-center gap-2 bg-primary px-5 py-2.5 rounded-2xl mt-3 shadow-card"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             if (connections.length > 0) {

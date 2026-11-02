@@ -86,7 +86,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       </View>
 
       {/* Floating Avatar */}
-      <View className="absolute top-[90px] left-[18px] z-10">
+      <View className="absolute top-[90px] left-5 z-10">
         {user.avatarUrl ? (
           <Image
             source={{ uri: user.avatarUrl }}
@@ -102,7 +102,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       </View>
 
       {/* Card Body */}
-      <View className="pt-9 px-4.5 pb-4.5">
+      <View className="pt-9 px-5 pb-5">
         {/* Name & Origin */}
         <View>
           <Text className="text-lg font-semibold text-text-primary tracking-tight" numberOfLines={1}>

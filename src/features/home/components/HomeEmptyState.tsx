@@ -108,7 +108,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
             Looking for travel mates for {destinationTitle}
           </Text>
 
-          <Text className="text-[13px] text-text-secondary leading-5 mb-4.5">
+          <Text className="text-[13px] text-text-secondary leading-5 mb-4">
             Your trip is live. New travelers add trips every day—check your trip matches or browse other destinations while we find people heading to {destinationTitle}.
           </Text>
 
@@ -231,7 +231,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         </Text>
 
         {/* 3 Core Value Props to Reduce Hesitation */}
-        <View className="w-full gap-2.5 mb-5.5">
+        <View className="w-full gap-2.5 mb-5">
           <View className="flex-row items-center bg-surface-subtle py-2.5 px-3.5 rounded-2xl border border-border gap-3">
             <View className="w-8 h-8 rounded-xl bg-surface items-center justify-center border border-border">
               <Text className="text-[15px]">🎯</Text>

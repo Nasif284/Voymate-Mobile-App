@@ -58,7 +58,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
           <TouchableWithoutFeedback>
             <View className="bg-surface rounded-t-[28px] max-h-[75%] pt-5 pb-8 shadow-floating">
               {/* Header */}
-              <View className="flex-row justify-between items-center px-5.5 pb-4 border-b border-border">
+              <View className="flex-row justify-between items-center px-5 pb-4 border-b border-border">
                 <View>
                   <Text className="text-lg font-semibold text-text-primary tracking-tight">
                     Your Travel Plans
@@ -79,10 +79,10 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
               {/* Trips List */}
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 16, gap: 10 }}
+                contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16, gap: 10 }}
               >
                 {trips.length === 0 ? (
-                  <View className="p-7.5 items-center">
+                  <View className="p-8 items-center">
                     <Luggage size={32} color={theme.colors.primary} />
                     <Text className="text-base font-semibold text-text-primary mt-2.5">
                       No Upcoming Trips
@@ -116,7 +116,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                         <View className="flex-row items-center flex-1 gap-3">
                           <View
                             className={cn(
-                              'w-9.5 h-9.5 rounded-full bg-surface-subtle items-center justify-center',
+                              'w-10 h-10 rounded-full bg-surface-subtle items-center justify-center',
                               isSelected && 'bg-primary'
                             )}
                           >
@@ -155,7 +155,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
 
               {/* Bottom Action: Plan New Trip */}
               {onPlanNewTrip && (
-                <View className="px-5.5 pt-2.5">
+                <View className="px-5 pt-2.5">
                   <TouchableOpacity
                     className="flex-row items-center justify-center bg-primary py-3.5 rounded-2xl gap-1.5 shadow-card"
                     onPress={() => {

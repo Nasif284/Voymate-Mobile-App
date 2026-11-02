@@ -91,7 +91,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
             color={activeFilterCount > 0 ? theme.colors.white : theme.colors.textPrimary}
           />
           {activeFilterCount > 0 && (
-            <View className="absolute -top-1 -right-1 bg-primary-dark w-4.5 h-4.5 rounded-full items-center justify-center border-2 border-white">
+            <View className="absolute -top-1 -right-1 bg-primary-dark w-[18px] h-[18px] rounded-full items-center justify-center border-2 border-white">
               <Text className="text-[9px] font-semibold text-white">{activeFilterCount}</Text>
             </View>
           )}

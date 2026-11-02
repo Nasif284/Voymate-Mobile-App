@@ -223,7 +223,7 @@ export const HomeScreen: React.FC = () => {
       {buddyUsers.length > 0 && (
         <View className="flex-row justify-between items-center px-5 mt-2.5 mb-4">
           <View className="flex-row items-center gap-2.5 flex-1">
-            <View className="w-8.5 h-8.5 rounded-full bg-surface-subtle items-center justify-center">
+            <View className="w-9 h-9 rounded-full bg-surface-subtle items-center justify-center">
               <Users size={16} color={theme.colors.primary} />
             </View>
             <View>
@@ -243,7 +243,7 @@ export const HomeScreen: React.FC = () => {
   const renderFooter = () => {
     if (isFetchingNextPage) {
       return (
-        <View className="flex-row items-center justify-center py-4.5 gap-2">
+        <View className="flex-row items-center justify-center py-4 gap-2">
           <ActivityIndicator size="small" color={theme.colors.primary} />
           <Text className="text-xs font-semibold text-text-muted">Loading more travelers...</Text>
         </View>

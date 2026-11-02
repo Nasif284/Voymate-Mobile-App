@@ -147,7 +147,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
         <View className="flex-1 bg-black/50 justify-end">
           <View className="bg-surface rounded-t-[28px] max-h-[90%] pb-6">
             {/* Header */}
-            <View className="flex-row items-center justify-between px-5 pt-4.5 pb-3.5 border-b border-border">
+            <View className="flex-row items-center justify-between px-5 pt-4 pb-3.5 border-b border-border">
               <View>
                 <Text className="text-lg font-semibold text-text-primary tracking-tight">Edit Trip</Text>
                 <View className="flex-row items-center gap-1 mt-0.5">
@@ -158,7 +158,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 </View>
               </View>
               <TouchableOpacity
-                className="w-8.5 h-8.5 rounded-full bg-surface-subtle items-center justify-center"
+                className="w-8 h-8 rounded-full bg-surface-subtle items-center justify-center"
                 onPress={onClose}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
@@ -318,7 +318,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                         <View className="flex-row items-center justify-between mb-1.5">
                           <Text className="text-lg">{b.icon}</Text>
                           {isSelected && (
-                            <View className="w-4.5 h-4.5 rounded-full bg-white items-center justify-center">
+                            <View className="w-4 h-4 rounded-full bg-white items-center justify-center">
                               <Check size={10} color={theme.colors.primary} strokeWidth={3} />
                             </View>
                           )}

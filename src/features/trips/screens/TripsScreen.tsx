@@ -280,7 +280,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             Create a trip plan so we can match you with travelers going to the same destination.
           </Text>
           <TouchableOpacity
-            className="flex-row items-center gap-1.5 bg-primary px-4.5 py-2.5 rounded-2xl mt-2.5 shadow-card"
+            className="flex-row items-center gap-1.5 bg-primary px-5 py-2.5 rounded-2xl mt-2.5 shadow-card"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               setShowCreateModal(true);
