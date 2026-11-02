@@ -340,37 +340,45 @@ export const MessagesScreen: React.FC = () => {
     <View className="flex-1 bg-background">
       <StatusBar style="dark" />
 
-      {/* Header */}
+      {/* Header matching other primary tab pages (px-5, pt-2, pb-3.5) */}
       <View
-        className="flex-row items-center justify-between px-4.5 pb-3 bg-surface border-b border-border-subtle"
+        className="px-5 pt-2 pb-3.5 bg-background"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <View>
-          <Text className="text-2xl font-semibold text-text-primary tracking-tight">Messages</Text>
-          <Text className="text-xs font-semibold text-primary mt-0.5">
-            {totalUnread > 0 ? `${totalUnread} new messages` : 'Direct chats'}
-          </Text>
-        </View>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-1 pr-3">
+            <Text className="text-[22px] font-semibold text-text-primary tracking-tight">Messages</Text>
+            <Text className="text-xs text-text-muted mt-0.5">
+              {totalUnread > 0 ? (
+                <Text className="text-primary font-semibold">
+                  {totalUnread} new message{totalUnread !== 1 ? 's' : ''}
+                </Text>
+              ) : (
+                'Direct chats with your travel mates'
+              )}
+            </Text>
+          </View>
 
-        <TouchableOpacity
-          className="w-10 h-10 rounded-full bg-primary-mist items-center justify-center"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (connections.length > 0) {
-              navigation.navigate('Connections', { initialTab: 'connections' });
-            } else {
-              navigation.navigate('Main', { screen: 'HomeTab' } as any);
-            }
-          }}
-          activeOpacity={0.8}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <MessageSquarePlus size={22} color={theme.colors.primary} />
-        </TouchableOpacity>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-primary-mist items-center justify-center"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (connections.length > 0) {
+                navigation.navigate('Connections', { initialTab: 'connections' });
+              } else {
+                navigation.navigate('Main', { screen: 'HomeTab' } as any);
+              }
+            }}
+            activeOpacity={0.8}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MessageSquarePlus size={22} color={theme.colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Search Bar */}
-      <View className="flex-row items-center bg-surface-subtle mx-4 mt-3 mb-2 px-3.5 py-2.5 rounded-2xl border border-border gap-2.5">
+      {/* Search Bar matching Explore screen (mx-5, h-12, rounded-2xl) */}
+      <View className="flex-row items-center bg-surface mx-5 mb-3 px-3.5 h-12 rounded-2xl border border-border gap-2.5 shadow-subtle">
         <Search size={16} color={theme.colors.textMuted} />
         <TextInput
           className="flex-1 text-sm text-text-primary p-0"
@@ -394,9 +402,9 @@ export const MessagesScreen: React.FC = () => {
           renderItem={renderConversationItem}
           ListHeaderComponent={renderConnectionsBar}
           contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 8,
-            paddingBottom: tabBarHeight + 20,
+            paddingHorizontal: 20,
+            paddingTop: 4,
+            paddingBottom: tabBarHeight + 24,
           }}
           showsVerticalScrollIndicator={false}
           refreshControl={
