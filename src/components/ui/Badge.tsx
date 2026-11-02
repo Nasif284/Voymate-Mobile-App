@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { theme } from '../../config/theme';
+import { View, Text, ViewStyle, TextStyle } from 'react-native';
+import { cn } from '../../utils/cn';
 
 export type BadgeVariant = 'success' | 'warning' | 'error' | 'mint' | 'neutral';
 
@@ -10,7 +10,25 @@ interface BadgeProps {
   icon?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  className?: string;
+  textClassName?: string;
 }
+
+const VARIANT_CONTAINER_CLASSES: Record<BadgeVariant, string> = {
+  success: 'bg-success-light',
+  warning: 'bg-warning-light',
+  error: 'bg-error-light',
+  neutral: 'bg-surface-container',
+  mint: 'bg-primary-light',
+};
+
+const VARIANT_TEXT_CLASSES: Record<BadgeVariant, string> = {
+  success: 'text-success',
+  warning: 'text-warning',
+  error: 'text-error',
+  neutral: 'text-textSecondary',
+  mint: 'text-primary',
+};
 
 export const Badge: React.FC<BadgeProps> = ({
   label,
@@ -18,65 +36,29 @@ export const Badge: React.FC<BadgeProps> = ({
   icon,
   style,
   textStyle,
+  className,
+  textClassName,
 }) => {
-  const getColors = () => {
-    switch (variant) {
-      case 'success':
-        return {
-          bg: theme.colors.successLight,
-          text: theme.colors.success,
-        };
-      case 'warning':
-        return {
-          bg: theme.colors.warningLight,
-          text: theme.colors.warning,
-        };
-      case 'error':
-        return {
-          bg: theme.colors.errorLight,
-          text: theme.colors.error,
-        };
-      case 'neutral':
-        return {
-          bg: theme.colors.surfaceContainer,
-          text: theme.colors.textSecondary,
-        };
-      case 'mint':
-      default:
-        return {
-          bg: theme.colors.primaryLight,
-          text: theme.colors.primary,
-        };
-    }
-  };
-
-  const colors = getColors();
-
   return (
-    <View style={[styles.badge, { backgroundColor: colors.bg }, style]}>
-      {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
-      <Text style={[styles.label, { color: colors.text }, textStyle]}>
+    <View
+      className={cn(
+        'flex-row items-center px-2.5 py-1 rounded-full self-start',
+        VARIANT_CONTAINER_CLASSES[variant],
+        className
+      )}
+      style={style}
+    >
+      {icon ? <View className="mr-1">{icon}</View> : null}
+      <Text
+        className={cn(
+          'text-[11px] font-semibold tracking-wide',
+          VARIANT_TEXT_CLASSES[variant],
+          textClassName
+        )}
+        style={textStyle}
+      >
         {label}
       </Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: theme.radius.full,
-    alignSelf: 'flex-start',
-  },
-  iconContainer: {
-    marginRight: 4,
-  },
-  label: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.semibold,
-    letterSpacing: 0.2,
-  },
-});

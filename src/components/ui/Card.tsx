@@ -1,61 +1,53 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { View, ViewStyle, TouchableOpacity } from 'react-native';
 import { theme } from '../../config/theme';
+import { cn } from '../../utils/cn';
 
 interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
+  className?: string;
   onPress?: () => void;
   variant?: 'elevated' | 'outlined' | 'flat';
 }
 
+const VARIANT_CLASSES: Record<'elevated' | 'outlined' | 'flat', string> = {
+  elevated: 'shadow-card',
+  outlined: 'border border-border-subtle',
+  flat: 'bg-surface-container',
+};
+
 export const Card: React.FC<CardProps> = ({
   children,
   style,
+  className,
   onPress,
   variant = 'elevated',
 }) => {
-  const getCardStyle = (): ViewStyle => {
-    switch (variant) {
-      case 'outlined':
-        return {
-          ...styles.base,
-          borderWidth: 1,
-          borderColor: theme.colors.borderSubtle,
-        };
-      case 'flat':
-        return {
-          ...styles.base,
-          backgroundColor: theme.colors.surfaceContainer,
-        };
-      case 'elevated':
-      default:
-        return {
-          ...styles.base,
-          ...theme.shadows.card,
-        };
-    }
-  };
+  const cardClasses = cn(
+    'bg-surface rounded-xl p-4',
+    VARIANT_CLASSES[variant],
+    className
+  );
+
+  const shadowFallback = variant === 'elevated' ? theme.shadows.card : undefined;
 
   if (onPress) {
     return (
       <TouchableOpacity
         activeOpacity={0.88}
         onPress={onPress}
-        style={[getCardStyle(), style]}
+        className={cardClasses}
+        style={[shadowFallback, style]}
       >
         {children}
       </TouchableOpacity>
     );
   }
 
-  return <View style={[getCardStyle(), style]}>{children}</View>;
+  return (
+    <View className={cardClasses} style={[shadowFallback, style]}>
+      {children}
+    </View>
+  );
 };
-
-const styles = StyleSheet.create({
-  base: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.xl,
-    padding: theme.spacing.lg,
-  },
-});

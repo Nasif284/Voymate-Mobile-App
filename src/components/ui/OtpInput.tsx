@@ -7,6 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import { useHaptics } from '../../hooks/useHaptics';
+import { cn } from '../../utils/cn';
 
 interface OtpInputProps {
   length?: number;
@@ -80,7 +81,7 @@ export const OtpInput: React.FC<OtpInputProps> = ({
           const isCurrent = isFocused && index === digits.length;
           const isFilled = digit.length > 0;
 
-          const cellClasses = [
+          const cellClasses = cn(
             'w-[45px] h-[54px] rounded-[13px] bg-surface items-center justify-center border-[1.2px]',
             error
               ? 'border-error bg-error-light'
@@ -88,13 +89,13 @@ export const OtpInput: React.FC<OtpInputProps> = ({
               ? 'border-primary border-2 shadow-sm'
               : isFilled
               ? 'border-primary'
-              : 'border-border shadow-sm',
-          ].join(' ');
+              : 'border-border shadow-sm'
+          );
 
-          const textClasses = [
+          const textClasses = cn(
             'text-xl font-bold text-center',
-            error ? 'text-error' : isFilled ? 'text-primary' : 'text-textPrimary',
-          ].join(' ');
+            error ? 'text-error' : isFilled ? 'text-primary' : 'text-textPrimary'
+          );
 
           return (
             <View key={index} className={cellClasses}>

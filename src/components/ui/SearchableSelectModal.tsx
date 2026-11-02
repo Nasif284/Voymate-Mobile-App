@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   TextInput,
@@ -14,6 +13,7 @@ import {
 import { theme } from '../../config/theme';
 import { Search, X, Check, Plus } from 'lucide-react-native';
 import { useHaptics } from '../../hooks/useHaptics';
+import { cn } from '../../utils/cn';
 
 export interface SelectOption {
   label: string;
@@ -89,15 +89,15 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.modalOverlay}
+        className="flex-1 bg-black/45 justify-end"
       >
-        <SafeAreaView style={styles.sheetContainer}>
+        <SafeAreaView className="bg-surface rounded-t-3xl max-h-[85%] min-h-[60%] pb-5 shadow-card">
           {/* Header */}
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{title}</Text>
+          <View className="flex-row items-center justify-between px-5 pt-4 pb-3 border-b border-border-subtle">
+            <Text className="text-lg font-semibold text-textPrimary">{title}</Text>
             <TouchableOpacity
               onPress={handleDismiss}
-              style={styles.closeButton}
+              className="w-9 h-9 rounded-full bg-surface-subtle items-center justify-center"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <X size={20} color={theme.colors.textPrimary} />
@@ -105,12 +105,12 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
           </View>
 
           {/* Search Bar */}
-          <View style={styles.searchBar}>
-            <Search size={18} color={theme.colors.textMuted} style={styles.searchIcon} />
+          <View className="flex-row items-center bg-surface-subtle mx-5 mt-3.5 mb-2 px-3.5 h-[46px] rounded-xl border border-border-subtle">
+            <Search size={18} color={theme.colors.textMuted} className="mr-2.5" />
             <TextInput
-              style={styles.searchInput}
+              className="flex-1 text-[15px] text-textPrimary py-0"
               placeholder={placeholder}
-              placeholderTextColor={theme.colors.textMuted}
+              placeholderTextColor={theme.colors.textPlaceholder}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCorrect={false}
@@ -121,13 +121,13 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
           {/* Custom option button if no exact match and allowCustom is true */}
           {allowCustom && searchQuery.trim().length > 1 && (
             <TouchableOpacity
-              style={styles.customAddButton}
+              className="flex-row items-center py-3 px-5 bg-primary-light mx-5 rounded-xl mb-2"
               onPress={handleAddCustom}
               activeOpacity={0.7}
             >
-              <Plus size={16} color={theme.colors.primary} style={{ marginRight: 8 }} />
-              <Text style={styles.customAddText}>
-                Use <Text style={{ fontWeight: '700' }}>"{searchQuery.trim()}"</Text>
+              <Plus size={16} color={theme.colors.primary} className="mr-2" />
+              <Text className="text-sm text-primary">
+                Use <Text className="font-bold">"{searchQuery.trim()}"</Text>
               </Text>
             </TouchableOpacity>
           )}
@@ -137,26 +137,29 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
             data={filteredItems}
             keyExtractor={(item, index) => `${item.value}_${index}`}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24 }}
             renderItem={({ item }) => {
               const isSelected = selectedValue === item.value || selectedValue === item.label;
               return (
                 <TouchableOpacity
-                  style={[styles.itemRow, isSelected && styles.itemRowSelected]}
+                  className={cn(
+                    'flex-row items-center justify-between py-3.5 px-2 border-b border-border-subtle',
+                    isSelected && 'bg-primary-mist rounded-xl px-2'
+                  )}
                   onPress={() => handleSelectItem(item)}
                   activeOpacity={0.7}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View className="flex-1">
                     <Text
-                      style={[
-                        styles.itemLabel,
-                        isSelected && styles.itemLabelSelected,
-                      ]}
+                      className={cn(
+                        'text-[15px] text-textPrimary font-medium',
+                        isSelected && 'text-primary font-semibold'
+                      )}
                     >
                       {item.label}
                     </Text>
                     {item.sublabel ? (
-                      <Text style={styles.itemSublabel}>{item.sublabel}</Text>
+                      <Text className="text-xs text-textMuted mt-0.5">{item.sublabel}</Text>
                     ) : null}
                   </View>
 
@@ -167,8 +170,8 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
               );
             }}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No results found</Text>
+              <View className="py-9 items-center">
+                <Text className="text-sm text-textMuted">No results found</Text>
               </View>
             }
           />
@@ -177,113 +180,3 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-    minHeight: '60%',
-    paddingBottom: 20,
-    ...theme.shadows.card,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 84, 64, 0.08)',
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
-    marginHorizontal: 20,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingHorizontal: 14,
-    height: 46,
-    borderRadius: 14,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: theme.colors.textPrimary,
-  },
-  customAddButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: theme.colors.primaryLight,
-    marginHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  customAddText: {
-    fontSize: 14,
-    color: theme.colors.primary,
-  },
-  listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 84, 64, 0.05)',
-  },
-  itemRowSelected: {
-    backgroundColor: 'rgba(0, 84, 64, 0.03)',
-  },
-  itemLabel: {
-    fontSize: 15,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-  },
-  itemLabelSelected: {
-    color: theme.colors.primary,
-    fontWeight: '700',
-  },
-  itemSublabel: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  emptyContainer: {
-    paddingVertical: 36,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-  },
-});

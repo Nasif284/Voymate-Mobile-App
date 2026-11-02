@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, Text, ViewStyle } from 'react-native';
+import { cn } from '../../utils/cn';
 
 interface AvatarProps {
   uri?: string | null;
@@ -33,7 +34,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <View
-      className={`relative ${className || ''}`}
+      className={cn('relative', className)}
       style={[{ width: size, height: size }, style]}
     >
       {uri ? (
@@ -62,7 +63,10 @@ export const Avatar: React.FC<AvatarProps> = ({
 
       {isOnline !== undefined ? (
         <View
-          className={`absolute border-2 border-white ${isOnline ? 'bg-success' : 'bg-textMuted'}`}
+          className={cn(
+            'absolute border-2 border-white',
+            isOnline ? 'bg-success' : 'bg-textMuted'
+          )}
           style={{
             width: badgeSize,
             height: badgeSize,
