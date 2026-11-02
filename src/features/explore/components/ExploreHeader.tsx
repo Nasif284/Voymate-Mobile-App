@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -11,6 +10,7 @@ import { theme } from '../../../config/theme';
 import { ExploreFilters } from '../types';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 interface ExploreHeaderProps {
   filters: ExploreFilters;
@@ -42,21 +42,23 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View className="px-5 pt-2 pb-3.5">
       {/* Page Title */}
-      <View style={styles.titleRow}>
-        <Text style={styles.title}>Explore Destinations</Text>
-        <Text style={styles.subtitle}>
+      <View className="mb-3.5">
+        <Text className="text-[22px] font-semibold text-text-primary tracking-tight">
+          Explore Destinations
+        </Text>
+        <Text className="text-xs text-text-muted mt-0.5">
           Find solo travelers by city, travel dates, and budget
         </Text>
       </View>
 
       {/* Search Input & Filter Button */}
-      <View style={styles.searchRow}>
-        <View style={styles.searchBox}>
+      <View className="flex-row items-center gap-2.5">
+        <View className="flex-1 flex-row items-center bg-surface rounded-2xl border border-border px-3.5 h-12 gap-2 shadow-subtle">
           <Search size={16} color={theme.colors.textMuted} />
           <TextInput
-            style={styles.searchInput}
+            className="flex-1 text-[13.5px] text-text-primary p-0"
             placeholder="Search destination (e.g. Manali, Goa)..."
             placeholderTextColor={theme.colors.textMuted}
             value={searchQuery}
@@ -77,7 +79,10 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
 
         {/* Filter Button */}
         <TouchableOpacity
-          style={[styles.filterBtn, activeFilterCount > 0 && styles.filterBtnActive]}
+          className={cn(
+            'w-12 h-12 rounded-2xl bg-surface border border-border items-center justify-center relative shadow-subtle',
+            activeFilterCount > 0 && 'bg-primary border-primary shadow-card'
+          )}
           onPress={handleOpenFilter}
           activeOpacity={0.8}
         >
@@ -86,8 +91,8 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
             color={activeFilterCount > 0 ? theme.colors.white : theme.colors.textPrimary}
           />
           {activeFilterCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{activeFilterCount}</Text>
+            <View className="absolute -top-1 -right-1 bg-primary-dark w-4.5 h-4.5 rounded-full items-center justify-center border-2 border-white">
+              <Text className="text-[9px] font-semibold text-white">{activeFilterCount}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -98,15 +103,15 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsScroll}
+          contentContainerStyle={{ gap: 8, marginTop: 10 }}
         >
           {filters.travelStyle && (
             <TouchableOpacity
-              style={styles.filterChip}
+              className="flex-row items-center bg-primary-mist py-1.5 px-3 rounded-xl border border-primary/20 gap-1.5"
               onPress={() => onRemoveFilter('travelStyle')}
               activeOpacity={0.7}
             >
-              <Text style={styles.filterChipText}>
+              <Text className="text-xs font-medium text-primary">
                 🎒 {filters.travelStyle}
               </Text>
               <X size={12} color={theme.colors.primary} />
@@ -115,11 +120,11 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
 
           {filters.budgetStyle && (
             <TouchableOpacity
-              style={styles.filterChip}
+              className="flex-row items-center bg-primary-mist py-1.5 px-3 rounded-xl border border-primary/20 gap-1.5"
               onPress={() => onRemoveFilter('budgetStyle')}
               activeOpacity={0.7}
             >
-              <Text style={styles.filterChipText}>
+              <Text className="text-xs font-medium text-primary">
                 🪙 {filters.budgetStyle}
               </Text>
               <X size={12} color={theme.colors.primary} />
@@ -127,137 +132,14 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
           )}
 
           <TouchableOpacity
-            style={styles.clearAllChip}
+            className="flex-row items-center bg-surface-subtle py-1.5 px-3 rounded-xl border border-border"
             onPress={onClearAllFilters}
             activeOpacity={0.7}
           >
-            <Text style={styles.clearAllText}>Clear Filters</Text>
+            <Text className="text-xs font-medium text-text-muted">Clear Filters</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 14,
-  },
-  titleRow: {
-    marginBottom: 14,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  searchBox: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 10,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    padding: 0,
-  },
-  filterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  filterBtnActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: theme.colors.error,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  chipsScroll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 12,
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primaryMist,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-    gap: 5,
-  },
-  filterChipText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    textTransform: 'capitalize',
-  },
-  clearAllChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    backgroundColor: theme.colors.errorLight,
-  },
-  clearAllText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.error,
-  },
-});

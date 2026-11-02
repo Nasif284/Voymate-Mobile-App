@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   ScrollView,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
@@ -14,6 +12,7 @@ import { theme } from '../../../config/theme';
 import { ExploreFilters, TRAVEL_STYLES, BUDGET_STYLES } from '../types';
 import { X, RotateCcw, Compass, Wallet } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 interface FilterModalProps {
   visible: boolean;
@@ -82,28 +81,32 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
-          <View style={styles.sheet}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-surface rounded-t-[28px] max-h-[75%] pt-5 pb-8 shadow-floating">
             {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.title}>Filter Companions</Text>
-                <Text style={styles.subtitle}>Refine results by travel style & budget</Text>
+            <View className="flex-row justify-between items-center px-5.5 pb-4 border-b border-border">
+              <View className="flex-1">
+                <Text className="text-lg font-semibold text-text-primary tracking-tight">
+                  Filter Companions
+                </Text>
+                <Text className="text-xs text-text-muted mt-0.5">
+                  Refine results by travel style & budget
+                </Text>
               </View>
 
-              <View style={styles.headerRight}>
+              <View className="flex-row items-center gap-3">
                 {hasAnyFilter && (
                   <TouchableOpacity
-                    style={styles.resetBtn}
+                    className="flex-row items-center bg-error-light py-1.5 px-2.5 rounded-xl gap-1"
                     onPress={handleReset}
                     activeOpacity={0.7}
                   >
                     <RotateCcw size={12} color={theme.colors.error} />
-                    <Text style={styles.resetText}>Reset</Text>
+                    <Text className="text-[11px] font-semibold text-error">Reset</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
-                  style={styles.closeBtn}
+                  className="p-1.5 bg-surface-subtle rounded-full"
                   onPress={onClose}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
@@ -114,27 +117,35 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
+              contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 20 }}
             >
               {/* Travel Style */}
-              <View style={styles.section}>
-                <View style={styles.sectionTitleRow}>
+              <View className="mb-5">
+                <View className="flex-row items-center gap-1.5 mb-2.5">
                   <Compass size={13} color={theme.colors.primary} />
-                  <Text style={styles.sectionTitle}>Travel Style</Text>
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-primary">
+                    Travel Style
+                  </Text>
                 </View>
-                <View style={styles.chipsGrid}>
+                <View className="flex-row flex-wrap gap-2">
                   {TRAVEL_STYLES.map((style) => {
                     const isSelected = localFilters.travelStyle === style.id;
                     return (
                       <TouchableOpacity
                         key={style.id}
-                        style={[styles.chip, isSelected && styles.chipActive]}
+                        className={cn(
+                          'flex-row items-center bg-surface-subtle py-2 px-3 rounded-2xl border border-transparent gap-1.5',
+                          isSelected && 'bg-primary-mist border-primary'
+                        )}
                         onPress={() => handleSelectTravelStyle(style.id)}
                         activeOpacity={0.7}
                       >
-                        <Text style={styles.chipEmoji}>{style.icon}</Text>
+                        <Text className="text-sm">{style.icon}</Text>
                         <Text
-                          style={[styles.chipText, isSelected && styles.chipTextActive]}
+                          className={cn(
+                            'text-xs font-semibold text-text-secondary',
+                            isSelected && 'text-primary'
+                          )}
                         >
                           {style.label}
                         </Text>
@@ -145,24 +156,32 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               </View>
 
               {/* Budget Style */}
-              <View style={styles.section}>
-                <View style={styles.sectionTitleRow}>
+              <View className="mb-5">
+                <View className="flex-row items-center gap-1.5 mb-2.5">
                   <Wallet size={13} color={theme.colors.primary} />
-                  <Text style={styles.sectionTitle}>Budget Style</Text>
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-primary">
+                    Budget Style
+                  </Text>
                 </View>
-                <View style={styles.chipsGrid}>
+                <View className="flex-row flex-wrap gap-2">
                   {BUDGET_STYLES.map((b) => {
                     const isSelected = localFilters.budgetStyle === b.id;
                     return (
                       <TouchableOpacity
                         key={b.id}
-                        style={[styles.chip, isSelected && styles.chipActive]}
+                        className={cn(
+                          'flex-row items-center bg-surface-subtle py-2 px-3 rounded-2xl border border-transparent gap-1.5',
+                          isSelected && 'bg-primary-mist border-primary'
+                        )}
                         onPress={() => handleSelectBudgetStyle(b.id)}
                         activeOpacity={0.7}
                       >
-                        <Text style={styles.chipEmoji}>{b.icon}</Text>
+                        <Text className="text-sm">{b.icon}</Text>
                         <Text
-                          style={[styles.chipText, isSelected && styles.chipTextActive]}
+                          className={cn(
+                            'text-xs font-semibold text-text-secondary',
+                            isSelected && 'text-primary'
+                          )}
                         >
                           {b.label}
                         </Text>
@@ -174,13 +193,13 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             </ScrollView>
 
             {/* Apply Button */}
-            <View style={styles.footer}>
+            <View className="px-5.5 pt-3">
               <TouchableOpacity
-                style={styles.applyBtn}
+                className="bg-primary py-3.5 items-center justify-center rounded-2xl shadow-card"
                 onPress={handleApply}
                 activeOpacity={0.85}
               >
-                <Text style={styles.applyBtnText}>Apply Filters</Text>
+                <Text className="text-sm font-semibold text-white">Apply Filters</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -189,144 +208,3 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: theme.colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: '75%',
-    paddingTop: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  resetBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    gap: 4,
-  },
-  resetText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.error,
-  },
-  closeBtn: {
-    padding: 6,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 18,
-  },
-  scrollContent: {
-    paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    color: theme.colors.primary,
-  },
-  chipsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    gap: 6,
-  },
-  chipActive: {
-    backgroundColor: theme.colors.primaryMist,
-    borderColor: theme.colors.primary,
-  },
-  chipEmoji: {
-    fontSize: 13,
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  chipTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  footer: {
-    paddingHorizontal: 22,
-    paddingTop: 12,
-  },
-  applyBtn: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  applyBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-});

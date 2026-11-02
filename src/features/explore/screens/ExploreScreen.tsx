@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   RefreshControl,
   TouchableOpacity,
@@ -183,7 +182,7 @@ export const ExploreScreen: React.FC = () => {
 
   const renderMatchItem = useCallback(
     ({ item }: { item: TripMatchItem }) => (
-      <View style={styles.cardWrapper}>
+      <View className="px-5">
         <MatchCard
           match={item}
           connectionStatus={
@@ -220,8 +219,8 @@ export const ExploreScreen: React.FC = () => {
         onClearAllFilters={handleResetFilters}
       />
       {!isLoading && hasActiveSearch && matches.length > 0 && (
-        <View style={styles.resultsBar}>
-          <Text style={styles.resultsCount}>
+        <View className="mb-2.5 px-5.5">
+          <Text className="text-xs font-semibold text-text-muted uppercase tracking-wider">
             {matches.length} companion{matches.length !== 1 ? 's' : ''} found
           </Text>
         </View>
@@ -236,30 +235,34 @@ export const ExploreScreen: React.FC = () => {
 
     if (!hasActiveSearch) {
       return (
-        <View style={styles.content}>
-          <View style={styles.starterCard}>
-            <View style={styles.starterIconCircle}>
+        <View className="flex-1 px-5">
+          <View className="bg-surface rounded-3xl py-8 px-5.5 items-center border border-border mt-1.5 shadow-subtle">
+            <View className="w-[68px] h-[68px] rounded-full bg-primary-mist items-center justify-center mb-4">
               <Compass size={32} color={theme.colors.primary} />
             </View>
-            <Text style={styles.starterTitle}>Search by Destination</Text>
-            <Text style={styles.starterText}>
+            <Text className="text-lg font-semibold text-text-primary text-center">
+              Search by Destination
+            </Text>
+            <Text className="text-[13px] text-text-muted text-center mt-1.5 leading-5 px-2">
               Enter a city above or tap a popular destination below to see travelers going there.
             </Text>
 
-            <View style={styles.startersHeader}>
+            <View className="flex-row items-center gap-1.5 mt-6 mb-3">
               <Sparkles size={12} color={theme.colors.primary} />
-              <Text style={styles.startersLabel}>Popular Destinations</Text>
+              <Text className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                Popular Destinations
+              </Text>
             </View>
-            <View style={styles.popularGrid}>
+            <View className="flex-row flex-wrap justify-center gap-2">
               {POPULAR_DESTINATIONS.map((dest) => (
                 <TouchableOpacity
                   key={dest.name}
-                  style={styles.popularChip}
+                  className="flex-row items-center bg-surface-subtle py-2 px-3.5 rounded-full border border-border gap-1.5"
                   onPress={() => handleSelectQuickDestination(dest.name)}
                   activeOpacity={0.75}
                 >
-                  <Text style={styles.popularEmoji}>{dest.icon}</Text>
-                  <Text style={styles.popularText}>{dest.name}</Text>
+                  <Text className="text-[13px]">{dest.icon}</Text>
+                  <Text className="text-xs font-semibold text-text-primary">{dest.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -269,24 +272,24 @@ export const ExploreScreen: React.FC = () => {
     }
 
     return (
-      <View style={styles.content}>
-        <View style={styles.emptyCard}>
-          <View style={styles.emptyIconCircle}>
+      <View className="flex-1 px-5">
+        <View className="bg-surface rounded-2xl py-9 px-6 items-center border border-border mt-1.5">
+          <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-3.5">
             <Search size={26} color={theme.colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>
-            No Travelers Going to &quot;{appliedQuery || 'Selected Filters'}&quot; Yet
+          <Text className="text-base font-semibold text-text-primary text-center">
+            No Travelers Going to "{appliedQuery || 'Selected Filters'}" Yet
           </Text>
-          <Text style={styles.emptyText}>
+          <Text className="text-[13px] text-text-muted text-center mt-1.5 leading-5">
             No one has posted a trip here with these filters yet. Plan a trip here so other travelers can find you, or clear your filters.
           </Text>
           <TouchableOpacity
-            style={styles.clearBtn}
+            className="flex-row items-center bg-primary py-2.5 px-4.5 rounded-2xl mt-4.5 gap-1.5 shadow-subtle"
             onPress={handleResetFilters}
             activeOpacity={0.85}
           >
             <RotateCcw size={14} color={theme.colors.white} />
-            <Text style={styles.clearBtnText}>Clear Search &amp; Filters</Text>
+            <Text className="text-xs font-semibold text-white">Clear Search & Filters</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -294,17 +297,17 @@ export const ExploreScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.screen}>
+    <View className="flex-1 bg-background">
       <FlatList
         data={!isLoading && hasActiveSearch ? matches : []}
         keyExtractor={(item) => `${item.user.id}-${item.tripMatch?.id || ''}`}
         renderItem={renderMatchItem}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.scrollContainer,
-          { paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 24 },
-        ]}
+        contentContainerStyle={{
+          paddingTop: insets.top + 8,
+          paddingBottom: tabBarHeight + 24,
+        }}
         showsVerticalScrollIndicator={false}
         initialNumToRender={6}
         maxToRenderPerBatch={8}
@@ -341,155 +344,3 @@ export const ExploreScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  scrollContainer: {
-    paddingBottom: 40,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  cardWrapper: {
-    paddingHorizontal: 20,
-  },
-  resultsBar: {
-    marginBottom: 10,
-    paddingHorizontal: 22,
-  },
-  resultsCount: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  starterCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    paddingVertical: 32,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginTop: 6,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  starterIconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  starterTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-  },
-  starterText: {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 19,
-    paddingHorizontal: 8,
-  },
-  startersHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  startersLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    color: theme.colors.primary,
-  },
-  popularGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  popularChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 6,
-  },
-  popularEmoji: {
-    fontSize: 13,
-  },
-  popularText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  emptyCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    paddingVertical: 38,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginTop: 6,
-  },
-  emptyIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 19,
-  },
-  clearBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 14,
-    marginTop: 18,
-    gap: 6,
-  },
-  clearBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-});
