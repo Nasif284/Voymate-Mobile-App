@@ -70,6 +70,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const [inputText, setInputText] = useState('');
   const [isTargetOnline, setIsTargetOnline] = useState(false);
+  const [activeConvId, setActiveConvId] = useState<string | null>(initialConvId || null);
 
   // TanStack Query Hooks
   const {
@@ -77,7 +78,13 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     isLoading: isLoadingDirectChat,
   } = useGetDirectChat(targetUserId, !initialConvId && Boolean(targetUserId));
 
-  const conversationId = initialConvId || resolvedConvId || null;
+  useEffect(() => {
+    if (!activeConvId && resolvedConvId) {
+      setActiveConvId(resolvedConvId);
+    }
+  }, [resolvedConvId, activeConvId]);
+
+  const conversationId = activeConvId || resolvedConvId || initialConvId || null;
 
   const {
     data: messages = [],
@@ -92,19 +99,48 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     let unsubRead: (() => void) | undefined;
     let unsubPresence: (() => void) | undefined;
 
-    // Listen for incoming messages and update React Query cache
+    // Listen for incoming messages and update React Query cache with deduplication & reconciliation
     const handleIncomingMessage = (newMsg: ChatMessage) => {
-      const activeConvId = conversationId || newMsg.conversationId;
+      const targetConvId = activeConvId || conversationId || newMsg.conversationId;
       if (
-        newMsg.conversationId === conversationId ||
-        (!conversationId && newMsg.senderId === targetUserId)
+        newMsg.conversationId === targetConvId ||
+        (!targetConvId && newMsg.senderId === targetUserId)
       ) {
-        if (activeConvId) {
+        if (!activeConvId && newMsg.conversationId) {
+          setActiveConvId(newMsg.conversationId);
+          navigation.setParams({ conversationId: newMsg.conversationId });
+          socketService.joinConversation(newMsg.conversationId);
+        }
+
+        if (targetConvId) {
           queryClient.setQueryData<ChatMessage[]>(
-            QUERY_KEYS.messages(activeConvId),
-            (prev = []) => [newMsg, ...prev]
+            QUERY_KEYS.messages(targetConvId),
+            (prev = []) => {
+              // 1. Strict deduplication by ID: if message with this ID already exists, do not duplicate
+              if (prev.some((m) => m.id === newMsg.id)) {
+                return prev;
+              }
+
+              // 2. Optimistic reconciliation: if this is a confirmed echo of an optimistic message sent by me,
+              // replace the temp_ message in-place rather than adding a second bubble!
+              const tempIndex = prev.findIndex(
+                (m) =>
+                  m.id.startsWith('temp_') &&
+                  m.senderId === newMsg.senderId &&
+                  m.content === newMsg.content
+              );
+
+              if (tempIndex !== -1) {
+                const updated = [...prev];
+                updated[tempIndex] = newMsg;
+                return updated;
+              }
+
+              // 3. Otherwise, prepend new message to the list (since FlatList is inverted)
+              return [newMsg, ...prev];
+            }
           );
-          socketService.markAsRead(activeConvId);
+          socketService.markAsRead(targetConvId);
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
       }
@@ -112,9 +148,10 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
     // Listen for read receipts
     const handleMessagesRead = (data: { conversationId: string; readerId: string }) => {
-      if (data.conversationId === conversationId && data.readerId !== currentUser?.id && conversationId) {
+      const targetConvId = activeConvId || conversationId;
+      if (data.conversationId === targetConvId && data.readerId !== currentUser?.id && targetConvId) {
         queryClient.setQueryData<ChatMessage[]>(
-          QUERY_KEYS.messages(conversationId),
+          QUERY_KEYS.messages(targetConvId),
           (prev = []) =>
             prev.map((m) =>
               m.senderId === currentUser?.id ? { ...m, status: 'READ' } : m
@@ -136,9 +173,10 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       unsubRead = socketService.onMessagesRead(handleMessagesRead);
       unsubPresence = socketService.onPresenceChange(handlePresence);
 
-      if (conversationId) {
-        socketService.joinConversation(conversationId);
-        socketService.markAsRead(conversationId);
+      const targetConvId = activeConvId || conversationId;
+      if (targetConvId) {
+        socketService.joinConversation(targetConvId);
+        socketService.markAsRead(targetConvId);
       }
     });
 
@@ -147,11 +185,12 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       unsubMessage?.();
       unsubRead?.();
       unsubPresence?.();
-      if (conversationId) {
-        socketService.leaveConversation(conversationId);
+      const targetConvId = activeConvId || conversationId;
+      if (targetConvId) {
+        socketService.leaveConversation(targetConvId);
       }
     };
-  }, [conversationId, targetUserId, currentUser?.id, queryClient]);
+  }, [conversationId, activeConvId, targetUserId, currentUser?.id, queryClient, navigation]);
 
   // Send Text Message
   const handleSendText = () => {
@@ -161,12 +200,14 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setInputText('');
 
+    const targetConvId = activeConvId || conversationId;
+
     // Optimistic message in React Query cache
-    if (conversationId) {
+    if (targetConvId) {
       const tempId = `temp_${Date.now()}`;
       const optimisticMsg: ChatMessage = {
         id: tempId,
-        conversationId,
+        conversationId: targetConvId,
         senderId: currentUser?.id || '',
         type: 'TEXT',
         content: trimmed,
@@ -175,15 +216,15 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       };
 
       queryClient.setQueryData<ChatMessage[]>(
-        QUERY_KEYS.messages(conversationId),
+        QUERY_KEYS.messages(targetConvId),
         (prev = []) => [optimisticMsg, ...prev]
       );
     }
 
     socketService.sendMessage(
       {
-        conversationId: conversationId || undefined,
-        recipientId: !conversationId ? targetUserId : undefined,
+        conversationId: targetConvId || undefined,
+        recipientId: !targetConvId ? targetUserId : undefined,
       },
       trimmed
     );
@@ -346,28 +387,43 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Input Bar */}
         <View
-          className="flex-row items-center bg-surface px-3 pt-2 border-t border-border-subtle gap-2"
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+          className="flex-row items-end bg-surface px-4 pt-2.5 border-t border-border-subtle gap-2.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 10) }}
         >
           <TextInput
-            className="flex-1 bg-surface-subtle rounded-2xl border border-border px-3.5 py-2 text-sm text-text-primary max-h-[100px]"
+            className="flex-1 min-h-[44px] max-h-[120px] bg-surface-subtle rounded-2xl border border-border px-4 py-2.5 text-[15px] leading-5 text-text-primary"
             placeholder="Type a message..."
             placeholderTextColor={theme.colors.textPlaceholder}
             value={inputText}
             onChangeText={setInputText}
             multiline
             maxLength={1000}
+            textAlignVertical="center"
           />
 
           <TouchableOpacity
+            activeOpacity={0.8}
             className={cn(
-              'w-9 h-9 rounded-full items-center justify-center',
-              inputText.trim() ? 'bg-primary' : 'bg-border'
+              'w-11 h-11 rounded-full shrink-0 items-center justify-center',
+              inputText.trim() ? 'bg-primary shadow-xs' : 'bg-slate-100 border border-slate-200/80'
             )}
+            style={{
+              flexShrink: 0,
+              minWidth: 44,
+              minHeight: 44,
+              maxWidth: 44,
+              maxHeight: 44,
+            }}
             onPress={handleSendText}
             disabled={!inputText.trim()}
           >
-            <Send size={16} color={theme.colors.white} strokeWidth={2.5} />
+            <View style={{ transform: [{ translateX: -1 }, { translateY: 0.5 }] }}>
+              <Send
+                size={18}
+                color={inputText.trim() ? '#FFFFFF' : '#94A3B8'}
+                strokeWidth={2.2}
+              />
+            </View>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

@@ -21,6 +21,7 @@ import { useGetConversations } from '../hooks/chat.hooks';
 import { useGetConnections } from '../../connections/hooks/connection.hooks';
 import { socketService } from '../services/socket.service';
 import { Conversation, ChatMessage } from '../types';
+import { useAuthStore } from '../../../store/authStore';
 import {
   Search,
   MessageSquare,
@@ -56,6 +57,7 @@ export const MessagesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuthStore();
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -100,7 +102,9 @@ export const MessagesScreen: React.FC = () => {
             type: newMsg.type,
             status: newMsg.status,
           };
-          target.unreadCount = (target.unreadCount || 0) + 1;
+          if (newMsg.senderId !== currentUser?.id) {
+            target.unreadCount = (target.unreadCount || 0) + 1;
+          }
           updated.splice(existingIdx, 1);
           return [target, ...updated];
         } else {
@@ -120,7 +124,7 @@ export const MessagesScreen: React.FC = () => {
       isMounted = false;
       unsubMessage?.();
     };
-  }, [queryClient, refetchConversations]);
+  }, [queryClient, refetchConversations, currentUser?.id]);
 
   const onRefresh = useCallback(() => {
     loadData();
