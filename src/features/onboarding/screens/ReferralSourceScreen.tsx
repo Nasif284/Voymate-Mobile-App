@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
@@ -14,6 +13,7 @@ import { Button } from '../../../components/ui/Button';
 import { VoymateLogo } from '../../../components/ui/VoymateLogo';
 import { useHaptics } from '../../../hooks/useHaptics';
 import { useSetOnboardingSource } from '../hooks/onboarding.hooks';
+import { cn } from '../../../utils/cn';
 import {
   Users,
   Share2,
@@ -93,61 +93,62 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView className="flex-1 bg-surface">
+      <View className="flex-1">
         {/* Top Step Progress Indicator */}
-        <View style={styles.stepProgressHeader}>
-          <View style={styles.brandRow}>
+        <View className="flex-row items-center justify-between px-6 pt-3 pb-2.5">
+          <View className="flex-row items-center gap-2">
             <VoymateLogo size={24} withBackground />
-            <Text style={styles.brandText}>Voymate</Text>
+            <Text className="text-lg font-bold text-primary tracking-tight">Voymate</Text>
           </View>
-          <Text style={styles.stepCounterText}>Step 1 of 3</Text>
+          <Text className="text-[13px] font-semibold text-textMuted">Step 1 of 3</Text>
         </View>
 
         {/* Progress Bar Line */}
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: '33%' }]} />
+        <View className="h-[3px] bg-border-subtle mx-6 rounded-full overflow-hidden mb-4">
+          <View className="h-full bg-primary rounded-full w-1/3" />
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 110 }}
         >
           {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>How did you hear about us?</Text>
-            <Text style={styles.subtitle}>
+          <View className="mb-6 mt-2">
+            <Text className="text-[26px] font-medium text-textPrimary tracking-tight">How did you hear about us?</Text>
+            <Text className="text-sm text-textSecondary mt-1.5 leading-5">
               This helps us understand where our global traveler community is growing.
             </Text>
           </View>
 
           {/* Error Banner */}
           {errorMessage ? (
-            <View style={styles.errorBanner}>
-              <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-              <Text style={styles.errorBannerText}>{errorMessage}</Text>
+            <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mb-4 border border-error">
+              <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+              <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
             </View>
           ) : null}
 
           {/* Options Grid / List */}
-          <View style={styles.optionsList}>
+          <View className="gap-3">
             {SOURCE_OPTIONS.map((opt) => {
               const isSelected = selectedSource === opt.id;
               return (
                 <TouchableOpacity
                   key={opt.id}
-                  style={[
-                    styles.optionCard,
-                    isSelected && styles.optionCardSelected,
-                  ]}
+                  className={cn(
+                    'flex-row items-center bg-surface py-3.5 px-4 rounded-2xl border-[1.5px] shadow-subtle',
+                    isSelected ? 'border-primary' : 'border-border'
+                  )}
+                  style={theme.shadows.subtle}
                   onPress={() => handleSelect(opt.id)}
                   activeOpacity={0.75}
                 >
                   <View
-                    style={[
-                      styles.iconCircle,
-                      isSelected && styles.iconCircleSelected,
-                    ]}
+                    className={cn(
+                      'w-10 h-10 rounded-xl items-center justify-center mr-3.5',
+                      isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                    )}
                   >
                     {opt.icon(
                       isSelected ? theme.colors.primary : theme.colors.textSecondary
@@ -155,19 +156,19 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
                   </View>
 
                   <Text
-                    style={[
-                      styles.optionLabel,
-                      isSelected && styles.optionLabelSelected,
-                    ]}
+                    className={cn(
+                      'flex-1 text-[15px]',
+                      isSelected ? 'text-primary font-semibold' : 'text-textPrimary font-medium'
+                    )}
                   >
                     {opt.label}
                   </Text>
 
                   <View
-                    style={[
-                      styles.radioCircle,
-                      isSelected && styles.radioCircleSelected,
-                    ]}
+                    className={cn(
+                      'w-[22px] h-[22px] rounded-full border-[1.5px] items-center justify-center',
+                      isSelected ? 'bg-primary border-primary' : 'border-border'
+                    )}
                   >
                     {isSelected && <Check size={13} color={theme.colors.white} strokeWidth={3} />}
                   </View>
@@ -178,7 +179,7 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
         </ScrollView>
 
         {/* Floating Bottom Button */}
-        <View style={styles.bottomBar}>
+        <View className="absolute bottom-0 left-0 right-0 bg-surface px-6 pt-3 pb-6 border-t border-border-subtle">
           <Button
             title="Continue"
             variant="primary"
@@ -186,173 +187,10 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
             loading={loading}
             disabled={!selectedSource || loading}
             onPress={handleContinue}
-            style={styles.continueButton}
+            className="rounded-2xl h-[54px] shadow-card"
           />
         </View>
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    flex: 1,
-  },
-  stepProgressHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 10,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  brandText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    letterSpacing: -0.3,
-  },
-  stepCounterText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  progressBarTrack: {
-    height: 3,
-    backgroundColor: theme.colors.borderSubtle,
-    marginHorizontal: 24,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: theme.colors.primary,
-    borderRadius: 2,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 110,
-  },
-  header: {
-    marginBottom: 24,
-    marginTop: 8,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  bannerIcon: {
-    marginRight: 8,
-  },
-  errorBannerText: {
-    flex: 1,
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  optionsList: {
-    gap: 12,
-  },
-  optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  optionCardSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.surface,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  iconCircleSelected: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  optionLabel: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  optionLabelSelected: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  radioCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioCircleSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderSubtle,
-  },
-  continueButton: {
-    borderRadius: 16,
-    height: 54,
-    ...theme.shadows.card,
-  },
-});

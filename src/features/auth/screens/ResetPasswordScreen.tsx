@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -25,6 +24,7 @@ import {
 } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
 import { useResetPassword } from '../hooks/auth.hooks';
+import { cn } from '../../../utils/cn';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ResetPassword'>;
 
@@ -96,22 +96,23 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardView}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 36 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
+            <View className="w-full max-w-[420px] self-center">
               {/* Back Navigation Button */}
               {!isSuccess && (
                 <TouchableOpacity
-                  style={styles.backButton}
+                  className="w-10 h-10 rounded-full bg-surface items-center justify-center mb-5 border border-border shadow-subtle"
+                  style={theme.shadows.subtle}
                   onPress={() => {
                     haptics.selection();
                     navigation.goBack();
@@ -125,12 +126,12 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
               {isSuccess ? (
                 /* Success View matching Next app */
-                <View style={styles.successContainer}>
-                  <View style={styles.successIconBox}>
+                <View className="items-center py-10 px-4">
+                  <View className="w-[72px] h-[72px] rounded-full bg-primary-mist items-center justify-center mb-5">
                     <CheckCircle size={40} color={theme.colors.primary} />
                   </View>
-                  <Text style={styles.successTitle}>Password updated successfully!</Text>
-                  <Text style={styles.successSubtitle}>
+                  <Text className="text-[22px] font-bold text-textPrimary text-center tracking-tight">Password updated successfully!</Text>
+                  <Text className="text-sm text-textSecondary text-center mt-2 leading-5 mb-7">
                     Your new password is set. Redirecting you to sign in...
                   </Text>
 
@@ -139,32 +140,32 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                     variant="primary"
                     size="lg"
                     onPress={handleGoToLogin}
-                    style={styles.loginNowButton}
+                    className="w-full"
                   />
                 </View>
               ) : (
                 <>
                   {/* Header */}
-                  <View style={styles.header}>
-                    <View style={styles.iconBox}>
+                  <View className="mb-6">
+                    <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
                       <Lock size={22} color={theme.colors.primary} />
                     </View>
-                    <Text style={styles.title}>Reset your password</Text>
-                    <Text style={styles.subtitle}>
+                    <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Reset your password</Text>
+                    <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                       Create a strong new password for your account.
                     </Text>
                   </View>
 
                   {/* Error Banner */}
                   {errorMessage ? (
-                    <View style={styles.errorBanner}>
-                      <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-                      <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                    <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mb-4 border border-error">
+                      <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+                      <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
                     </View>
                   ) : null}
 
                   {/* Form */}
-                  <View style={styles.form}>
+                  <View className="gap-4">
                     <Input
                       label="New password"
                       placeholder="Enter new password"
@@ -177,7 +178,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       autoCapitalize="none"
                       autoCorrect={false}
                       leftIcon={<Lock size={18} color={theme.colors.textMuted} />}
-                      containerStyle={styles.inputField}
+                      className="mb-1"
                     />
 
                     <Input
@@ -192,62 +193,63 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       autoCapitalize="none"
                       autoCorrect={false}
                       leftIcon={<Lock size={18} color={theme.colors.textMuted} />}
-                      containerStyle={styles.inputField}
+                      className="mb-1"
                     />
 
                     {/* Requirements checklist */}
-                    <View style={styles.requirementsBox}>
-                      <Text style={styles.requirementsHeader}>Password Requirements:</Text>
-                      <View style={styles.reqRow}>
-                        <View style={[styles.reqCheck, hasMinLength && styles.reqCheckActive]}>
+                    <View className="bg-surface-subtle rounded-xl p-3.5 gap-2 border border-border mt-1">
+                      <Text className="text-xs font-semibold text-textSecondary mb-0.5 uppercase tracking-wide">Password Requirements:</Text>
+
+                      <View className="flex-row items-center gap-2">
+                        <View className={cn('w-4 h-4 rounded-full items-center justify-center', hasMinLength ? 'bg-primary' : 'bg-border')}>
                           {hasMinLength && <Check size={10} color={theme.colors.white} strokeWidth={3} />}
                         </View>
-                        <Text style={[styles.reqText, hasMinLength && styles.reqTextActive]}>
+                        <Text className={cn('text-xs', hasMinLength ? 'text-textPrimary font-semibold' : 'text-textMuted')}>
                           At least 8 characters
                         </Text>
                       </View>
 
-                      <View style={styles.reqRow}>
+                      <View className="flex-row items-center gap-2">
                         <View
-                          style={[
-                            styles.reqCheck,
-                            hasUppercase && hasLowercase && styles.reqCheckActive,
-                          ]}
+                          className={cn(
+                            'w-4 h-4 rounded-full items-center justify-center',
+                            hasUppercase && hasLowercase ? 'bg-primary' : 'bg-border'
+                          )}
                         >
                           {hasUppercase && hasLowercase && (
                             <Check size={10} color={theme.colors.white} strokeWidth={3} />
                           )}
                         </View>
                         <Text
-                          style={[
-                            styles.reqText,
-                            hasUppercase && hasLowercase && styles.reqTextActive,
-                          ]}
+                          className={cn(
+                            'text-xs',
+                            hasUppercase && hasLowercase ? 'text-textPrimary font-semibold' : 'text-textMuted'
+                          )}
                         >
                           Upper and lowercase letters
                         </Text>
                       </View>
 
-                      <View style={styles.reqRow}>
-                        <View style={[styles.reqCheck, hasNumber && styles.reqCheckActive]}>
+                      <View className="flex-row items-center gap-2">
+                        <View className={cn('w-4 h-4 rounded-full items-center justify-center', hasNumber ? 'bg-primary' : 'bg-border')}>
                           {hasNumber && <Check size={10} color={theme.colors.white} strokeWidth={3} />}
                         </View>
-                        <Text style={[styles.reqText, hasNumber && styles.reqTextActive]}>
+                        <Text className={cn('text-xs', hasNumber ? 'text-textPrimary font-semibold' : 'text-textMuted')}>
                           At least one number (0-9)
                         </Text>
                       </View>
 
                       {confirmPassword.length > 0 && (
-                        <View style={styles.reqRow}>
+                        <View className="flex-row items-center gap-2">
                           <View
-                            style={[styles.reqCheck, passwordsMatch && styles.reqCheckActive]}
+                            className={cn('w-4 h-4 rounded-full items-center justify-center', passwordsMatch ? 'bg-primary' : 'bg-border')}
                           >
                             {passwordsMatch && (
                               <Check size={10} color={theme.colors.white} strokeWidth={3} />
                             )}
                           </View>
                           <Text
-                            style={[styles.reqText, passwordsMatch && styles.reqTextActive]}
+                            className={cn('text-xs', passwordsMatch ? 'text-textPrimary font-semibold' : 'text-textMuted')}
                           >
                             Passwords match
                           </Text>
@@ -262,7 +264,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       loading={loading}
                       disabled={!isFormValid || loading}
                       onPress={handleSubmit}
-                      style={styles.submitButton}
+                      className="mt-3"
                     />
                   </View>
                 </>
@@ -274,163 +276,3 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingTop: 16,
-    paddingBottom: 36,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  bannerIcon: {
-    marginRight: 8,
-    flexShrink: 0,
-  },
-  errorBannerText: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.error,
-    fontWeight: '500',
-  },
-  form: {
-    gap: 16,
-  },
-  inputField: {
-    marginBottom: 4,
-  },
-  requirementsBox: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 14,
-    padding: 14,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginTop: 4,
-  },
-  requirementsHeader: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    marginBottom: 2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  reqRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  reqCheck: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  reqCheckActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  reqText: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-  },
-  reqTextActive: {
-    color: theme.colors.textPrimary,
-    fontWeight: '600',
-  },
-  submitButton: {
-    marginTop: 12,
-  },
-  successContainer: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 16,
-  },
-  successIconBox: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  successTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-    letterSpacing: -0.3,
-  },
-  successSubtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
-    marginBottom: 28,
-  },
-  loginNowButton: {
-    width: '100%',
-  },
-});

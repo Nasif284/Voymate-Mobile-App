@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
@@ -16,8 +15,8 @@ import { AuthStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
-import { GoogleIcon } from '../../../components/ui/GoogleIcon';
 import { VoymateLogo } from '../../../components/ui/VoymateLogo';
+import { GoogleIcon } from '../../../components/ui/GoogleIcon';
 import { Mail, Lock, AlertCircle } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
 import { useLogin } from '../hooks/auth.hooks';
@@ -69,44 +68,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardView}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, paddingTop: 24, paddingBottom: 36 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.contentCenter}>
+            <View className="w-full max-w-[420px] self-center">
               {/* Minimalist Creative Brand Mark */}
-              <View style={styles.brandHero}>
-                <View style={styles.logoWrapper}>
+              <View className="items-center mt-3 mb-6">
+                <View className="mb-3 shadow-subtle" style={theme.shadows.subtle}>
                   <VoymateLogo size={56} variant="rose" withBackground />
                 </View>
-                <Text style={styles.brandWordmark}>VOYMATE</Text>
+                <Text className="text-xs font-bold text-primary tracking-[4px]">VOYMATE</Text>
               </View>
 
               {/* Understated, Classy Welcome Header */}
-              <View style={styles.header}>
-                <Text style={styles.welcomeText}>Welcome back</Text>
-                <Text style={styles.subtext}>
+              <View className="items-center mb-7">
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Welcome back</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 text-center leading-5">
                   Sign in to view your trips, matches, and messages.
                 </Text>
               </View>
 
               {/* Error Banner if any */}
               {errorMessage ? (
-                <View style={styles.errorBanner}>
-                  <AlertCircle size={16} color={theme.colors.error} style={styles.errorIcon} />
-                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mb-4 border border-error">
+                  <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+                  <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
                 </View>
               ) : null}
 
               {/* Modern Label-Free Inputs */}
-              <View style={styles.form}>
+              <View className="w-full">
                 <Input
                   placeholder="Email address"
                   value={email}
@@ -118,7 +117,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   textContentType="emailAddress"
                   returnKeyType="next"
                   leftIcon={<Mail size={18} color={theme.colors.textMuted} />}
-                  containerStyle={styles.inputContainer}
+                  className="mb-3.5"
                 />
 
                 <Input
@@ -131,12 +130,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
                   leftIcon={<Lock size={18} color={theme.colors.textMuted} />}
-                  containerStyle={styles.inputContainer}
+                  className="mb-3.5"
                 />
 
                 {/* Subtle Forgot Password Link */}
                 <TouchableOpacity
-                  style={styles.forgotPasswordButton}
+                  className="self-end mb-5 mt-0.5"
                   onPress={() => {
                     haptics.selection();
                     navigation.navigate('ForgotPassword');
@@ -144,7 +143,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+                  <Text className="text-primary text-[13px] font-medium">Forgot password?</Text>
                 </TouchableOpacity>
 
                 {/* Primary Button */}
@@ -154,32 +153,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   size="lg"
                   loading={loading}
                   onPress={handleLogin}
-                  style={styles.signInButton}
+                  className="rounded-2xl h-[54px] shadow-card"
                 />
 
                 {/* Creative Divider */}
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or continue with</Text>
-                  <View style={styles.dividerLine} />
+                <View className="flex-row items-center my-[22px]">
+                  <View className="flex-1 h-[1px] bg-border" />
+                  <Text className="mx-3.5 text-xs text-textMuted font-medium tracking-wide">or continue with</Text>
+                  <View className="flex-1 h-[1px] bg-border" />
                 </View>
 
                 {/* Google Sign In */}
                 <TouchableOpacity
-                  style={styles.googleButton}
+                  className="flex-row items-center justify-center bg-surface border border-border rounded-2xl h-[52px] shadow-subtle"
+                  style={theme.shadows.subtle}
                   activeOpacity={0.85}
                   onPress={() => {
                     haptics.light();
                   }}
                 >
                   <GoogleIcon size={19} />
-                  <Text style={styles.googleButtonText}>Continue with Google</Text>
+                  <Text className="text-[15px] font-medium text-textPrimary ml-2.5 tracking-wide">Continue with Google</Text>
                 </TouchableOpacity>
               </View>
 
               {/* Bottom Switcher */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>New here? </Text>
+              <View className="flex-row justify-center items-center mt-7">
+                <Text className="text-sm text-textSecondary">New here? </Text>
                 <TouchableOpacity
                   onPress={() => {
                     haptics.selection();
@@ -188,7 +188,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.footerLink}>Join Voymate</Text>
+                  <Text className="text-sm text-primary font-bold">Join Voymate</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -198,148 +198,3 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingTop: 24,
-    paddingBottom: 36,
-  },
-  contentCenter: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
-  },
-  brandHero: {
-    alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 24,
-  },
-  logoWrapper: {
-    marginBottom: 12,
-    ...theme.shadows.subtle,
-  },
-  brandWordmark: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    letterSpacing: 4,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 28,
-  },
-  welcomeText: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtext: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  errorIcon: {
-    marginRight: 8,
-  },
-  errorBannerText: {
-    flex: 1,
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
-    marginBottom: 14,
-  },
-  forgotPasswordButton: {
-    alignSelf: 'flex-end',
-    marginBottom: 22,
-    marginTop: 2,
-  },
-  forgotPasswordText: {
-    color: theme.colors.primary,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  signInButton: {
-    borderRadius: 16,
-    height: 54,
-    ...theme.shadows.card,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 22,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: theme.colors.border,
-  },
-  dividerText: {
-    marginHorizontal: 14,
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    fontWeight: '500',
-    letterSpacing: 0.2,
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 16,
-    height: 52,
-    ...theme.shadows.subtle,
-  },
-  googleButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    marginLeft: 10,
-    letterSpacing: 0.1,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 28,
-  },
-  footerText: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-  },
-  footerLink: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '700',
-  },
-});

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../../../store/authStore';
 import { theme } from '../../../config/theme';
@@ -13,43 +13,19 @@ export const SplashScreen: React.FC = () => {
   }, [initializeAuth]);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-surface items-center justify-center">
       <StatusBar style="dark" />
-      <View style={styles.logoContainer}>
-        <View style={styles.logoShadowWrapper}>
+      <View className="items-center">
+        <View className="mb-5 shadow-card" style={theme.shadows.card}>
           <VoymateLogo size={88} variant="rose" withBackground />
         </View>
-        <Text style={styles.brandTitle}>VOYMATE</Text>
-        <Text style={styles.brandSubtitle}>Find Your Journey. Never Travel Alone.</Text>
+        <Text className="text-display font-bold text-textPrimary tracking-[4px]">
+          VOYMATE
+        </Text>
+        <Text className="text-[13px] text-textMuted mt-2 tracking-[0.5px]">
+          Find Your Journey. Never Travel Alone.
+        </Text>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logoShadowWrapper: {
-    marginBottom: theme.spacing.xl,
-    ...theme.shadows.card,
-  },
-  brandTitle: {
-    fontSize: theme.typography.sizes.display,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.textPrimary,
-    letterSpacing: 4,
-  },
-  brandSubtitle: {
-    fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textMuted,
-    marginTop: theme.spacing.sm,
-    letterSpacing: 0.5,
-  },
-});

@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -23,54 +22,58 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
       <StatusBar style="dark" />
-      <View style={styles.container}>
+      <View className="flex-1 px-6 py-4 justify-between">
         {/* Top Hero Brand Section */}
-        <View style={styles.brandHero}>
-          <View style={styles.iconCircle}>
+        <View className="mt-3">
+          <View className="w-[68px] h-[68px] rounded-full bg-primary-mist items-center justify-center mb-4">
             <Compass size={36} color={theme.colors.primary} />
           </View>
-          <Text style={styles.brandEyebrow}>WELCOME TO VOYMATE</Text>
-          <Text style={styles.headline}>Never travel alone again.</Text>
-          <Text style={styles.subheadline}>
+          <Text className="text-xs font-bold text-primary tracking-[2px] mb-1.5">
+            WELCOME TO VOYMATE
+          </Text>
+          <Text className="text-display font-bold text-textPrimary leading-9 tracking-tight">
+            Never travel alone again.
+          </Text>
+          <Text className="text-[15px] text-textSecondary leading-[22px] mt-3">
             Connect with solo travelers who share your destination, dates, and travel style.
           </Text>
         </View>
 
         {/* Feature Highlights Grid */}
-        <View style={styles.featureList}>
-          <View style={styles.featureItem}>
-            <View style={styles.featureIconBox}>
+        <View className="my-4">
+          <View className="flex-row items-start mb-4">
+            <View className="w-[38px] h-[38px] rounded-xl bg-surface-subtle items-center justify-center mr-3 mt-0.5">
               <Users size={18} color={theme.colors.primary} />
             </View>
-            <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Smart Compatibility</Text>
-              <Text style={styles.featureDescription}>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-textPrimary">Smart Compatibility</Text>
+              <Text className="text-[13px] text-textMuted mt-0.5 leading-[18px]">
                 Match by dates, budget bracket, and travel pace.
               </Text>
             </View>
           </View>
 
-          <View style={styles.featureItem}>
-            <View style={styles.featureIconBox}>
+          <View className="flex-row items-start mb-4">
+            <View className="w-[38px] h-[38px] rounded-xl bg-surface-subtle items-center justify-center mr-3 mt-0.5">
               <MapPin size={18} color={theme.colors.primary} />
             </View>
-            <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Nearby Discovery</Text>
-              <Text style={styles.featureDescription}>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-textPrimary">Nearby Discovery</Text>
+              <Text className="text-[13px] text-textMuted mt-0.5 leading-[18px]">
                 Find fellow travelers currently in the same city.
               </Text>
             </View>
           </View>
 
-          <View style={styles.featureItem}>
-            <View style={styles.featureIconBox}>
+          <View className="flex-row items-start mb-4">
+            <View className="w-[38px] h-[38px] rounded-xl bg-surface-subtle items-center justify-center mr-3 mt-0.5">
               <ShieldCheck size={18} color={theme.colors.primary} />
             </View>
-            <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Direct Messaging</Text>
-              <Text style={styles.featureDescription}>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-textPrimary">Direct Messaging</Text>
+              <Text className="text-[13px] text-textMuted mt-0.5 leading-[18px]">
                 Chat in real time and coordinate trip plans before you go.
               </Text>
             </View>
@@ -78,13 +81,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.footerActions}>
+        <View className="mb-2">
           <Button
             title="Create an Account"
             variant="primary"
             size="lg"
             onPress={() => navigation.navigate('Signup')}
-            style={styles.signupButton}
+            className="mb-3"
           />
 
           <Button
@@ -98,86 +101,3 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.lg,
-    justifyContent: 'space-between',
-  },
-  brandHero: {
-    marginTop: theme.spacing.md,
-  },
-  iconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  brandEyebrow: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.primary,
-    letterSpacing: 2,
-    marginBottom: 6,
-  },
-  headline: {
-    fontSize: theme.typography.sizes.display,
-    fontWeight: theme.typography.weights.black,
-    color: theme.colors.textPrimary,
-    lineHeight: 38,
-    letterSpacing: -0.5,
-  },
-  subheadline: {
-    fontSize: theme.typography.sizes.base,
-    color: theme.colors.textSecondary,
-    lineHeight: 22,
-    marginTop: theme.spacing.md,
-  },
-  featureList: {
-    marginVertical: theme.spacing.lg,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.lg,
-  },
-  featureIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: theme.spacing.md,
-    marginTop: 2,
-  },
-  featureContent: {
-    flex: 1,
-  },
-  featureTitle: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.textPrimary,
-  },
-  featureDescription: {
-    fontSize: theme.typography.sizes.sm,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-    lineHeight: 18,
-  },
-  footerActions: {
-    marginBottom: theme.spacing.sm,
-  },
-  signupButton: {
-    marginBottom: theme.spacing.md,
-  },
-});

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -99,21 +98,22 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardView}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 36 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
+            <View className="w-full max-w-[420px] self-center">
               {/* Back Navigation Button */}
               <TouchableOpacity
-                style={styles.backButton}
+                className="w-10 h-10 rounded-full bg-surface items-center justify-center mb-5 border border-border shadow-subtle"
+                style={theme.shadows.subtle}
                 onPress={() => {
                   haptics.selection();
                   navigation.goBack();
@@ -125,17 +125,17 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
               </TouchableOpacity>
 
               {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.iconBox}>
+              <View className="mb-6">
+                <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
                   <ShieldCheck size={24} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.title}>Enter verification code</Text>
-                <Text style={styles.subtitle}>
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Enter verification code</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   We have sent a 6-digit verification code to reset your password.
                 </Text>
 
-                <View style={styles.emailPill}>
-                  <Text style={styles.emailText} numberOfLines={1}>
+                <View className="flex-row items-center bg-surface-subtle py-2 px-3 rounded-xl mt-3 self-start border border-border-subtle">
+                  <Text className="text-[13px] font-semibold text-primary mr-2.5 max-w-[240px]" numberOfLines={1}>
                     {email}
                   </Text>
                   <TouchableOpacity
@@ -144,24 +144,24 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
                       navigation.goBack();
                     }}
                   >
-                    <Text style={styles.editLink}>Change</Text>
+                    <Text className="text-xs text-textMuted font-semibold underline">Change</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* Error Banner */}
               {errorMessage ? (
-                <View style={styles.errorBanner}>
-                  <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mb-4 border border-error">
+                  <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+                  <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
                 </View>
               ) : null}
 
               {/* Success / Status Banner */}
               {statusMessage ? (
-                <View style={styles.statusBanner}>
-                  <CheckCircle size={16} color={theme.colors.success} style={styles.bannerIcon} />
-                  <Text style={styles.statusBannerText}>{statusMessage}</Text>
+                <View className="flex-row items-center bg-success-light py-2.5 px-3.5 rounded-xl mb-4 border border-success">
+                  <CheckCircle size={16} color={theme.colors.success} className="mr-2" />
+                  <Text className="flex-1 text-primary text-[13px] font-medium leading-[17px]">{statusMessage}</Text>
                 </View>
               ) : null}
 
@@ -183,15 +183,15 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
                 loading={loading}
                 disabled={code.length < 6 || loading}
                 onPress={() => handleVerify()}
-                style={styles.verifyButton}
+                className="rounded-2xl h-[54px] mt-6 shadow-card"
               />
 
               {/* Resend Cooldown Section */}
-              <View style={styles.resendContainer}>
+              <View className="items-center mt-6 py-2">
                 {countdown > 0 ? (
-                  <Text style={styles.countdownText}>
+                  <Text className="text-[13px] text-textMuted font-medium">
                     Resend code in{' '}
-                    <Text style={styles.countdownBold}>
+                    <Text className="text-primary font-bold">
                       0:{countdown < 10 ? `0${countdown}` : countdown}
                     </Text>
                   </Text>
@@ -201,7 +201,7 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
                     disabled={resending}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.resendLink}>
+                    <Text className="text-[13px] font-semibold text-primary">
                       {resending ? 'Sending...' : "Didn't receive a code? Resend"}
                     </Text>
                   </TouchableOpacity>
@@ -214,141 +214,3 @@ export const ForgotPasswordVerifyScreen: React.FC<Props> = ({ navigation, route 
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingTop: 16,
-    paddingBottom: 36,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
-    ...theme.shadows.subtle,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  emailPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    marginTop: 12,
-    alignSelf: 'flex-start',
-  },
-  emailText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginRight: 10,
-    maxWidth: 240,
-  },
-  editLink: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
-  },
-  bannerIcon: {
-    marginRight: 8,
-    flexShrink: 0,
-  },
-  errorBannerText: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.error,
-    fontWeight: '500',
-  },
-  statusBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.successLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.12)',
-  },
-  statusBannerText: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.primary,
-    fontWeight: '500',
-  },
-  verifyButton: {
-    marginTop: 24,
-  },
-  resendContainer: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  countdownText: {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-  },
-  countdownBold: {
-    color: theme.colors.primary,
-    fontWeight: '700',
-  },
-  resendLink: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-});

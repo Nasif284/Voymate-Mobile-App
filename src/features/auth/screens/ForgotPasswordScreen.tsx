@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -58,21 +57,22 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-surface">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardView}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContainer}
+            contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 36 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
+            <View className="w-full max-w-[420px] self-center">
               {/* Back Navigation Button */}
               <TouchableOpacity
-                style={styles.backButton}
+                className="w-10 h-10 rounded-full bg-surface items-center justify-center mb-5 border border-border shadow-subtle"
+                style={theme.shadows.subtle}
                 onPress={() => {
                   haptics.selection();
                   navigation.goBack();
@@ -84,34 +84,34 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
 
               {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.keyIconBox}>
+              <View className="mb-7">
+                <View className="w-11 h-11 rounded-full bg-primary-mist items-center justify-center mb-3.5">
                   <KeyRound size={22} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.title}>Reset password</Text>
-                <Text style={styles.subtitle}>
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Reset password</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   Enter your email address and we will send you the verification code to reset your password.
                 </Text>
               </View>
 
               {/* Error Banner */}
               {errorMessage ? (
-                <View style={styles.errorBanner}>
-                  <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mb-4 border border-error">
+                  <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+                  <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
                 </View>
               ) : null}
 
               {/* Success Banner */}
               {successMessage ? (
-                <View style={styles.statusBanner}>
-                  <CheckCircle size={16} color={theme.colors.success} style={styles.bannerIcon} />
-                  <Text style={styles.statusBannerText}>{successMessage}</Text>
+                <View className="flex-row items-center bg-success-light py-2.5 px-3.5 rounded-xl mb-4 border border-success">
+                  <CheckCircle size={16} color={theme.colors.success} className="mr-2" />
+                  <Text className="flex-1 text-success text-[13px] font-medium leading-[17px]">{successMessage}</Text>
                 </View>
               ) : null}
 
               {/* Form Input (Label-free, top-aligned) */}
-              <View style={styles.form}>
+              <View className="w-full">
                 <Input
                   placeholder="Email address"
                   value={email}
@@ -123,7 +123,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   leftIcon={<Mail size={18} color={theme.colors.textMuted} />}
-                  containerStyle={styles.inputField}
+                  className="mb-4"
                 />
 
                 <Button
@@ -132,12 +132,12 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                   size="lg"
                   loading={loading}
                   onPress={handleSubmit}
-                  style={styles.submitButton}
+                  className="rounded-2xl h-[54px] mt-1 shadow-card"
                 />
               </View>
 
               {/* Back to Login Link */}
-              <View style={styles.footer}>
+              <View className="items-center mt-7">
                 <TouchableOpacity
                   onPress={() => {
                     haptics.selection();
@@ -146,7 +146,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                   activeOpacity={0.7}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Text style={styles.footerLink}>Back to sign in</Text>
+                  <Text className="text-sm text-primary font-semibold">Back to sign in</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -156,120 +156,3 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingTop: 16,
-    paddingBottom: 36,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
-    ...theme.shadows.subtle,
-  },
-  header: {
-    marginBottom: 28,
-  },
-  keyIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
-  },
-  statusBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.successLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(15, 110, 86, 0.15)',
-  },
-  bannerIcon: {
-    marginRight: 8,
-  },
-  errorBannerText: {
-    flex: 1,
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  statusBannerText: {
-    flex: 1,
-    color: theme.colors.success,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  form: {
-    width: '100%',
-  },
-  inputField: {
-    marginBottom: 16,
-  },
-  submitButton: {
-    borderRadius: 16,
-    height: 54,
-    marginTop: 4,
-    ...theme.shadows.card,
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 28,
-  },
-  footerLink: {
-    fontSize: 14,
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-});
