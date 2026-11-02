@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Image,
   Platform,
@@ -50,7 +49,6 @@ const formatMemberDate = (dateVal?: string | Date) => {
 
 export const ProfileHero: React.FC<ProfileHeroProps> = ({
   user,
-  variant,
   matchScore,
   distanceKm,
   connectionStatus = 'NONE',
@@ -70,30 +68,31 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   const memberSince = formatMemberDate(user.createdAt);
 
   return (
-    <View style={styles.container}>
+    <View className="w-full bg-background">
       {/* Cover Image Banner */}
       <TouchableOpacity
         activeOpacity={isOwnProfile ? 0.85 : 1}
         onPress={isOwnProfile ? onCoverPress : undefined}
-        style={styles.coverContainer}
+        className="w-full h-[220px] bg-primary-dark relative"
       >
         {user.coverUrl ? (
           <Image
             source={{ uri: user.coverUrl }}
-            style={styles.coverImage}
+            className="w-full h-full"
             resizeMode="cover"
           />
         ) : (
-          <View style={styles.coverFallback}>
-            <View style={styles.coverGradientSim} />
+          <View className="w-full h-full bg-primary-dark">
+            <View className="absolute inset-0 bg-primary-dark opacity-80" />
           </View>
         )}
-        <View style={styles.coverDarkGradient} />
+        <View className="absolute inset-0 bg-black/40" />
 
         {/* Back Button (Only for public profiles) */}
         {onBackPress && (
           <TouchableOpacity
-            style={styles.backButton}
+            className="absolute w-[38px] h-[38px] rounded-full bg-black/40 items-center justify-center z-10 border border-white/20"
+            style={{ top: Platform.OS === 'ios' ? 52 : 36, left: 20 }}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onBackPress();
@@ -105,60 +104,63 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         )}
 
         {/* Top Right Badges */}
-        <View style={styles.topRightBadges}>
+        <View
+          className="absolute flex-row items-center gap-2 z-10"
+          style={{ top: Platform.OS === 'ios' ? 52 : 36, right: 20 }}
+        >
           {distanceKm !== undefined && (
-            <View style={styles.distanceBadge}>
+            <View className="flex-row items-center gap-1 bg-black/40 px-2.5 py-[5px] rounded-[14px] border border-white/20">
               <MapPin size={11} color={theme.colors.white} />
-              <Text style={styles.distanceText}>
+              <Text className="text-white text-[11px] font-bold">
                 {formatDistanceKm(distanceKm)}
               </Text>
             </View>
           )}
 
           {user.isTraveling && (
-            <View style={styles.travelingLiveBadge}>
-              <View style={styles.pulseDot} />
-              <Text style={styles.travelingLiveText}>Traveling Now</Text>
+            <View className="flex-row items-center gap-[5px] bg-black/40 px-2.5 py-[5px] rounded-[14px] border border-primary-border">
+              <View className="w-1.5 h-1.5 rounded-full bg-success" />
+              <Text className="text-white text-[11px] font-bold tracking-[0.3px]">Traveling Now</Text>
             </View>
           )}
         </View>
       </TouchableOpacity>
 
       {/* Profile Overlapping Card */}
-      <View style={styles.profileCard}>
+      <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5 shadow-sm">
         {/* Floating Avatar */}
-        <View style={styles.avatarRow}>
+        <View className="flex-row justify-between items-end -mt-[45px] mb-3">
           <TouchableOpacity
             activeOpacity={isOwnProfile ? 0.85 : 1}
             onPress={isOwnProfile ? onAvatarPress : undefined}
-            style={styles.avatarWrapper}
+            className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle shadow-md items-center justify-center relative"
           >
             {user.avatarUrl ? (
-              <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+              <Image source={{ uri: user.avatarUrl }} className="w-full h-full rounded-full" />
             ) : (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarInitial}>
+              <View className="w-full h-full rounded-full bg-primary items-center justify-center">
+                <Text className="text-[34px] font-bold text-white">
                   {user.fullName?.charAt(0)?.toUpperCase() || 'V'}
                 </Text>
               </View>
             )}
 
             {isOwnProfile && (
-              <View style={styles.avatarEditBadge}>
-                <Text style={styles.avatarEditIcon}>📷</Text>
+              <View className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full bg-primary border-2 border-surface items-center justify-center">
+                <Text className="text-xs">📷</Text>
               </View>
             )}
           </TouchableOpacity>
 
           {/* Quick Match / Status Pill */}
           {matchScore !== undefined && matchScore !== null ? (
-            <View style={styles.matchScorePill}>
+            <View className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-1.5 rounded-full border border-primary-border mb-1">
               <Sparkles size={13} color={theme.colors.primary} />
-              <Text style={styles.matchScoreText}>{matchScore}% Match</Text>
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">{matchScore}% Match</Text>
             </View>
           ) : user.travelPersonality ? (
-            <View style={styles.personalityPill}>
-              <Text style={styles.personalityText} numberOfLines={1}>
+            <View className="bg-surface-subtle px-3 py-1.5 rounded-full mb-1 max-w-[160px]">
+              <Text className="text-text-secondary text-[11px] font-semibold" numberOfLines={1}>
                 {user.travelPersonality}
               </Text>
             </View>
@@ -166,48 +168,48 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
         </View>
 
         {/* User Details */}
-        <View style={styles.infoSection}>
-          <View style={styles.nameRow}>
-            <Text style={styles.nameText} numberOfLines={1}>
+        <View className="mb-4">
+          <View className="flex-row items-center mb-1.5">
+            <Text className="text-2xl font-bold text-text-primary tracking-[-0.4px]" numberOfLines={1}>
               {user.fullName}
             </Text>
           </View>
 
           {/* Location & Member Since */}
-          <View style={styles.metaRow}>
+          <View className="flex-row flex-wrap items-center gap-3">
             {locationString ? (
-              <View style={styles.metaItem}>
+              <View className="flex-row items-center gap-1">
                 <MapPin size={13} color={theme.colors.primary} />
-                <Text style={styles.metaText} numberOfLines={1}>
+                <Text className="text-[13px] font-semibold text-primary" numberOfLines={1}>
                   {locationString}
                 </Text>
               </View>
             ) : null}
 
             {memberSince ? (
-              <View style={styles.metaItem}>
+              <View className="flex-row items-center gap-1">
                 <Calendar size={13} color={theme.colors.textSecondary} />
-                <Text style={styles.metaMutedText}>Member since {memberSince}</Text>
+                <Text className="text-xs font-medium text-text-secondary">Member since {memberSince}</Text>
               </View>
             ) : null}
           </View>
         </View>
 
         {/* Action Buttons Bar */}
-        <View style={styles.actionRow}>
+        <View className="flex-row items-center gap-2.5 mt-1">
           {isOwnProfile ? (
             <TouchableOpacity
-              style={styles.editProfileButton}
+              className="flex-1 h-11 rounded-[14px] bg-primary items-center justify-center"
               onPress={onEditPress}
               activeOpacity={0.8}
             >
-              <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+              <Text className="text-sm font-bold text-white">Edit Profile</Text>
             </TouchableOpacity>
           ) : (
             <>
               {/* Message Button */}
               <TouchableOpacity
-                style={styles.messageButton}
+                className="flex-1 h-11 rounded-[14px] bg-primary-mist border border-primary-border flex-row items-center justify-center gap-1.5"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   onMessagePress?.();
@@ -215,18 +217,18 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                 activeOpacity={0.8}
               >
                 <MessageSquare size={16} color={theme.colors.primary} />
-                <Text style={styles.messageButtonText}>Message</Text>
+                <Text className="text-sm font-bold text-primary">Message</Text>
               </TouchableOpacity>
 
               {/* Dynamic Connection Button */}
               {connectionStatus === 'CONNECTED' ? (
-                <View style={styles.connectedBadge}>
+                <View className="flex-[1.3] h-11 rounded-[14px] bg-primary-mist border border-primary-border flex-row items-center justify-center gap-1.5">
                   <Check size={14} color={theme.colors.primary} strokeWidth={2.5} />
-                  <Text style={styles.connectedBadgeText}>Connected</Text>
+                  <Text className="text-sm font-bold text-primary">Connected</Text>
                 </View>
               ) : connectionStatus === 'REQUEST_RECEIVED' ? (
                 <TouchableOpacity
-                  style={styles.acceptButton}
+                  className="flex-[1.3] h-11 rounded-[14px] bg-primary flex-row items-center justify-center gap-1.5"
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     onAcceptPress?.();
@@ -234,16 +236,16 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   activeOpacity={0.8}
                 >
                   <Check size={16} color={theme.colors.white} strokeWidth={2.5} />
-                  <Text style={styles.acceptButtonText}>Accept Request</Text>
+                  <Text className="text-sm font-bold text-white">Accept Request</Text>
                 </TouchableOpacity>
               ) : connectionStatus === 'REQUEST_SENT' ? (
-                <View style={styles.requestSentBadge}>
+                <View className="flex-[1.3] h-11 rounded-[14px] bg-surface-subtle flex-row items-center justify-center gap-1.5">
                   <Clock size={14} color={theme.colors.textSecondary} />
-                  <Text style={styles.requestSentText}>Request Sent</Text>
+                  <Text className="text-[13px] font-semibold text-text-secondary">Request Sent</Text>
                 </View>
               ) : (
                 <TouchableOpacity
-                  style={styles.connectButton}
+                  className="flex-[1.3] h-11 rounded-[14px] bg-primary flex-row items-center justify-center gap-1.5 shadow-sm"
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     onConnectPress?.();
@@ -251,7 +253,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                   activeOpacity={0.8}
                 >
                   <UserPlus size={16} color={theme.colors.white} />
-                  <Text style={styles.connectButtonText}>Connect</Text>
+                  <Text className="text-sm font-bold text-white">Connect</Text>
                 </TouchableOpacity>
               )}
             </>
@@ -261,335 +263,3 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: theme.colors.background,
-  },
-  coverContainer: {
-    width: '100%',
-    height: 220,
-    backgroundColor: theme.colors.primaryDark,
-    position: 'relative',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-  },
-  coverFallback: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  coverGradientSim: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: theme.colors.primaryDark,
-    opacity: 0.8,
-  },
-  coverDarkGradient: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: theme.colors.overlay,
-  },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 52 : 36,
-    left: 20,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: theme.colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  topRightBadges: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 52 : 36,
-    right: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    zIndex: 10,
-  },
-  distanceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.overlay,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  distanceText: {
-    color: theme.colors.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  travelingLiveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: theme.colors.overlay,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.success,
-  },
-  travelingLiveText: {
-    color: theme.colors.white,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  profileCard: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: -45,
-    marginBottom: 12,
-  },
-  avatarWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 4,
-    borderColor: theme.colors.surface,
-    backgroundColor: theme.colors.surfaceSubtle,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 45,
-  },
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 45,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  avatarEditBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarEditIcon: {
-    fontSize: 12,
-  },
-  matchScorePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-    marginBottom: 4,
-  },
-  matchScoreText: {
-    color: theme.colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  personalityPill: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginBottom: 4,
-    maxWidth: 160,
-  },
-  personalityText: {
-    color: theme.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  infoSection: {
-    marginBottom: 16,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  nameText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 12,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  metaMutedText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 4,
-  },
-  messageButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  messageButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  connectButton: {
-    flex: 1.3,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  connectButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  acceptButton: {
-    flex: 1.3,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  acceptButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  connectedBadge: {
-    flex: 1.3,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  connectedBadgeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  requestSentBadge: {
-    flex: 1.3,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surfaceSubtle,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  requestSentText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  editProfileButton: {
-    flex: 1,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  editProfileButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-});

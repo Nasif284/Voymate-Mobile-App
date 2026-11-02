@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Image,
@@ -43,6 +42,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
 import { StatusBar } from 'expo-status-bar';
+import { cn } from '../../../utils/cn';
 
 export const ProfileScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -157,140 +157,140 @@ export const ProfileScreen: React.FC = () => {
   const tabBarHeight = 82 + insets.bottom;
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="light" />
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + 24 }]}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: tabBarHeight + 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Cover Photo Header */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handlePickCover}
-          style={styles.coverContainer}
+          className="w-full h-[220px] bg-primary-dark relative"
         >
           {profile?.coverUrl ? (
             <Image
               source={{ uri: profile.coverUrl }}
-              style={styles.coverImage}
+              className="w-full h-full"
               resizeMode="cover"
             />
           ) : (
-            <View style={styles.coverFallback}>
-              <View style={styles.coverGradientSim} />
+            <View className="w-full h-full bg-primary-dark">
+              <View className="absolute inset-0 bg-primary-dark opacity-85" />
             </View>
           )}
-          <View style={styles.coverDarkGradient} />
+          <View className="absolute inset-0 bg-black/40" />
 
           {/* Bottom Right: Change Cover */}
           <TouchableOpacity
-            style={styles.changeCoverBtn}
+            className="absolute bottom-[42px] right-4 flex-row items-center gap-1.5 bg-black/40 px-2.5 py-[5px] rounded-xl border border-white/25"
             onPress={handlePickCover}
             activeOpacity={0.8}
           >
             <Camera size={13} color={theme.colors.white} />
-            <Text style={styles.changeCoverBtnText}>Change cover</Text>
+            <Text className="text-white text-[11px] font-bold">Change cover</Text>
           </TouchableOpacity>
         </TouchableOpacity>
 
         {/* Profile Identity Card */}
-        <View style={styles.identityCard}>
+        <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5 shadow-sm">
           {/* Avatar Row */}
-          <View style={styles.avatarRow}>
+          <View className="flex-row justify-between items-end -mt-[45px] mb-3">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={handlePickAvatar}
-              style={styles.avatarWrapper}
+              className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle shadow-md items-center justify-center relative"
             >
               {profile?.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+                <Image source={{ uri: profile.avatarUrl }} className="w-full h-full rounded-full" />
               ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarInitial}>
+                <View className="w-full h-full rounded-full bg-primary items-center justify-center">
+                  <Text className="text-[34px] font-bold text-white">
                     {profile?.fullName?.charAt(0)?.toUpperCase() ||
                       authUser?.fullName?.charAt(0)?.toUpperCase() ||
                       'V'}
                   </Text>
                 </View>
               )}
-              <View style={styles.cameraBadge}>
+              <View className="absolute -bottom-0.5 -right-0.5 w-7 h-7 rounded-full bg-primary border-2 border-surface items-center justify-center">
                 <Camera size={14} color={theme.colors.white} />
               </View>
             </TouchableOpacity>
 
             {/* Edit Profile Action Group */}
-            <View style={styles.actionButtonGroup}>
+            <View className="flex-row items-center gap-2 mb-1">
               <TouchableOpacity
-                style={styles.editProfileButton}
+                className="flex-row items-center gap-1.5 bg-primary-mist px-3.5 py-2 rounded-2xl border border-primary-border"
                 onPress={() => setShowEditModal(true)}
                 activeOpacity={0.8}
               >
                 <Edit3 size={15} color={theme.colors.primary} />
-                <Text style={styles.editProfileButtonText}>Edit Profile</Text>
+                <Text className="text-[13px] font-semibold text-primary">Edit Profile</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* User Name & Demographics */}
-          <View style={styles.nameSection}>
-            <Text style={styles.nameText}>
+          <View className="mb-4">
+            <Text className="text-2xl font-bold text-text-primary tracking-[-0.4px] mb-1">
               {profile?.fullName || authUser?.fullName || 'Voymate Traveler'}
             </Text>
             {locationString ? (
-              <View style={styles.locationRow}>
+              <View className="flex-row items-center gap-1.5 mb-1">
                 <MapPin size={13} color={theme.colors.primary} />
-                <Text style={styles.locationText}>{locationString}</Text>
+                <Text className="text-[13px] font-semibold text-primary">{locationString}</Text>
               </View>
             ) : null}
             {memberSince ? (
-              <View style={styles.memberRow}>
+              <View className="flex-row items-center gap-1.5">
                 <Calendar size={12} color={theme.colors.textSecondary} />
-                <Text style={styles.memberText}>Member since {memberSince}</Text>
+                <Text className="text-xs font-medium text-text-secondary">Member since {memberSince}</Text>
               </View>
             ) : null}
           </View>
 
           {/* Instagram-Style Stats Bar */}
-          <View style={styles.statsBar}>
+          <View className="flex-row items-center justify-around bg-surface-subtle rounded-[18px] py-3.5 border border-border">
             {/* Journeys (Tappable) */}
             <TouchableOpacity
-              style={styles.statItem}
+              className="items-center flex-1"
               activeOpacity={0.7}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 navigation.navigate('Trips', { initialTab: 'active' });
               }}
             >
-              <Text style={styles.statNumber}>
+              <Text className="text-lg font-bold text-text-primary">
                 {profile?.tripCount !== undefined ? profile.tripCount : upcomingTrips.length}
               </Text>
-              <Text style={styles.statLabel}>TRIPS</Text>
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px] mt-0.5">TRIPS</Text>
             </TouchableOpacity>
 
-            <View style={styles.statDivider} />
+            <View className="w-[1px] h-6 bg-border" />
 
             {/* Mates / Connections (Tappable) */}
             <TouchableOpacity
-              style={styles.statItem}
+              className="items-center flex-1"
               activeOpacity={0.7}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 navigation.navigate('Connections', { initialTab: 'connections' });
               }}
             >
-              <Text style={styles.statNumber}>
+              <Text className="text-lg font-bold text-text-primary">
                 {connectionsCount}
               </Text>
-              <Text style={styles.statLabel}>MATES</Text>
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px] mt-0.5">MATES</Text>
             </TouchableOpacity>
 
-            <View style={styles.statDivider} />
+            <View className="w-[1px] h-6 bg-border" />
 
             {/* Requests (Tappable) */}
             <TouchableOpacity
-              style={styles.statItem}
+              className="items-center flex-1"
               activeOpacity={0.7}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -300,13 +300,13 @@ export const ProfileScreen: React.FC = () => {
                 });
               }}
             >
-              <View style={styles.statNumberRow}>
-                <Text style={styles.statNumber}>
+              <View className="flex-row items-center gap-1">
+                <Text className="text-lg font-bold text-text-primary">
                   {incomingRequestsCount}
                 </Text>
-                {incomingRequestsCount > 0 && <View style={styles.statBadgeDot} />}
+                {incomingRequestsCount > 0 && <View className="w-[7px] h-[7px] rounded-full bg-primary -mt-2" />}
               </View>
-              <Text style={styles.statLabel}>REQUESTS</Text>
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px] mt-0.5">REQUESTS</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -315,19 +315,17 @@ export const ProfileScreen: React.FC = () => {
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => handleToggleTraveling(!profile?.isTraveling)}
-          style={[
-            styles.travelingCard,
-            profile?.isTraveling ? styles.travelingCardActive : styles.travelingCardInactive,
-          ]}
+          className={cn(
+            'mx-4 mt-3.5 rounded-[22px] p-4 border',
+            profile?.isTraveling ? 'bg-primary-mist border-primary-border' : 'bg-surface border-border'
+          )}
         >
-          <View style={styles.travelingHeader}>
+          <View className="flex-row items-center gap-3">
             <View
-              style={[
-                styles.travelingIconWrap,
-                profile?.isTraveling
-                  ? styles.travelingIconWrapActive
-                  : styles.travelingIconWrapInactive,
-              ]}
+              className={cn(
+                'w-10 h-10 rounded-[14px] items-center justify-center',
+                profile?.isTraveling ? 'bg-primary-light' : 'bg-surface-subtle'
+              )}
             >
               <Radio
                 size={18}
@@ -335,11 +333,11 @@ export const ProfileScreen: React.FC = () => {
               />
             </View>
 
-            <View style={styles.travelingTextWrap}>
-              <Text style={styles.travelingTitle}>
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-text-primary">
                 {profile?.isTraveling ? 'Currently Traveling' : 'Not Traveling'}
               </Text>
-              <Text style={styles.travelingSubtitle}>
+              <Text className="text-[11px] text-text-secondary leading-[15px] mt-0.5">
                 {profile?.isTraveling
                   ? 'Visible to travelers near your current location.'
                   : 'Turn on during your trip to meet travelers nearby.'}
@@ -386,17 +384,17 @@ export const ProfileScreen: React.FC = () => {
         />
 
         {/* Log Out Button at Very Bottom */}
-        <View style={styles.logoutSection}>
+        <View className="mt-6 mb-3 items-center">
           <TouchableOpacity
-            style={styles.bottomLogoutBtn}
+            className="flex-row items-center justify-center gap-1.5 py-[7px] px-4 rounded-full bg-error-light border border-error-light"
             onPress={handleLogout}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 12, right: 12 }}
           >
             <LogOut size={13} color={theme.colors.error} strokeWidth={2.2} />
-            <Text style={styles.bottomLogoutText}>Log out</Text>
+            <Text className="text-[12.5px] font-bold text-error tracking-[0.1px]">Log out</Text>
           </TouchableOpacity>
-          <Text style={styles.appVersionText}>Voymate • v1.0.0</Text>
+          <Text className="text-[11px] font-medium text-text-placeholder mt-2.5 tracking-[0.2px]">Voymate • v1.0.0</Text>
         </View>
       </ScrollView>
 
@@ -414,299 +412,3 @@ export const ProfileScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  coverContainer: {
-    width: '100%',
-    height: 220,
-    backgroundColor: theme.colors.primaryDark,
-    position: 'relative',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-  },
-  coverFallback: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  coverGradientSim: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: theme.colors.primaryDark,
-    opacity: 0.85,
-  },
-  coverDarkGradient: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: theme.colors.overlay,
-  },
-  changeCoverBtn: {
-    position: 'absolute',
-    bottom: 42,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.overlay,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  changeCoverBtnText: {
-    color: theme.colors.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  identityCard: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginTop: -45,
-    marginBottom: 12,
-  },
-  avatarWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 4,
-    borderColor: theme.colors.surface,
-    backgroundColor: theme.colors.surfaceSubtle,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 45,
-  },
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 45,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
-    fontSize: 34,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionButtonGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  editProfileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  editProfileButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  nameSection: {
-    marginBottom: 16,
-  },
-  nameText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginBottom: 4,
-  },
-  locationText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  memberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  memberText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-  },
-  statsBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 18,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  statBadgeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: theme.colors.primary,
-    marginTop: -8,
-  },
-  statLabel: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.6,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: theme.colors.border,
-  },
-  travelingCard: {
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderRadius: 22,
-    padding: 16,
-    borderWidth: 1,
-  },
-  travelingCardActive: {
-    backgroundColor: theme.colors.primaryMist,
-    borderColor: theme.colors.primaryBorder,
-  },
-  travelingCardInactive: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-  },
-  travelingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  travelingIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  travelingIconWrapActive: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  travelingIconWrapInactive: {
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  travelingTextWrap: {
-    flex: 1,
-  },
-  travelingTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  travelingSubtitle: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    lineHeight: 15,
-    marginTop: 2,
-  },
-  logoutSection: {
-    marginTop: 24,
-    marginBottom: 12,
-    alignItems: 'center',
-  },
-  bottomLogoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: theme.colors.errorLight,
-    borderWidth: 1,
-    borderColor: theme.colors.errorLight,
-  },
-  bottomLogoutText: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: theme.colors.error,
-    letterSpacing: 0.1,
-  },
-  appVersionText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: theme.colors.textPlaceholder,
-    marginTop: 10,
-    letterSpacing: 0.2,
-  },
-});

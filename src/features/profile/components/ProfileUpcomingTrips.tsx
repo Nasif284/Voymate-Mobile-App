@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   ScrollView,
   TouchableOpacity,
@@ -45,36 +44,36 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
   if ((!trips || trips.length === 0) && !onSeeAll) return null;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.headerIcon}>
+    <View className="bg-surface rounded-[24px] py-[18px] mx-4 mt-3.5 border border-border shadow-sm">
+      <View className="flex-row items-center justify-between px-5 mb-3.5">
+        <View className="flex-row items-center gap-2">
+          <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
             <Compass size={16} color={theme.colors.primary} />
           </View>
-          <Text style={styles.headerTitle}>Upcoming Travel Plans</Text>
+          <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Upcoming Travel Plans</Text>
         </View>
-        <View style={styles.headerRight}>
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{trips.length}</Text>
+        <View className="flex-row items-center gap-2.5">
+          <View className="bg-primary-mist px-2 py-[3px] rounded-[10px]">
+            <Text className="text-[11px] font-semibold text-primary">{trips.length}</Text>
           </View>
           {onSeeAll && (
             <TouchableOpacity onPress={onSeeAll} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={styles.seeAllText}>See all</Text>
+              <Text className="text-[13px] font-semibold text-primary">See all</Text>
             </TouchableOpacity>
           )}
         </View>
       </View>
 
       {trips.length === 0 ? (
-        <TouchableOpacity style={styles.emptyTripsPrompt} onPress={onSeeAll} activeOpacity={0.8}>
-          <Text style={styles.emptyTripsText}>No upcoming trips yet. Add a trip to start getting matched.</Text>
-          <Text style={styles.emptyTripsAction}>Create Trip Plan →</Text>
+        <TouchableOpacity className="mx-4 p-3.5 rounded-[14px] bg-surface-subtle border border-border gap-1.5" onPress={onSeeAll} activeOpacity={0.8}>
+          <Text className="text-[13px] text-text-secondary leading-[19px]">No upcoming trips yet. Add a trip to start getting matched.</Text>
+          <Text className="text-xs font-semibold text-primary mt-0.5">Create Trip Plan →</Text>
         </TouchableOpacity>
       ) : (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollList}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
       >
         {trips.map((trip) => {
           const dateFromStr = formatDate(trip.dateFrom);
@@ -93,48 +92,48 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
           return (
             <TouchableOpacity
               key={trip.id}
-              style={styles.tripCard}
+              className="w-[210px] bg-surface-subtle rounded-[18px] overflow-hidden border border-border"
               activeOpacity={0.85}
               onPress={() => onTripPress?.(trip)}
             >
               {/* Trip Image Banner */}
-              <View style={styles.imageWrapper}>
+              <View className="w-full h-[100px] relative bg-primary-dark">
                 {trip.destination?.coverUrl ? (
                   <Image
                     source={{ uri: trip.destination.coverUrl }}
-                    style={styles.tripImage}
+                    className="w-full h-full"
                     resizeMode="cover"
                   />
                 ) : (
-                  <View style={styles.imageFallback} />
+                  <View className="w-full h-full bg-primary-dark" />
                 )}
-                <View style={styles.imageGradient} />
-                <View style={styles.destBadge}>
+                <View className="absolute inset-0 bg-black/30" />
+                <View className="absolute bottom-2 left-2 right-2 flex-row items-center gap-1">
                   <MapPin size={10} color={theme.colors.white} />
-                  <Text style={styles.destBadgeText} numberOfLines={1}>
+                  <Text className="text-[11px] font-semibold text-white" numberOfLines={1}>
                     {destinationName}
                   </Text>
                 </View>
               </View>
 
               {/* Trip Info */}
-              <View style={styles.infoWrapper}>
-                <Text style={styles.tripTitle} numberOfLines={1}>
+              <View className="p-3 gap-1.5">
+                <Text className="text-sm font-semibold text-text-primary" numberOfLines={1}>
                   {trip.name}
                 </Text>
 
                 {dateRange ? (
-                  <View style={styles.dateRow}>
+                  <View className="flex-row items-center gap-1.5">
                     <Calendar size={12} color={theme.colors.primary} />
-                    <Text style={styles.dateText} numberOfLines={1}>
+                    <Text className="text-[11px] font-semibold text-text-secondary" numberOfLines={1}>
                       {dateRange}
                     </Text>
                   </View>
                 ) : null}
 
                 {trip.travelStyle ? (
-                  <View style={styles.styleBadge}>
-                    <Text style={styles.styleBadgeText}>
+                  <View className="self-start bg-primary-mist px-2 py-0.5 rounded-lg mt-0.5">
+                    <Text className="text-[10px] font-bold text-primary">
                       {trip.travelStyle}
                     </Text>
                   </View>
@@ -148,150 +147,3 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    paddingVertical: 18,
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 14,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  seeAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  countBadge: {
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  countText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  emptyTripsPrompt: { marginHorizontal: 16, padding: 14, borderRadius: 14, backgroundColor: theme.colors.surfaceSubtle, borderWidth: 1, borderColor: theme.colors.border, gap: 6 },
-  emptyTripsText: { fontSize: 13, color: theme.colors.textSecondary, lineHeight: 19 },
-  emptyTripsAction: { fontSize: 12, fontWeight: '600', color: theme.colors.primary, marginTop: 2 },
-  scrollList: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  tripCard: {
-    width: 210,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 18,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  imageWrapper: {
-    width: '100%',
-    height: 100,
-    position: 'relative',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  tripImage: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  imageGradient: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  destBadge: {
-    position: 'absolute',
-    bottom: 8,
-    left: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  destBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.white,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  infoWrapper: {
-    padding: 12,
-    gap: 6,
-  },
-  tripTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  dateText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  styleBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginTop: 2,
-  },
-  styleBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-});

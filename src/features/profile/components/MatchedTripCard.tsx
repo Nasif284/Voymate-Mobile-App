@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import { MapPin, Calendar, Compass, Wallet } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 
@@ -46,47 +46,47 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
       : trip.destination?.name || 'Destination';
 
   return (
-    <View style={styles.card}>
+    <View className="bg-surface rounded-[24px] mx-4 mt-3.5 overflow-hidden border border-border shadow-sm">
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerIcon}>
+      <View className="flex-row items-center gap-2 px-[18px] py-3.5 border-b border-border">
+        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
           <MapPin size={16} color={theme.colors.primary} />
         </View>
-        <Text style={styles.headerTitle}>Matched Trip Plan</Text>
+        <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Matched Trip Plan</Text>
       </View>
 
       {/* Trip Cover Banner */}
-      <View style={styles.bannerContainer}>
+      <View className="w-full h-[140px] relative bg-primary-dark">
         {trip.destination?.coverUrl ? (
           <Image
             source={{ uri: trip.destination.coverUrl }}
-            style={styles.bannerImage}
+            className="w-full h-full"
             resizeMode="cover"
           />
         ) : (
-          <View style={styles.bannerFallback} />
+          <View className="w-full h-full bg-primary-dark" />
         )}
-        <View style={styles.bannerOverlay} />
-        <View style={styles.bannerContent}>
-          <Text style={styles.tripName} numberOfLines={1}>
+        <View className="absolute inset-0 bg-black/35" />
+        <View className="absolute bottom-3 left-4 right-4">
+          <Text className="text-lg font-bold text-white tracking-[-0.2px]" numberOfLines={1}>
             {trip.name}
           </Text>
-          <Text style={styles.destinationSub} numberOfLines={1}>
+          <Text className="text-xs font-semibold text-white/90 mt-0.5" numberOfLines={1}>
             {destinationDisplay}
           </Text>
         </View>
       </View>
 
       {/* Info Tiles Grid */}
-      <View style={styles.grid}>
+      <View className="p-4 gap-2.5">
         {dateRangeStr ? (
-          <View style={styles.tile}>
-            <View style={styles.tileIconWrapper}>
+          <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
+            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
               <Calendar size={14} color={theme.colors.primary} />
             </View>
-            <View style={styles.tileTextWrapper}>
-              <Text style={styles.tileLabel}>TRAVEL DATES</Text>
-              <Text style={styles.tileValue} numberOfLines={1}>
+            <View className="flex-1">
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px]">TRAVEL DATES</Text>
+              <Text className="text-[13px] font-semibold text-text-primary mt-0.5" numberOfLines={1}>
                 {dateRangeStr}
               </Text>
             </View>
@@ -94,13 +94,13 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
         ) : null}
 
         {trip.travelStyle ? (
-          <View style={styles.tile}>
-            <View style={styles.tileIconWrapper}>
+          <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
+            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
               <Compass size={14} color={theme.colors.primary} />
             </View>
-            <View style={styles.tileTextWrapper}>
-              <Text style={styles.tileLabel}>TRAVEL STYLE</Text>
-              <Text style={styles.tileValue} numberOfLines={1}>
+            <View className="flex-1">
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px]">TRAVEL STYLE</Text>
+              <Text className="text-[13px] font-semibold text-text-primary mt-0.5" numberOfLines={1}>
                 {trip.travelStyle}
               </Text>
             </View>
@@ -108,13 +108,13 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
         ) : null}
 
         {trip.budgetStyle ? (
-          <View style={styles.tile}>
-            <View style={styles.tileIconWrapper}>
+          <View className="flex-row items-center gap-3 bg-surface-subtle px-3.5 py-2.5 rounded-[14px] border border-border">
+            <View className="w-8 h-8 rounded-[10px] bg-primary-mist items-center justify-center">
               <Wallet size={14} color={theme.colors.primary} />
             </View>
-            <View style={styles.tileTextWrapper}>
-              <Text style={styles.tileLabel}>BUDGET STYLE</Text>
-              <Text style={styles.tileValue} numberOfLines={1}>
+            <View className="flex-1">
+              <Text className="text-[9px] font-semibold text-text-secondary tracking-[0.6px]">BUDGET STYLE</Text>
+              <Text className="text-[13px] font-semibold text-text-primary mt-0.5" numberOfLines={1}>
                 {trip.budgetStyle}
               </Text>
             </View>
@@ -124,121 +124,3 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    marginHorizontal: 16,
-    marginTop: 14,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  bannerContainer: {
-    width: '100%',
-    height: 140,
-    position: 'relative',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  bannerImage: {
-    width: '100%',
-    height: '100%',
-  },
-  bannerFallback: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  bannerOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-  },
-  bannerContent: {
-    position: 'absolute',
-    bottom: 12,
-    left: 16,
-    right: 16,
-  },
-  tripName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: -0.2,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  destinationSub: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 2,
-  },
-  grid: {
-    padding: 16,
-    gap: 10,
-  },
-  tile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  tileIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tileTextWrapper: {
-    flex: 1,
-  },
-  tileLabel: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.6,
-  },
-  tileValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginTop: 1,
-  },
-});

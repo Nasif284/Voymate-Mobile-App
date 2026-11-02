@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   TextInput,
@@ -17,6 +16,7 @@ import { X, Lock, Eye, EyeOff } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useProfileResetPassword } from '../hooks/profile.hooks';
 import { theme } from '../../../config/theme';
+import { cn } from '../../../utils/cn';
 
 interface ResetPasswordModalProps {
   visible: boolean;
@@ -86,15 +86,15 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
       onRequestClose={handleClose}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-black/50 justify-center items-center p-5">
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.keyboardWrap}
+            className="w-full items-center"
           >
-            <View style={styles.card}>
+            <View className="w-full max-w-[400px] bg-surface rounded-[24px] p-6 relative shadow-lg">
               {/* Close Button */}
               <TouchableOpacity
-                style={styles.closeBtn}
+                className="absolute top-[18px] right-[18px] w-8 h-8 rounded-full items-center justify-center bg-surface-subtle z-10"
                 onPress={handleClose}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
@@ -102,24 +102,24 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
               </TouchableOpacity>
 
               {/* Header Icon & Title */}
-              <View style={styles.header}>
-                <View style={styles.iconCircle}>
+              <View className="items-center mb-5 mt-1">
+                <View className="w-[50px] h-[50px] rounded-full bg-primary-mist items-center justify-center mb-3">
                   <Lock size={22} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.title}>Reset Password</Text>
-                <Text style={styles.subtitle}>
+                <Text className="text-xl font-bold text-text-primary mb-1.5">Reset Password</Text>
+                <Text className="text-xs text-text-secondary text-center leading-[17px] px-2">
                   Create a password with at least 8 characters, an uppercase letter, and a number.
                 </Text>
               </View>
 
               {/* Form Fields */}
-              <View style={styles.form}>
+              <View className="gap-3.5">
                 {/* New Password */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>NEW PASSWORD</Text>
-                  <View style={styles.inputWrap}>
+                <View className="gap-1.5">
+                  <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">NEW PASSWORD</Text>
+                  <View className="flex-row items-center bg-surface-subtle border border-border rounded-[14px] px-3.5 h-12">
                     <TextInput
-                      style={styles.input}
+                      className="flex-1 text-sm text-text-primary font-semibold"
                       secureTextEntry={!showNewPassword}
                       placeholder="••••••••"
                       placeholderTextColor={theme.colors.textPlaceholder}
@@ -128,7 +128,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       autoCapitalize="none"
                     />
                     <TouchableOpacity
-                      style={styles.eyeBtn}
+                      className="p-1.5"
                       onPress={() => setShowNewPassword((prev) => !prev)}
                     >
                       {showNewPassword ? (
@@ -141,11 +141,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                 </View>
 
                 {/* Confirm Password */}
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>CONFIRM PASSWORD</Text>
-                  <View style={styles.inputWrap}>
+                <View className="gap-1.5">
+                  <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">CONFIRM PASSWORD</Text>
+                  <View className="flex-row items-center bg-surface-subtle border border-border rounded-[14px] px-3.5 h-12">
                     <TextInput
-                      style={styles.input}
+                      className="flex-1 text-sm text-text-primary font-semibold"
                       secureTextEntry={!showConfirmPassword}
                       placeholder="••••••••"
                       placeholderTextColor={theme.colors.textPlaceholder}
@@ -154,7 +154,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                       autoCapitalize="none"
                     />
                     <TouchableOpacity
-                      style={styles.eyeBtn}
+                      className="p-1.5"
                       onPress={() => setShowConfirmPassword((prev) => !prev)}
                     >
                       {showConfirmPassword ? (
@@ -167,32 +167,31 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
                 </View>
 
                 {confirmPassword.length > 0 && !passwordsMatch && (
-                  <Text style={styles.errorText}>Passwords do not match.</Text>
+                  <Text className="text-xs text-error font-semibold -mt-1">Passwords do not match.</Text>
                 )}
 
                 {/* Action Buttons */}
-                <View style={styles.actionsRow}>
+                <View className="flex-row items-center gap-2.5 mt-2">
                   <TouchableOpacity
-                    style={styles.cancelBtn}
+                    className="flex-1 h-11 rounded-[14px] border border-border bg-surface-subtle items-center justify-center"
                     onPress={handleClose}
                     disabled={isSubmitting}
                   >
-                    <Text style={styles.cancelBtnText}>Cancel</Text>
+                    <Text className="text-[13px] font-semibold text-text-secondary">Cancel</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={[
-                      styles.submitBtn,
-                      (!newPassword || !confirmPassword || !passwordsMatch || isSubmitting) &&
-                        styles.submitBtnDisabled,
-                    ]}
+                    className={cn(
+                      'flex-[1.5] h-11 rounded-[14px] bg-primary items-center justify-center shadow-sm',
+                      (!newPassword || !confirmPassword || !passwordsMatch || isSubmitting) && 'opacity-45'
+                    )}
                     onPress={handleSubmit}
                     disabled={!newPassword || !confirmPassword || !passwordsMatch || isSubmitting}
                   >
                     {isSubmitting ? (
                       <ActivityIndicator size="small" color={theme.colors.white} />
                     ) : (
-                      <Text style={styles.submitBtnText}>Update Password</Text>
+                      <Text className="text-[13px] font-semibold text-white">Update Password</Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -204,148 +203,3 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: theme.colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  keyboardWrap: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 24,
-    position: 'relative',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: 18,
-    right: 18,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    zIndex: 10,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 4,
-  },
-  iconCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 17,
-    paddingHorizontal: 8,
-  },
-  form: {
-    gap: 14,
-  },
-  inputGroup: {
-    gap: 6,
-  },
-  inputLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.6,
-  },
-  inputWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 48,
-  },
-  input: {
-    flex: 1,
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    fontWeight: '600',
-  },
-  eyeBtn: {
-    padding: 6,
-  },
-  errorText: {
-    fontSize: 12,
-    color: theme.colors.error,
-    fontWeight: '600',
-    marginTop: -4,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 8,
-  },
-  cancelBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  submitBtn: {
-    flex: 1.5,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  submitBtnDisabled: {
-    opacity: 0.45,
-  },
-  submitBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-});

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   ActivityIndicator,
   Alert,
@@ -133,10 +132,10 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (isLoading && !user) {
     return (
-      <View style={styles.loadingContainer}>
+      <View className="flex-1 bg-background justify-center items-center gap-3">
         <StatusBar style="light" />
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Loading traveler profile...</Text>
+        <Text className="text-[13px] font-semibold text-text-secondary">Loading traveler profile...</Text>
       </View>
     );
   }
@@ -157,12 +156,12 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
       : variant;
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="light" />
 
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 48 }}
         bounces={true}
         showsVerticalScrollIndicator={false}
       >
@@ -228,28 +227,3 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 48,
-  },
-});

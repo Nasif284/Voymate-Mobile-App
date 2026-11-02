@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { Sparkles, Check } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 
@@ -13,24 +13,24 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
   reasons = [],
 }) => {
   return (
-    <View style={styles.card}>
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm">
       {/* Top Header & Gauge Row */}
-      <View style={styles.topRow}>
+      <View className="flex-row items-center gap-4 pb-4 border-b border-border">
         {/* Score Ring Gauge */}
-        <View style={styles.gaugeWrapper}>
-          <View style={styles.gaugeCircle}>
-            <Text style={styles.gaugeScore}>{score}%</Text>
-            <Text style={styles.gaugeLabel}>SCORE</Text>
+        <View className="items-center justify-center">
+          <View className="w-[76px] h-[76px] rounded-full border-4 border-primary bg-primary-mist items-center justify-center shadow-sm">
+            <Text className="text-[22px] font-bold text-primary tracking-[-0.5px]">{score}%</Text>
+            <Text className="text-[8px] font-semibold text-primary tracking-[0.8px] opacity-85 -mt-0.5">SCORE</Text>
           </View>
         </View>
 
         {/* Gauge Intro Text */}
-        <View style={styles.introWrapper}>
-          <View style={styles.titleRow}>
+        <View className="flex-1">
+          <View className="flex-row items-center gap-1.5 mb-1">
             <Sparkles size={16} color={theme.colors.primary} />
-            <Text style={styles.title}>Why You Match</Text>
+            <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Why You Match</Text>
           </View>
-          <Text style={styles.subtitle}>
+          <Text className="text-xs text-text-secondary leading-4 font-medium">
             Calculated based on your travel styles, shared interests, and budget alignment.
           </Text>
         </View>
@@ -38,13 +38,13 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
 
       {/* Breakdown Reasons */}
       {reasons && reasons.length > 0 && (
-        <View style={styles.reasonsList}>
+        <View className="pt-3.5 gap-2">
           {reasons.map((reason, index) => (
-            <View key={index} style={styles.reasonItem}>
-              <View style={styles.checkCircle}>
+            <View key={index} className="flex-row items-center gap-2.5 bg-surface-subtle px-3 py-2.5 rounded-[14px] border border-border">
+              <View className="w-5 h-5 rounded-full bg-primary-mist items-center justify-center">
                 <Check size={11} color={theme.colors.primary} strokeWidth={3} />
               </View>
-              <Text style={styles.reasonText}>{reason}</Text>
+              <Text className="flex-1 text-[13px] font-semibold text-text-primary leading-[18px]">{reason}</Text>
             </View>
           ))}
         </View>
@@ -52,111 +52,3 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 20,
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  gaugeWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gaugeCircle: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 4,
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  gaugeScore: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    letterSpacing: -0.5,
-  },
-  gaugeLabel: {
-    fontSize: 8,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    letterSpacing: 0.8,
-    opacity: 0.85,
-    marginTop: -1,
-  },
-  introWrapper: {
-    flex: 1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    lineHeight: 16,
-    fontWeight: '500',
-  },
-  reasonsList: {
-    paddingTop: 14,
-    gap: 8,
-  },
-  reasonItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  checkCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  reasonText: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    lineHeight: 18,
-  },
-});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { User, Quote, Plus } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 
@@ -16,112 +16,34 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
   const firstName = name?.split(' ')[0] || 'Traveler';
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.headerIcon}>
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm">
+      <View className="flex-row items-center gap-2 mb-3">
+        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
           <User size={15} color={theme.colors.primary} />
         </View>
-        <Text style={styles.headerTitle}>About {firstName}</Text>
+        <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">About {firstName}</Text>
       </View>
 
       {hasBio ? (
-        <View style={styles.content}>
+        <View className="relative pl-1">
           <Quote
             size={16}
             color={theme.colors.primaryLight}
-            style={styles.quoteIcon}
+            className="mb-1"
           />
-          <Text style={styles.bioText}>{bio!.trim()}</Text>
+          <Text className="text-sm text-text-primary leading-[22px] font-medium">{bio!.trim()}</Text>
         </View>
       ) : (
-        <TouchableOpacity style={styles.emptyPrompt} onPress={onAddBio} activeOpacity={0.8}>
-          <Text style={styles.emptyPromptText}>
+        <TouchableOpacity className="bg-surface-subtle rounded-[14px] p-3.5 border border-border gap-2.5" onPress={onAddBio} activeOpacity={0.8}>
+          <Text className="text-[13px] text-text-secondary leading-[19px]">
             Add a short bio about your travel style so potential travel mates know more about you.
           </Text>
-          <View style={styles.addBioPill}>
+          <View className="flex-row items-center self-start bg-primary-mist px-3 py-1.5 rounded-[10px] gap-1">
             <Plus size={13} color={theme.colors.primary} />
-            <Text style={styles.addBioPillText}>Add Bio</Text>
+            <Text className="text-xs font-bold text-primary">Add Bio</Text>
           </View>
         </TouchableOpacity>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 20,
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  content: {
-    position: 'relative',
-    paddingLeft: 4,
-  },
-  quoteIcon: {
-    marginBottom: 4,
-  },
-  bioText: {
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    lineHeight: 22,
-    fontWeight: '500',
-  },
-  emptyPrompt: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 10,
-  },
-  emptyPromptText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 19,
-  },
-  addBioPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
-    gap: 4,
-  },
-  addBioPillText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-});

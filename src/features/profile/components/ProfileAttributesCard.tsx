@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { Compass, Sparkles, Globe, Award, Heart } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 
@@ -28,32 +28,32 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
   if (!hasAny) return null;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.headerIcon}>
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm gap-4">
+      <View className="flex-row items-center gap-2 pb-3 border-b border-border">
+        <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
           <Compass size={16} color={theme.colors.primary} />
         </View>
-        <Text style={styles.headerTitle}>Travel Preferences</Text>
+        <Text className="text-base font-bold text-text-primary tracking-[-0.2px]">Travel Preferences</Text>
       </View>
 
       {/* Travel Style & Personality Highlight Row */}
       {(travelType || travelPersonality) && (
-        <View style={styles.highlightSection}>
+        <View className="flex-row flex-wrap gap-3">
           {travelType ? (
-            <View style={styles.highlightItem}>
-              <Text style={styles.subLabel}>TRAVEL STYLE</Text>
-              <View style={styles.stylePill}>
+            <View className="flex-1 min-w-[130px] gap-1.5">
+              <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">TRAVEL STYLE</Text>
+              <View className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-[7px] rounded-[14px] border border-primary-border self-start">
                 <Sparkles size={12} color={theme.colors.primary} />
-                <Text style={styles.stylePillText}>{travelType}</Text>
+                <Text className="text-[13px] font-bold text-primary">{travelType}</Text>
               </View>
             </View>
           ) : null}
 
           {travelPersonality ? (
-            <View style={styles.highlightItem}>
-              <Text style={styles.subLabel}>PERSONALITY</Text>
-              <View style={styles.personalityPill}>
-                <Text style={styles.personalityPillText}>{travelPersonality}</Text>
+            <View className="flex-1 min-w-[130px] gap-1.5">
+              <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">PERSONALITY</Text>
+              <View className="bg-surface-subtle px-3 py-[7px] rounded-[14px] self-start">
+                <Text className="text-[13px] font-bold text-text-primary">{travelPersonality}</Text>
               </View>
             </View>
           ) : null}
@@ -62,15 +62,15 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
 
       {/* Languages */}
       {languages.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionLabelRow}>
+        <View className="gap-2">
+          <View className="flex-row items-center gap-1.5">
             <Globe size={13} color={theme.colors.textSecondary} />
-            <Text style={styles.subLabel}>LANGUAGES</Text>
+            <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">LANGUAGES</Text>
           </View>
-          <View style={styles.tagWrap}>
+          <View className="flex-row flex-wrap gap-2">
             {languages.map((lang, idx) => (
-              <View key={idx} style={styles.langTag}>
-                <Text style={styles.langTagText}>{lang}</Text>
+              <View key={idx} className="bg-surface-subtle px-3 py-1.5 rounded-xl">
+                <Text className="text-xs font-semibold text-text-secondary">{lang}</Text>
               </View>
             ))}
           </View>
@@ -79,15 +79,15 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
 
       {/* Skills */}
       {skills.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionLabelRow}>
+        <View className="gap-2">
+          <View className="flex-row items-center gap-1.5">
             <Award size={13} color={theme.colors.textSecondary} />
-            <Text style={styles.subLabel}>SKILLS</Text>
+            <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">SKILLS</Text>
           </View>
-          <View style={styles.tagWrap}>
+          <View className="flex-row flex-wrap gap-2">
             {skills.map((skill, idx) => (
-              <View key={idx} style={styles.skillTag}>
-                <Text style={styles.skillTagText}>{skill}</Text>
+              <View key={idx} className="bg-primary-mist px-3 py-1.5 rounded-xl border border-primary-border">
+                <Text className="text-xs font-bold text-primary">{skill}</Text>
               </View>
             ))}
           </View>
@@ -96,15 +96,15 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
 
       {/* Interests */}
       {interests.length > 0 && (
-        <View style={styles.section}>
-          <View style={styles.sectionLabelRow}>
+        <View className="gap-2">
+          <View className="flex-row items-center gap-1.5">
             <Heart size={13} color={theme.colors.textSecondary} />
-            <Text style={styles.subLabel}>INTERESTS</Text>
+            <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">INTERESTS</Text>
           </View>
-          <View style={styles.tagWrap}>
+          <View className="flex-row flex-wrap gap-2">
             {interests.map((interest, idx) => (
-              <View key={idx} style={styles.interestTag}>
-                <Text style={styles.interestTagText}>{interest}</Text>
+              <View key={idx} className="bg-surface-subtle px-3 py-1.5 rounded-xl border border-border">
+                <Text className="text-xs font-semibold text-text-primary">{interest}</Text>
               </View>
             ))}
           </View>
@@ -113,138 +113,3 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 20,
-    marginHorizontal: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-    gap: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  headerIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  highlightSection: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  highlightItem: {
-    flex: 1,
-    minWidth: 130,
-    gap: 6,
-  },
-  subLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.6,
-  },
-  stylePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-    alignSelf: 'flex-start',
-  },
-  stylePillText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  personalityPill: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 14,
-    alignSelf: 'flex-start',
-  },
-  personalityPillText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  section: {
-    gap: 8,
-  },
-  sectionLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  tagWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  langTag: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  langTagText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  skillTag: {
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  skillTagText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  interestTag: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  interestTagText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-});
