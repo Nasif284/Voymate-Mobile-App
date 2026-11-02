@@ -2,17 +2,16 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   ScrollView,
-  Platform,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { theme } from '../../../config/theme';
 import { ActiveTrip } from '../types';
 import { X, Luggage, Calendar, Check, Plus } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 interface SelectTripModalProps {
   visible: boolean;
@@ -55,17 +54,21 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-black/50 justify-end">
           <TouchableWithoutFeedback>
-            <View style={styles.sheet}>
+            <View className="bg-surface rounded-t-[28px] max-h-[75%] pt-5 pb-8 shadow-floating">
               {/* Header */}
-              <View style={styles.header}>
+              <View className="flex-row justify-between items-center px-5.5 pb-4 border-b border-border">
                 <View>
-                  <Text style={styles.title}>Your Travel Plans</Text>
-                  <Text style={styles.subtitle}>Select a trip to view matching companions</Text>
+                  <Text className="text-lg font-semibold text-text-primary tracking-tight">
+                    Your Travel Plans
+                  </Text>
+                  <Text className="text-xs text-text-muted mt-0.5">
+                    Select a trip to view matching companions
+                  </Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.closeBtn}
+                  className="p-1.5 bg-surface-subtle rounded-full"
                   onPress={onClose}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
@@ -76,13 +79,15 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
               {/* Trips List */}
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={{ paddingHorizontal: 22, paddingTop: 16, paddingBottom: 16, gap: 10 }}
               >
                 {trips.length === 0 ? (
-                  <View style={styles.emptyContainer}>
+                  <View className="p-7.5 items-center">
                     <Luggage size={32} color={theme.colors.primary} />
-                    <Text style={styles.emptyTitle}>No Upcoming Trips</Text>
-                    <Text style={styles.emptyText}>
+                    <Text className="text-base font-semibold text-text-primary mt-2.5">
+                      No Upcoming Trips
+                    </Text>
+                    <Text className="text-xs text-text-muted text-center mt-1">
                       Create a trip plan to start matching with travel mates.
                     </Text>
                   </View>
@@ -101,45 +106,45 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                     return (
                       <TouchableOpacity
                         key={trip.id}
-                        style={[
-                          styles.tripCard,
-                          isSelected && styles.tripCardSelected,
-                        ]}
+                        className={cn(
+                          'flex-row items-center justify-between bg-surface rounded-2xl border border-border p-3.5 shadow-subtle',
+                          isSelected && 'bg-primary-mist border-primary'
+                        )}
                         onPress={() => handleSelect(trip)}
                         activeOpacity={0.8}
                       >
-                        <View style={styles.tripCardLeft}>
+                        <View className="flex-row items-center flex-1 gap-3">
                           <View
-                            style={[
-                              styles.iconCircle,
-                              isSelected && styles.iconCircleSelected,
-                            ]}
+                            className={cn(
+                              'w-9.5 h-9.5 rounded-full bg-surface-subtle items-center justify-center',
+                              isSelected && 'bg-primary'
+                            )}
                           >
                             <Luggage
                               size={16}
                               color={isSelected ? theme.colors.white : theme.colors.primary}
                             />
                           </View>
-                          <View style={styles.tripInfo}>
-                            <Text style={styles.tripName} numberOfLines={1}>
+                          <View className="flex-1">
+                            <Text className="text-sm font-semibold text-text-primary" numberOfLines={1}>
                               {trip.name || destinationName}
                             </Text>
-                            <Text style={styles.tripDest} numberOfLines={1}>
+                            <Text className="text-xs text-text-secondary mt-0.5" numberOfLines={1}>
                               📍 {destinationName}
                             </Text>
                             {dateStr ? (
-                              <View style={styles.dateRow}>
+                              <View className="flex-row items-center gap-1 mt-1">
                                 <Calendar size={11} color={theme.colors.textMuted} />
-                                <Text style={styles.dateText}>{dateStr}</Text>
+                                <Text className="text-[11px] text-text-muted font-medium">{dateStr}</Text>
                               </View>
                             ) : null}
                           </View>
                         </View>
 
                         {isSelected && (
-                          <View style={styles.selectedBadge}>
+                          <View className="flex-row items-center bg-primary py-1 px-2 rounded-lg gap-1">
                             <Check size={13} color={theme.colors.white} />
-                            <Text style={styles.selectedText}>Active</Text>
+                            <Text className="text-[10px] font-semibold text-white">Active</Text>
                           </View>
                         )}
                       </TouchableOpacity>
@@ -150,9 +155,9 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
 
               {/* Bottom Action: Plan New Trip */}
               {onPlanNewTrip && (
-                <View style={styles.footer}>
+                <View className="px-5.5 pt-2.5">
                   <TouchableOpacity
-                    style={styles.planBtn}
+                    className="flex-row items-center justify-center bg-primary py-3.5 rounded-2xl gap-1.5 shadow-card"
                     onPress={() => {
                       onClose();
                       onPlanNewTrip();
@@ -160,7 +165,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                     activeOpacity={0.85}
                   >
                     <Plus size={16} color={theme.colors.white} />
-                    <Text style={styles.planBtnText}>Create Travel Plan</Text>
+                    <Text className="text-sm font-semibold text-white">Create Travel Plan</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -171,162 +176,3 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: theme.colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: '75%',
-    paddingTop: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 22,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  closeBtn: {
-    padding: 6,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 18,
-  },
-  scrollContent: {
-    paddingHorizontal: 22,
-    paddingTop: 16,
-    paddingBottom: 16,
-    gap: 10,
-  },
-  tripCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    padding: 14,
-  },
-  tripCardSelected: {
-    backgroundColor: theme.colors.primaryMist,
-    borderColor: theme.colors.primary,
-  },
-  tripCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconCircleSelected: {
-    backgroundColor: theme.colors.primary,
-  },
-  tripInfo: {
-    flex: 1,
-  },
-  tripName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  tripDest: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 3,
-  },
-  dateText: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    fontWeight: '500',
-  },
-  selectedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    gap: 4,
-  },
-  selectedText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.onPrimary,
-  },
-  emptyContainer: {
-    padding: 30,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginTop: 10,
-  },
-  emptyText: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  footer: {
-    paddingHorizontal: 22,
-    paddingTop: 10,
-  },
-  planBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 13,
-    borderRadius: 16,
-    gap: 6,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  planBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.onPrimary,
-  },
-});

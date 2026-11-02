@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   RefreshControl,
   TouchableOpacity,
@@ -159,7 +158,7 @@ export const MatchesScreen: React.FC = () => {
 
   const renderMatchItem = useCallback(
     ({ item }: { item: TripMatchItem }) => (
-      <View style={styles.cardWrapper}>
+      <View className="px-5">
         <MatchCard
           match={item}
           connectionStatus={
@@ -189,7 +188,7 @@ export const MatchesScreen: React.FC = () => {
       <MatchesHeader activeTripDestination={destinationTitle} />
 
       {!isLoading && activeTrip && (
-        <View style={styles.content}>
+        <View className="px-5">
           <ActiveTripCapsule
             trip={activeTrip}
             matchCount={matches.length}
@@ -214,33 +213,35 @@ export const MatchesScreen: React.FC = () => {
 
     if (!activeTrip) {
       return (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyCard}>
-            <View style={styles.emptyIconCircle}>
+        <View className="px-5 mt-2.5">
+          <View className="bg-surface rounded-3xl p-8 items-center border border-border shadow-subtle">
+            <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-4">
               <Compass size={30} color={theme.colors.primary} />
             </View>
-            <Text style={styles.emptyTitle}>Create a Trip to See Your Matches</Text>
-            <Text style={styles.emptyText}>
+            <Text className="text-lg font-semibold text-text-primary mb-2 text-center">
+              Create a Trip to See Your Matches
+            </Text>
+            <Text className="text-[13px] text-text-secondary text-center leading-5 max-w-[290px] mb-5">
               Add your destination and travel dates to see travelers going to the same place at the same time.
             </Text>
-            <View style={styles.emptyActionRow}>
+            <View className="flex-col w-full gap-2.5 items-center">
               <TouchableOpacity
-                style={styles.planTripBtn}
+                className="flex-row items-center justify-center bg-primary py-3.5 px-6 rounded-2xl w-full gap-2 shadow-card"
                 onPress={() => setIsCreateTripModalOpen(true)}
                 activeOpacity={0.85}
               >
                 <Sparkles size={14} color={theme.colors.white} />
-                <Text style={styles.planTripBtnText}>Create Travel Plan</Text>
+                <Text className="text-sm font-semibold text-white">Create Travel Plan</Text>
                 <ArrowRight size={14} color={theme.colors.white} />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.exploreBtnSecondary}
+                className="flex-row items-center bg-primary-mist py-2.5 px-4 rounded-xl gap-1.5 border border-primary/20"
                 onPress={() => navigation.navigate('ExploreTab')}
                 activeOpacity={0.85}
               >
                 <Compass size={14} color={theme.colors.primary} />
-                <Text style={styles.exploreBtnSecondaryText}>Explore Destinations</Text>
+                <Text className="text-xs font-semibold text-primary">Explore Destinations</Text>
                 <ArrowRight size={13} color={theme.colors.primary} />
               </TouchableOpacity>
             </View>
@@ -250,35 +251,35 @@ export const MatchesScreen: React.FC = () => {
     }
 
     return (
-      <View style={styles.content}>
-        <View style={styles.emptyCard}>
-          <View style={styles.emptyIconCircle}>
+      <View className="px-5">
+        <View className="bg-surface rounded-3xl p-8 items-center border border-border shadow-subtle">
+          <View className="w-[60px] h-[60px] rounded-full bg-primary-mist items-center justify-center mb-4">
             <Compass size={28} color={theme.colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>
+          <Text className="text-lg font-semibold text-text-primary mb-2 text-center">
             No Matches for {destinationTitle || 'Your Trip'} Yet
           </Text>
-          <Text style={styles.emptyText}>
+          <Text className="text-[13px] text-text-secondary text-center leading-5 max-w-[290px] mb-5">
             No travelers match your exact dates yet. Your trip is visible to others, and new matches will appear here automatically.
           </Text>
-          <View style={styles.emptyActionRow}>
+          <View className="flex-col w-full gap-2.5 items-center">
             <TouchableOpacity
-              style={styles.planTripBtn}
+              className="flex-row items-center justify-center bg-primary py-3.5 px-6 rounded-2xl w-full gap-2 shadow-card"
               onPress={() => navigation.navigate('ExploreTab')}
               activeOpacity={0.85}
             >
               <Compass size={14} color={theme.colors.white} />
-              <Text style={styles.planTripBtnText}>Explore Other Destinations</Text>
+              <Text className="text-sm font-semibold text-white">Explore Other Destinations</Text>
               <ArrowRight size={14} color={theme.colors.white} />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.exploreBtnSecondary}
+              className="flex-row items-center bg-primary-mist py-2.5 px-4 rounded-xl gap-1.5 border border-primary/20"
               onPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
               activeOpacity={0.85}
             >
               <Luggage size={14} color={theme.colors.primary} />
-              <Text style={styles.exploreBtnSecondaryText}>View My Trips</Text>
+              <Text className="text-xs font-semibold text-primary">View My Trips</Text>
               <ArrowRight size={13} color={theme.colors.primary} />
             </TouchableOpacity>
           </View>
@@ -288,17 +289,17 @@ export const MatchesScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.screen}>
+    <View className="flex-1 bg-background">
       <FlatList
         data={!isLoading && activeTrip ? matches : []}
         keyExtractor={(item) => `${item.user.id}-${item.tripMatch?.id || ''}`}
         renderItem={renderMatchItem}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.scrollContainer,
-          { paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 24 },
-        ]}
+        contentContainerStyle={{
+          paddingTop: insets.top + 8,
+          paddingBottom: tabBarHeight + 24,
+        }}
         showsVerticalScrollIndicator={false}
         initialNumToRender={6}
         maxToRenderPerBatch={8}
@@ -340,98 +341,3 @@ export const MatchesScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  scrollContainer: {
-    paddingBottom: 40,
-  },
-  content: {
-    paddingHorizontal: 20,
-  },
-  cardWrapper: {
-    paddingHorizontal: 20,
-  },
-  emptyContainer: {
-    paddingHorizontal: 20,
-    marginTop: 10,
-  },
-  emptyCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 32,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginTop: 8,
-  },
-  emptyIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 19,
-    maxWidth: 290,
-    marginBottom: 20,
-  },
-  emptyActionRow: {
-    flexDirection: 'column',
-    width: '100%',
-    gap: 10,
-    alignItems: 'center',
-  },
-  planTripBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 13,
-    paddingHorizontal: 24,
-    borderRadius: 14,
-    width: '100%',
-    gap: 8,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  planTripBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  exploreBtnSecondary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primaryMist,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  exploreBtnSecondaryText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { theme } from '../../../config/theme';
 import { TripMatchItem } from '../types';
 import { MessageSquare, Users } from 'lucide-react-native';
@@ -20,113 +20,41 @@ export const BuddiesOnTheRoadAlert: React.FC<BuddiesOnTheRoadAlertProps> = ({
   const count = buddies.length;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.left}>
-        <View style={styles.avatarWrapper}>
+    <View className="flex-row items-center justify-between bg-text-primary rounded-2xl py-3 px-3.5 mb-5 shadow-floating">
+      <View className="flex-row items-center flex-1 pr-2.5 gap-2.5">
+        <View className="relative">
           {firstBuddy.user.avatarUrl ? (
             <Image
               source={{ uri: firstBuddy.user.avatarUrl }}
-              style={styles.avatar}
+              className="w-9 h-9 rounded-full border border-surface"
             />
           ) : (
-            <View style={styles.avatarFallback}>
+            <View className="w-9 h-9 rounded-full bg-primary items-center justify-center border border-surface">
               <Users size={14} color={theme.colors.white} />
             </View>
           )}
         </View>
 
-        <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={1}>
+        <View className="flex-1">
+          <Text className="text-[13px] font-semibold text-white" numberOfLines={1}>
             {count === 1
               ? `${buddyName} is heading here too!`
               : `${buddyName} + ${count - 1} mate${count > 2 ? 's' : ''} heading here!`}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text className="text-[10px] text-white/75 mt-0.5">
             Connected buddies on the road around your dates
           </Text>
         </View>
       </View>
 
       <TouchableOpacity
-        style={styles.actionBtn}
+        className="flex-row items-center bg-primary py-2 px-3 rounded-xl gap-1 shadow-card"
         onPress={() => onMessagePress(firstBuddy)}
         activeOpacity={0.8}
       >
         <MessageSquare size={13} color={theme.colors.white} />
-        <Text style={styles.actionBtnText}>Chat</Text>
+        <Text className="text-[11px] font-semibold text-white">Chat</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.colors.textPrimary,
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 20,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    paddingRight: 10,
-    gap: 10,
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: theme.colors.surface,
-  },
-  avatarFallback: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: theme.colors.surface,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  subtitle: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.75)',
-    marginTop: 1,
-  },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    gap: 4,
-  },
-  actionBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.onPrimary,
-  },
-});

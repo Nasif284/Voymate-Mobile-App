@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '../../../config/theme';
 import { ActiveTrip } from '../types';
 import { Luggage, Calendar, Sparkles, ChevronDown } from 'lucide-react-native';
@@ -37,45 +37,47 @@ export const ActiveTripCapsule: React.FC<ActiveTripCapsuleProps> = ({
     'Upcoming Journey';
 
   return (
-    <View style={styles.card}>
-      <View style={styles.topRow}>
-        <View style={styles.labelGroup}>
+    <View className="bg-surface-subtle rounded-2xl border border-border p-4 mb-5 shadow-subtle">
+      <View className="flex-row justify-between items-center mb-2.5">
+        <View className="flex-row items-center gap-1.5">
           <Sparkles size={12} color={theme.colors.primary} />
-          <Text style={styles.label}>Matching For Trip</Text>
+          <Text className="text-[11px] font-semibold text-primary uppercase tracking-wider">
+            Matching For Trip
+          </Text>
         </View>
 
-        <View style={styles.topRight}>
+        <View className="flex-row items-center gap-2">
           {matchCount !== undefined && matchCount > 0 && (
-            <View style={styles.countBadge}>
-              <Text style={styles.countText}>{matchCount} matches</Text>
+            <View className="bg-surface px-2 py-0.5 rounded-lg border border-border">
+              <Text className="text-[10px] font-semibold text-primary">{matchCount} matches</Text>
             </View>
           )}
 
           {onChangeTrip && (
             <TouchableOpacity
-              style={styles.switchBtn}
+              className="flex-row items-center bg-surface py-1 px-2 rounded-lg border border-border gap-0.5"
               onPress={onChangeTrip}
               activeOpacity={0.8}
             >
-              <Text style={styles.switchBtnText}>Switch</Text>
+              <Text className="text-[11px] font-semibold text-primary">Switch</Text>
               <ChevronDown size={12} color={theme.colors.primary} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      <View style={styles.destinationRow}>
-        <View style={styles.iconCircle}>
+      <View className="flex-row items-center gap-3">
+        <View className="w-9 h-9 rounded-xl bg-surface items-center justify-center border border-border shadow-subtle">
           <Luggage size={16} color={theme.colors.primary} />
         </View>
-        <View style={styles.info}>
-          <Text style={styles.destinationTitle} numberOfLines={1}>
+        <View className="flex-1">
+          <Text className="text-sm font-semibold text-text-primary tracking-tight" numberOfLines={1}>
             {destinationName}
           </Text>
           {dates ? (
-            <View style={styles.dateRow}>
+            <View className="flex-row items-center gap-1 mt-0.5">
               <Calendar size={11} color={theme.colors.textMuted} />
-              <Text style={styles.dateText}>{dates}</Text>
+              <Text className="text-[11px] text-text-muted">{dates}</Text>
             </View>
           ) : null}
         </View>
@@ -83,104 +85,3 @@ export const ActiveTripCapsule: React.FC<ActiveTripCapsuleProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 16,
-    marginBottom: 20,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  labelGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  topRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  countBadge: {
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  countText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  switchBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 2,
-  },
-  switchBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  destinationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
-  },
-  info: {
-    flex: 1,
-  },
-  destinationTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 3,
-  },
-  dateText: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-});

@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '../../../config/theme';
+import { View, Text } from 'react-native';
 
 interface MatchesHeaderProps {
   activeTripDestination?: string | null;
@@ -10,9 +9,11 @@ export const MatchesHeader: React.FC<MatchesHeaderProps> = ({
   activeTripDestination,
 }) => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Trip Matches</Text>
-      <Text style={styles.subtitle}>
+    <View className="px-5 pt-2 pb-4">
+      <Text className="text-2xl font-semibold text-text-primary tracking-tight">
+        Trip Matches
+      </Text>
+      <Text className="text-xs text-text-muted mt-0.5 leading-[17px]">
         {activeTripDestination
           ? `Companions heading to ${activeTripDestination} on overlapping dates`
           : 'Companions whose destinations and dates align with yours'}
@@ -20,23 +21,3 @@ export const MatchesHeader: React.FC<MatchesHeaderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-});

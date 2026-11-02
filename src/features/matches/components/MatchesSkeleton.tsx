@@ -1,57 +1,34 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { theme } from '../../../config/theme';
+import { View } from 'react-native';
 
 export const MatchesSkeleton: React.FC = () => {
   return (
-    <View style={styles.container}>
+    <View className="px-5 pt-2.5">
       {/* Header Placeholder */}
-      <View style={styles.header}>
-        <View style={[styles.shimmerBox, { width: 140, height: 24, marginBottom: 8 }]} />
-        <View style={[styles.shimmerBox, { width: 220, height: 14, marginBottom: 16 }]} />
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <View style={[styles.shimmerBox, { width: 120, height: 32, borderRadius: 16 }]} />
-          <View style={[styles.shimmerBox, { width: 140, height: 32, borderRadius: 16 }]} />
+      <View className="mb-5">
+        <View className="w-[140px] h-6 rounded-lg bg-surface-subtle mb-2" />
+        <View className="w-[220px] h-3.5 rounded-lg bg-surface-subtle mb-4" />
+        <View className="flex-row gap-2">
+          <View className="w-[120px] h-8 rounded-2xl bg-surface-subtle" />
+          <View className="w-[140px] h-8 rounded-2xl bg-surface-subtle" />
         </View>
       </View>
 
       {/* Capsule Placeholder */}
-      <View style={[styles.shimmerBox, { width: '100%', height: 80, borderRadius: 20, marginBottom: 20 }]} />
+      <View className="w-full h-20 rounded-2xl bg-surface-subtle mb-5" />
 
       {/* Cards Placeholder */}
       {[1, 2].map((i) => (
-        <View key={i} style={styles.card}>
-          <View style={[styles.shimmerBox, { width: '100%', height: 120, borderRadius: 0 }]} />
-          <View style={{ padding: 18 }}>
-            <View style={[styles.shimmerBox, { width: 150, height: 20, marginBottom: 10 }]} />
-            <View style={[styles.shimmerBox, { width: 100, height: 14, marginBottom: 16 }]} />
-            <View style={[styles.shimmerBox, { width: '100%', height: 50, borderRadius: 12, marginBottom: 16 }]} />
-            <View style={[styles.shimmerBox, { width: '100%', height: 44, borderRadius: 14 }]} />
+        <View key={i} className="bg-surface rounded-3xl border border-border overflow-hidden mb-5">
+          <View className="w-full h-[120px] bg-surface-subtle" />
+          <View className="p-4.5">
+            <View className="w-[150px] h-5 rounded-lg bg-surface-subtle mb-2.5" />
+            <View className="w-[100px] h-3.5 rounded-lg bg-surface-subtle mb-4" />
+            <View className="w-full h-[50px] rounded-xl bg-surface-subtle mb-4" />
+            <View className="w-full h-11 rounded-2xl bg-surface-subtle" />
           </View>
         </View>
       ))}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  header: {
-    marginBottom: 20,
-  },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  shimmerBox: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 8,
-  },
-});

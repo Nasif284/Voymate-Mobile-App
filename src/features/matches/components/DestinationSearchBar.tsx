@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
 } from 'react-native';
 import { theme } from '../../../config/theme';
@@ -24,11 +23,11 @@ export const DestinationSearchBar: React.FC<DestinationSearchBarProps> = ({
   placeholder = 'Search by destination (e.g. Manali, Goa, Paris)...',
 }) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.searchBox}>
+    <View className="px-5 mb-4">
+      <View className="flex-row items-center bg-surface-subtle border border-border rounded-2xl px-3.5 py-2.5 gap-2.5 shadow-subtle">
         <Search size={16} color={theme.colors.textMuted} />
         <TextInput
-          style={styles.input}
+          className="flex-1 text-[13px] text-text-primary p-0"
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
@@ -46,28 +45,3 @@ export const DestinationSearchBar: React.FC<DestinationSearchBarProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 10,
-    ...theme.shadows.subtle,
-  },
-  input: {
-    flex: 1,
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    padding: 0,
-  },
-});
