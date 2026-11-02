@@ -39,6 +39,7 @@ const resetClientSessionState = (set: (partial: Partial<AuthState>) => void) => 
   set({
     user: null,
     isAuthenticated: false,
+    isVerified: true,
     onboarding: { step: 0, isCompleted: false },
     isLoading: false,
   });

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../../navigation/types';
 import { Button } from '../../../components/ui/Button';
@@ -11,7 +12,7 @@ export const InitialTripPlanScreen: React.FC<Props> = () => {
   const setOnboarding = useAuthStore((state) => state.setOnboarding);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-surface">
       <View className="flex-1 p-6 justify-between">
         <View className="mt-5">
           <Text className="text-[13px] font-semibold text-primary mb-2">Step 4 of 4</Text>

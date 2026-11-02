@@ -11,7 +11,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 
 export default function App() {
   return (
-    <GestureHandlerRootView className="flex-1">
+    <GestureHandlerRootView style={{ flex: 1 }} className="flex-1">
       <SafeAreaProvider>
         <ErrorBoundary>
           <QueryClientProvider client={queryClient}>

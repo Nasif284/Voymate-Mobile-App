@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  SafeAreaView,
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../config/theme';
 import { Search, X, Check, Plus } from 'lucide-react-native';
 import { useHaptics } from '../../hooks/useHaptics';

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { OnboardingStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
@@ -93,7 +93,7 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-surface">
       <View className="flex-1">
         {/* Top Step Progress Indicator */}
         <View className="flex-row items-center justify-between px-6 pt-3 pb-2.5">

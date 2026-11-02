@@ -2,8 +2,8 @@ import React from 'react';
 import {
   View,
   Text,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../../navigation/types';
@@ -22,7 +22,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   return (
-    <SafeAreaView className="flex-1 bg-surface">
+    <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-surface">
       <StatusBar style="dark" />
       <View className="flex-1 px-6 py-4 justify-between">
         {/* Top Hero Brand Section */}
