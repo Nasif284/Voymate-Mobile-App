@@ -16,7 +16,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
   const firstName = name?.split(' ')[0] || 'Traveler';
 
   return (
-    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm">
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border">
       <View className="flex-row items-center gap-2 mb-3">
         <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
           <User size={15} color={theme.colors.primary} />

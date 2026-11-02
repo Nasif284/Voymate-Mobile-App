@@ -196,13 +196,13 @@ export const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
 
         {/* Profile Identity Card */}
-        <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5 shadow-sm">
+        <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5">
           {/* Avatar Row */}
           <View className="flex-row justify-between items-end -mt-[45px] mb-3">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={handlePickAvatar}
-              className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle shadow-md items-center justify-center relative"
+              className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle items-center justify-center relative"
             >
               {profile?.avatarUrl ? (
                 <Image source={{ uri: profile.avatarUrl }} className="w-full h-full rounded-full" />

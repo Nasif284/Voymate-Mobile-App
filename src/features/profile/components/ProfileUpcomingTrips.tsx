@@ -44,7 +44,7 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
   if ((!trips || trips.length === 0) && !onSeeAll) return null;
 
   return (
-    <View className="bg-surface rounded-[24px] py-[18px] mx-4 mt-3.5 border border-border shadow-sm">
+    <View className="bg-surface rounded-[24px] py-[18px] mx-4 mt-3.5 border border-border">
       <View className="flex-row items-center justify-between px-5 mb-3.5">
         <View className="flex-row items-center gap-2">
           <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">

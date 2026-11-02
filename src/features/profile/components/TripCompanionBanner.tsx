@@ -38,7 +38,7 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
     dateFromStr && dateToStr ? `${dateFromStr} - ${dateToStr}` : dateFromStr || '';
 
   return (
-    <View className="bg-text-primary rounded-[24px] p-5 mx-4 mt-3.5 border border-white/10 shadow-md">
+    <View className="bg-text-primary rounded-[24px] p-5 mx-4 mt-3.5 border border-white/10">
       {/* Decorative accent top bar */}
       <View className="flex-row items-center gap-3 mb-3">
         <View className="w-9 h-9 rounded-xl bg-white/10 justify-center items-center border border-white/20">
@@ -69,7 +69,7 @@ export const TripCompanionBanner: React.FC<TripCompanionBannerProps> = ({
 
       {/* Action CTA */}
       <TouchableOpacity
-        className="bg-surface h-11 rounded-[14px] flex-row items-center justify-center gap-2 shadow-sm"
+        className="bg-surface h-11 rounded-[14px] flex-row items-center justify-center gap-2"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onMessagePress();

@@ -28,7 +28,7 @@ export const ProfileAttributesCard: React.FC<ProfileAttributesCardProps> = ({
   if (!hasAny) return null;
 
   return (
-    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm gap-4">
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border gap-4">
       <View className="flex-row items-center gap-2 pb-3 border-b border-border">
         <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
           <Compass size={16} color={theme.colors.primary} />

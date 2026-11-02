@@ -182,7 +182,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 
                   <TouchableOpacity
                     className={cn(
-                      'flex-[1.5] h-11 rounded-[14px] bg-primary items-center justify-center shadow-sm',
+                      'flex-[1.5] h-11 rounded-[14px] bg-primary items-center justify-center',
                       (!newPassword || !confirmPassword || !passwordsMatch || isSubmitting) && 'opacity-45'
                     )}
                     onPress={handleSubmit}

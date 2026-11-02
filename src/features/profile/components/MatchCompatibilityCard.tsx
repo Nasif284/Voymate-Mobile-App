@@ -13,12 +13,12 @@ export const MatchCompatibilityCard: React.FC<MatchCompatibilityCardProps> = ({
   reasons = [],
 }) => {
   return (
-    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border shadow-sm">
+    <View className="bg-surface rounded-[24px] p-5 mx-4 mt-3.5 border border-border">
       {/* Top Header & Gauge Row */}
       <View className="flex-row items-center gap-4 pb-4 border-b border-border">
         {/* Score Ring Gauge */}
         <View className="items-center justify-center">
-          <View className="w-[76px] h-[76px] rounded-full border-4 border-primary bg-primary-mist items-center justify-center shadow-sm">
+          <View className="w-[76px] h-[76px] rounded-full border-4 border-primary bg-primary-mist items-center justify-center">
             <Text className="text-[22px] font-bold text-primary tracking-[-0.5px]">{score}%</Text>
             <Text className="text-[8px] font-semibold text-primary tracking-[0.8px] opacity-85 -mt-0.5">SCORE</Text>
           </View>

@@ -46,7 +46,7 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
       : trip.destination?.name || 'Destination';
 
   return (
-    <View className="bg-surface rounded-[24px] mx-4 mt-3.5 overflow-hidden border border-border shadow-sm">
+    <View className="bg-surface rounded-[24px] mx-4 mt-3.5 overflow-hidden border border-border">
       {/* Header */}
       <View className="flex-row items-center gap-2 px-[18px] py-3.5 border-b border-border">
         <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">

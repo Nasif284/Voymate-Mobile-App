@@ -127,13 +127,13 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
       </TouchableOpacity>
 
       {/* Profile Overlapping Card */}
-      <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5 shadow-sm">
+      <View className="bg-surface rounded-t-[32px] -mt-8 px-5 pb-5">
         {/* Floating Avatar */}
         <View className="flex-row justify-between items-end -mt-[45px] mb-3">
           <TouchableOpacity
             activeOpacity={isOwnProfile ? 0.85 : 1}
             onPress={isOwnProfile ? onAvatarPress : undefined}
-            className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle shadow-md items-center justify-center relative"
+            className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle items-center justify-center relative"
           >
             {user.avatarUrl ? (
               <Image source={{ uri: user.avatarUrl }} className="w-full h-full rounded-full" />
@@ -245,7 +245,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
                 </View>
               ) : (
                 <TouchableOpacity
-                  className="flex-[1.3] h-11 rounded-[14px] bg-primary flex-row items-center justify-center gap-1.5 shadow-sm"
+                  className="flex-[1.3] h-11 rounded-[14px] bg-primary flex-row items-center justify-center gap-1.5"
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     onConnectPress?.();
