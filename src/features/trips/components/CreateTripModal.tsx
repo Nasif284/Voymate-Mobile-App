@@ -264,7 +264,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                 </View>
 
                 {selectedPlace ? (
-                  <View className="flex-row items-center justify-between bg-primary-mist rounded-2xl border border-primary/20 p-3">
+                  <View className="flex-row items-center justify-between bg-surface rounded-2xl border border-primary p-3">
                     <View className="flex-row items-center flex-1 pr-2.5 gap-2.5">
                       <View className="w-6 h-6 rounded-full bg-primary items-center justify-center">
                         <Check size={14} color={theme.colors.white} />
@@ -351,7 +351,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                   <TouchableOpacity
                     className={cn(
                       'flex-1 py-1.5 px-2 rounded-xl border border-transparent items-start',
-                      activePicker === 'from' && 'bg-primary-mist border-primary'
+                      activePicker === 'from' && 'bg-surface border-primary'
                     )}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -372,7 +372,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
 
                   {/* Center Duration Badge */}
                   <View className="items-center justify-center px-2 gap-1">
-                    <View className="bg-primary-mist border border-primary/20 rounded-xl py-0.5 px-2">
+                    <View className="bg-surface border border-primary rounded-xl py-0.5 px-2">
                       <Text className="text-[10px] font-semibold text-primary">
                         {durationDays} {durationDays === 1 ? 'Day' : 'Days'}
                       </Text>
@@ -384,7 +384,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                   <TouchableOpacity
                     className={cn(
                       'flex-1 py-1.5 px-2 rounded-xl border border-transparent items-end',
-                      activePicker === 'to' && 'bg-primary-mist border-primary'
+                      activePicker === 'to' && 'bg-surface border-primary'
                     )}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -415,7 +415,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                       </Text>
                       <TouchableOpacity
                         onPress={() => setActivePicker(null)}
-                        className="py-1 px-2.5 rounded-lg bg-primary-mist"
+                        className="py-1 px-2.5 rounded-lg bg-surface border border-primary"
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       >
                         <Text className="text-xs font-semibold text-primary">Done</Text>
@@ -453,7 +453,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                         key={days}
                         className={cn(
                           'flex-1 items-center justify-center bg-surface-subtle py-2 rounded-xl border border-transparent',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => handleAddDuration(days)}
                         activeOpacity={0.75}
@@ -492,7 +492,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                         key={style.id}
                         className={cn(
                           'flex-1 flex-row items-center justify-center bg-surface-subtle py-2.5 px-1.5 rounded-2xl border border-transparent gap-1.5',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -531,7 +531,7 @@ export const CreateTripModal: React.FC<CreateTripModalProps> = ({
                         key={b.id}
                         className={cn(
                           'w-[48.5%] bg-surface-subtle py-2 px-2.5 rounded-2xl border border-transparent',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

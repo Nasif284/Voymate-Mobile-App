@@ -121,7 +121,7 @@ export const SearchableSelectModal: React.FC<SearchableSelectModalProps> = ({
           {/* Custom option button if no exact match and allowCustom is true */}
           {allowCustom && searchQuery.trim().length > 1 && (
             <TouchableOpacity
-              className="flex-row items-center py-3 px-5 bg-primary-light mx-5 rounded-xl mb-2"
+              className="flex-row items-center py-3 px-5 bg-surface border border-primary mx-5 rounded-xl mb-2"
               onPress={handleAddCustom}
               activeOpacity={0.7}
             >

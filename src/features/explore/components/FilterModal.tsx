@@ -135,7 +135,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         key={style.id}
                         className={cn(
                           'flex-row items-center bg-surface-subtle py-2 px-3 rounded-2xl border border-transparent gap-1.5',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => handleSelectTravelStyle(style.id)}
                         activeOpacity={0.7}
@@ -171,7 +171,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         key={b.id}
                         className={cn(
                           'flex-row items-center bg-surface-subtle py-2 px-3 rounded-2xl border border-transparent gap-1.5',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => handleSelectBudgetStyle(b.id)}
                         activeOpacity={0.7}

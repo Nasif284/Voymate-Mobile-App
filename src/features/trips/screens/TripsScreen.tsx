@@ -225,7 +225,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
           {isCurrentActive && (
             <View className="flex-row items-center gap-2.5 mt-2.5 pt-3 border-t border-border">
               <TouchableOpacity
-                className="flex-1 flex-row items-center justify-center gap-1.5 bg-primary-mist py-2.5 rounded-xl"
+                className="flex-1 flex-row items-center justify-center gap-1.5 bg-surface border border-primary py-2.5 rounded-xl"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setEditingTrip(item);
@@ -325,7 +325,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
         </TouchableOpacity>
         <Text className="text-base font-semibold text-text-primary">My Trips</Text>
         <TouchableOpacity
-          className="w-9 h-9 rounded-full bg-primary-mist items-center justify-center"
+          className="w-9 h-9 rounded-full bg-surface border border-primary items-center justify-center"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setShowCreateModal(true);

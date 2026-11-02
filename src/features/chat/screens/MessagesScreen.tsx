@@ -364,7 +364,7 @@ export const MessagesScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-primary-mist items-center justify-center"
+            className="w-10 h-10 rounded-full bg-surface border border-primary items-center justify-center"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               if (connections.length > 0) {

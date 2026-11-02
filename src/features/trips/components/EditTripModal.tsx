@@ -186,7 +186,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 <TouchableOpacity
                   className={cn(
                     'flex-row items-center justify-between bg-surface-subtle border border-border rounded-2xl px-4 py-3',
-                    activePicker === 'from' && 'border-primary bg-primary-mist'
+                    activePicker === 'from' && 'border-primary bg-surface'
                   )}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -222,7 +222,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 <TouchableOpacity
                   className={cn(
                     'flex-row items-center justify-between bg-surface-subtle border border-border rounded-2xl px-4 py-3',
-                    activePicker === 'to' && 'border-primary bg-primary-mist'
+                    activePicker === 'to' && 'border-primary bg-surface'
                   )}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

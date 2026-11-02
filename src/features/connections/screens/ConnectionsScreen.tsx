@@ -319,7 +319,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   {/* Actions */}
                   <View className="flex-row items-center gap-2">
                     <TouchableOpacity
-                      className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-[7px] rounded-xl"
+                      className="flex-row items-center gap-1.5 bg-surface border border-primary px-3 py-[7px] rounded-xl"
                       onPress={() => handleMessage(item.userId, item.fullName, item.avatarUrl)}
                     >
                       <MessageSquare size={14} color={theme.colors.primary} />

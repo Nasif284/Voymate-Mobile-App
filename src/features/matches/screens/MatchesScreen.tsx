@@ -236,7 +236,7 @@ export const MatchesScreen: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-row items-center bg-primary-mist py-2.5 px-4 rounded-xl gap-1.5 border border-primary/20"
+                className="flex-row items-center bg-surface py-2.5 px-4 rounded-xl gap-1.5 border border-primary"
                 onPress={() => navigation.navigate('ExploreTab')}
                 activeOpacity={0.85}
               >
@@ -274,7 +274,7 @@ export const MatchesScreen: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-row items-center bg-primary-mist py-2.5 px-4 rounded-xl gap-1.5 border border-primary/20"
+              className="flex-row items-center bg-surface py-2.5 px-4 rounded-xl gap-1.5 border border-primary"
               onPress={() => navigation.navigate('Trips', { initialTab: 'active' })}
               activeOpacity={0.85}
             >

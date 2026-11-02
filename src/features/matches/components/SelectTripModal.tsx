@@ -108,7 +108,7 @@ export const SelectTripModal: React.FC<SelectTripModalProps> = ({
                         key={trip.id}
                         className={cn(
                           'flex-row items-center justify-between bg-surface rounded-2xl border border-border p-3.5 shadow-subtle',
-                          isSelected && 'bg-primary-mist border-primary'
+                          isSelected && 'bg-surface border-primary'
                         )}
                         onPress={() => handleSelect(trip)}
                         activeOpacity={0.8}

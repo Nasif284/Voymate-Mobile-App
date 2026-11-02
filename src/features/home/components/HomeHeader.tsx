@@ -72,7 +72,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           <TouchableOpacity
             className={cn(
               'flex-row items-center py-[7px] px-[11px] rounded-full border gap-1.5',
-              isTraveling ? 'bg-primary-mist border-primary/25' : 'bg-surface border-border'
+              isTraveling ? 'bg-surface border-primary' : 'bg-surface border-border'
             )}
             onPress={handleToggle}
             activeOpacity={0.7}

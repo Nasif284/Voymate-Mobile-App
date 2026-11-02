@@ -223,7 +223,7 @@ export const ProfileScreen: React.FC = () => {
             {/* Edit Profile Action Group */}
             <View className="flex-row items-center gap-2 mb-1">
               <TouchableOpacity
-                className="flex-row items-center gap-1.5 bg-primary-mist px-3.5 py-2 rounded-2xl border border-primary-border"
+                className="flex-row items-center gap-1.5 bg-surface px-3.5 py-2 rounded-2xl border border-primary"
                 onPress={() => setShowEditModal(true)}
                 activeOpacity={0.8}
               >

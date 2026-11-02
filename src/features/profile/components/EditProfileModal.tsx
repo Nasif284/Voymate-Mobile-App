@@ -121,7 +121,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <TouchableOpacity
               onPress={handleSave}
               disabled={isSaving}
-              className={cn('px-3.5 py-1.5 rounded-xl bg-primary-mist', isSaving && 'opacity-60')}
+              className={cn('px-3.5 py-1.5 rounded-xl bg-surface border border-primary', isSaving && 'opacity-60')}
             >
               {isSaving ? (
                 <ActivityIndicator size="small" color={theme.colors.primary} />

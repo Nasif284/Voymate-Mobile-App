@@ -38,7 +38,7 @@ export const ProfileBioCard: React.FC<ProfileBioCardProps> = ({ name, bio, onAdd
           <Text className="text-[13px] text-text-secondary leading-[19px]">
             Add a short bio about your travel style so potential travel mates know more about you.
           </Text>
-          <View className="flex-row items-center self-start bg-primary-mist px-3 py-1.5 rounded-[10px] gap-1">
+          <View className="flex-row items-center self-start bg-surface px-3 py-1.5 rounded-[10px] border border-primary gap-1">
             <Plus size={13} color={theme.colors.primary} />
             <Text className="text-xs font-bold text-primary">Add Bio</Text>
           </View>

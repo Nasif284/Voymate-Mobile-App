@@ -203,7 +203,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             <>
               {/* Message Button */}
               <TouchableOpacity
-                className="flex-1 h-11 rounded-[14px] bg-primary-mist border border-primary-border flex-row items-center justify-center gap-1.5"
+                className="flex-1 h-11 rounded-[14px] bg-surface border border-primary flex-row items-center justify-center gap-1.5"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   onMessagePress?.();
@@ -216,7 +216,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
 
               {/* Dynamic Connection Button */}
               {connectionStatus === 'CONNECTED' ? (
-                <View className="flex-[1.3] h-11 rounded-[14px] bg-primary-mist border border-primary-border flex-row items-center justify-center gap-1.5">
+                <View className="flex-[1.3] h-11 rounded-[14px] bg-surface border border-primary flex-row items-center justify-center gap-1.5">
                   <Check size={14} color={theme.colors.primary} strokeWidth={2.5} />
                   <Text className="text-sm font-bold text-primary">Connected</Text>
                 </View>

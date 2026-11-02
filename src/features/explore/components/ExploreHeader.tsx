@@ -107,7 +107,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
         >
           {filters.travelStyle && (
             <TouchableOpacity
-              className="flex-row items-center bg-primary-mist py-1.5 px-3 rounded-xl border border-primary/20 gap-1.5"
+              className="flex-row items-center bg-surface py-1.5 px-3 rounded-xl border border-primary gap-1.5"
               onPress={() => onRemoveFilter('travelStyle')}
               activeOpacity={0.7}
             >
@@ -120,7 +120,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
 
           {filters.budgetStyle && (
             <TouchableOpacity
-              className="flex-row items-center bg-primary-mist py-1.5 px-3 rounded-xl border border-primary/20 gap-1.5"
+              className="flex-row items-center bg-surface py-1.5 px-3 rounded-xl border border-primary gap-1.5"
               onPress={() => onRemoveFilter('budgetStyle')}
               activeOpacity={0.7}
             >
