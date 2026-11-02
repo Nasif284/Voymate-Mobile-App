@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
@@ -13,6 +12,7 @@ import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
 import { useHaptics } from '../../../hooks/useHaptics';
 import { useSetOnboardingTravelStyle } from '../hooks/onboarding.hooks';
+import { cn } from '../../../utils/cn';
 import {
   ArrowLeft,
   Check,
@@ -102,101 +102,97 @@ const PERSONALITIES: PersonalityOption[] = [
 ];
 
 const INTEREST_TAGS = [
-  { label: 'Mountains & Treks', value: 'Mountains' },
-  { label: 'Beaches & Ocean', value: 'Beach' },
-  { label: 'Food & Culinary', value: 'Foodie' },
-  { label: 'Culture & History', value: 'Culture' },
-  { label: 'Hiking & Trails', value: 'Hiking' },
-  { label: 'Nightlife & Music', value: 'Party' },
-  { label: 'Road Trips', value: 'Road Trips' },
-  { label: 'Wildlife & Nature', value: 'Wildlife' },
-  { label: 'Wellness & Yoga', value: 'Wellness' },
-  { label: 'Photography', value: 'Photography' },
+  { label: 'Hiking & Trekking', value: 'HIKING' },
+  { label: 'Street Food & Dining', value: 'FOODIE' },
+  { label: 'Photography', value: 'PHOTOGRAPHY' },
+  { label: 'Art & Museums', value: 'CULTURE' },
+  { label: 'Nightlife & Bars', value: 'NIGHTLIFE' },
+  { label: 'Beaches & Surfing', value: 'BEACH' },
+  { label: 'Historical Sites', value: 'HISTORY' },
+  { label: 'Nature & Wildlife', value: 'NATURE' },
+  { label: 'Road Trips', value: 'ROAD_TRIPS' },
+  { label: 'Wellness & Yoga', value: 'WELLNESS' },
+  { label: 'Coffee Crawls', value: 'COFFEE' },
+  { label: 'Scuba Diving', value: 'SCUBA' },
 ];
 
-interface MatchOption {
+interface MatchPreferenceOption {
   id: MatchPreference;
   title: string;
   subtitle: string;
   icon: (color: string) => React.ReactNode;
 }
 
-const MATCH_PREFERENCES: MatchOption[] = [
+const MATCH_PREFERENCES: MatchPreferenceOption[] = [
   {
     id: 'EVERYONE',
-    title: 'Everyone',
-    subtitle: 'Open to connecting with all respectful solo travelers worldwide 🌍',
-    icon: (color) => <Globe size={22} color={color} strokeWidth={2} />,
+    title: 'Any Traveler',
+    subtitle: 'Open to connecting with everyone regardless of gender.',
+    icon: (color) => <Globe size={24} color={color} strokeWidth={2} />,
   },
   {
     id: 'WOMEN',
-    title: 'Women Only',
-    subtitle: 'Prioritize connecting with female solo travelers 👩',
-    icon: (color) => <Heart size={22} color={color} strokeWidth={2} />,
+    title: 'Female Solo Travelers',
+    subtitle: 'Prefer matching exclusively with female travel buddies.',
+    icon: (color) => <Heart size={24} color={color} strokeWidth={2} />,
   },
   {
     id: 'MEN',
-    title: 'Men Only',
-    subtitle: 'Prioritize connecting with male solo travelers 👨',
-    icon: (color) => <Users size={22} color={color} strokeWidth={2} />,
+    title: 'Male Solo Travelers',
+    subtitle: 'Prefer matching exclusively with male travel buddies.',
+    icon: (color) => <Users size={24} color={color} strokeWidth={2} />,
   },
 ];
 
 export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
-  // Micro-step (0: Travel Type, 1: Personality, 2: Interests, 3: Match Preference)
   const [currentSubStep, setCurrentSubStep] = useState(0);
-
-  // Form State
   const [travelType, setTravelType] = useState<TravelType>('BACKPACKER');
   const [personality, setPersonality] = useState<Personality>('AMBIVERT');
-  const [selectedInterests, setSelectedInterests] = useState<string[]>(['Mountains', 'Culture']);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([
+    'FOODIE',
+    'PHOTOGRAPHY',
+    'HIKING',
+  ]);
   const [matchPreference, setMatchPreference] = useState<MatchPreference>('EVERYONE');
-
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const haptics = useHaptics();
   const setTravelStyleMutation = useSetOnboardingTravelStyle({
+    onSuccess: () => {
+      navigation.navigate('InitialTripPlan');
+    },
     onError: (msg) => setErrorMessage(msg),
   });
   const loading = setTravelStyleMutation.isPending;
 
-  // Next Micro-step
-  const handleNextSubStep = () => {
-    haptics.selection();
-    setErrorMessage(null);
-
-    // Validation for Sub-step 2 (Interests)
-    if (currentSubStep === 2 && selectedInterests.length === 0) {
-      haptics.error();
-      setErrorMessage('Please pick at least one travel interest to continue.');
-      return;
-    }
-
-    if (currentSubStep < TOTAL_SUBSTEPS - 1) {
-      setCurrentSubStep((prev) => prev + 1);
-    }
-  };
-
-  // Back Sub-step
+  // Navigation Logic between micro-steps
   const handleBack = () => {
-    haptics.selection();
-    setErrorMessage(null);
     if (currentSubStep > 0) {
+      haptics.selection();
       setCurrentSubStep((prev) => prev - 1);
+      if (errorMessage) setErrorMessage(null);
     } else {
       navigation.goBack();
     }
+  };
+
+  const handleNextSubStep = () => {
+    if (errorMessage) setErrorMessage(null);
+
+    if (currentSubStep === 2 && selectedInterests.length === 0) {
+      haptics.error();
+      setErrorMessage('Please select at least one travel interest.');
+      return;
+    }
+
+    haptics.selection();
+    setCurrentSubStep((prev) => prev + 1);
   };
 
   // Toggle Interest Tag
   const toggleInterest = (val: string) => {
     haptics.selection();
     if (selectedInterests.includes(val)) {
-      if (selectedInterests.length === 1) {
-        haptics.error();
-        setErrorMessage('Select at least one travel interest.');
-        return;
-      }
       setSelectedInterests(selectedInterests.filter((i) => i !== val));
     } else {
       if (selectedInterests.length >= 10) {
@@ -221,12 +217,13 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView className="flex-1 bg-surface">
+      <View className="flex-1">
         {/* Top Header Bar */}
-        <View style={styles.topNav}>
+        <View className="flex-row items-center justify-between px-5 pt-2.5 pb-2">
           <TouchableOpacity
-            style={styles.backButton}
+            className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border shadow-subtle"
+            style={theme.shadows.subtle}
             onPress={handleBack}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             activeOpacity={0.7}
@@ -234,61 +231,62 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
             <ArrowLeft size={20} color={theme.colors.textPrimary} strokeWidth={2} />
           </TouchableOpacity>
 
-          <View style={styles.substepIndicator}>
-            <Text style={styles.substepText}>
+          <View className="items-center">
+            <Text className="text-[13px] font-semibold text-textMuted">
               Travel Style • {currentSubStep + 1} of {TOTAL_SUBSTEPS}
             </Text>
           </View>
 
-          <View style={{ width: 40 }} />
+          <View className="w-10" />
         </View>
 
         {/* Segmented Progress Dashes */}
-        <View style={styles.segmentedProgressBar}>
+        <View className="flex-row px-5 gap-1.5 my-3">
           {Array.from({ length: TOTAL_SUBSTEPS }).map((_, index) => (
             <View
               key={index}
-              style={[
-                styles.segmentDash,
-                index <= currentSubStep && styles.segmentDashActive,
-              ]}
+              className={cn(
+                'flex-1 h-[3.5px] rounded-full',
+                index <= currentSubStep ? 'bg-primary' : 'bg-border-subtle'
+              )}
             />
           ))}
         </View>
 
         {/* Error Banner */}
         {errorMessage ? (
-          <View style={styles.errorBanner}>
-            <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-            <Text style={styles.errorBannerText}>{errorMessage}</Text>
+          <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mx-5 mb-2.5 border border-error">
+            <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+            <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">{errorMessage}</Text>
           </View>
         ) : null}
 
         {/* FOCUSED MICRO-STEPS */}
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 110 }}
         >
           {/* SUB-STEP 0: TRAVEL TYPE */}
           {currentSubStep === 0 && (
-            <View style={styles.subStepContainer}>
-              <View style={styles.header}>
-                <Text style={styles.title}>How do you travel?</Text>
-                <Text style={styles.subtitle}>
+            <View className="pt-2.5">
+              <View className="mb-6">
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">How do you travel?</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   Choose the travel budget and pace that best describes your style.
                 </Text>
               </View>
 
-              <View style={styles.cardList}>
+              <View className="gap-3.5">
                 {TRAVEL_TYPES.map((type) => {
                   const isSelected = travelType === type.id;
                   return (
                     <TouchableOpacity
                       key={type.id}
-                      style={[
-                        styles.choiceCard,
-                        isSelected && styles.choiceCardSelected,
-                      ]}
+                      className={cn(
+                        'flex-row bg-surface rounded-[18px] border-[1.5px] p-4 items-start shadow-subtle',
+                        isSelected ? 'border-primary' : 'border-border'
+                      )}
+                      style={theme.shadows.subtle}
                       onPress={() => {
                         haptics.selection();
                         setTravelType(type.id);
@@ -296,37 +294,37 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       activeOpacity={0.8}
                     >
                       <View
-                        style={[
-                          styles.cardIconBox,
-                          isSelected && styles.cardIconBoxSelected,
-                        ]}
+                        className={cn(
+                          'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
+                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                        )}
                       >
                         {type.icon(
                           isSelected ? theme.colors.primary : theme.colors.textSecondary
                         )}
                       </View>
 
-                      <View style={{ flex: 1 }}>
-                        <View style={styles.cardTitleRow}>
+                      <View className="flex-1">
+                        <View className="flex-row items-center justify-between mb-1">
                           <Text
-                            style={[
-                              styles.cardTitle,
-                              isSelected && styles.cardTitleSelected,
-                            ]}
+                            className={cn(
+                              'text-base font-semibold',
+                              isSelected ? 'text-primary' : 'text-textPrimary'
+                            )}
                           >
                             {type.title}
                           </Text>
                           <View
-                            style={[
-                              styles.radioCircle,
-                              isSelected && styles.radioCircleSelected,
-                            ]}
+                            className={cn(
+                              'w-[22px] h-[22px] rounded-full border-[1.5px] items-center justify-center',
+                              isSelected ? 'bg-primary border-primary' : 'border-border'
+                            )}
                           >
                             {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
-                        <Text style={styles.cardTagline}>{type.tagline}</Text>
-                        <Text style={styles.cardDesc}>{type.desc}</Text>
+                        <Text className="text-xs font-semibold text-primary mb-1">{type.tagline}</Text>
+                        <Text className="text-[13px] text-textSecondary leading-[18px]">{type.desc}</Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -337,24 +335,25 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* SUB-STEP 1: TRAVEL PERSONALITY */}
           {currentSubStep === 1 && (
-            <View style={styles.subStepContainer}>
-              <View style={styles.header}>
-                <Text style={styles.title}>Your travel energy</Text>
-                <Text style={styles.subtitle}>
+            <View className="pt-2.5">
+              <View className="mb-6">
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Your travel energy</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   This helps us match you with travel companions on a similar social wavelength.
                 </Text>
               </View>
 
-              <View style={styles.cardList}>
+              <View className="gap-3.5">
                 {PERSONALITIES.map((p) => {
                   const isSelected = personality === p.id;
                   return (
                     <TouchableOpacity
                       key={p.id}
-                      style={[
-                        styles.choiceCard,
-                        isSelected && styles.choiceCardSelected,
-                      ]}
+                      className={cn(
+                        'flex-row bg-surface rounded-[18px] border-[1.5px] p-4 items-start shadow-subtle',
+                        isSelected ? 'border-primary' : 'border-border'
+                      )}
+                      style={theme.shadows.subtle}
                       onPress={() => {
                         haptics.selection();
                         setPersonality(p.id);
@@ -362,37 +361,37 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       activeOpacity={0.8}
                     >
                       <View
-                        style={[
-                          styles.cardIconBox,
-                          isSelected && styles.cardIconBoxSelected,
-                        ]}
+                        className={cn(
+                          'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
+                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                        )}
                       >
                         {p.icon(
                           isSelected ? theme.colors.primary : theme.colors.textSecondary
                         )}
                       </View>
 
-                      <View style={{ flex: 1 }}>
-                        <View style={styles.cardTitleRow}>
+                      <View className="flex-1">
+                        <View className="flex-row items-center justify-between mb-1">
                           <Text
-                            style={[
-                              styles.cardTitle,
-                              isSelected && styles.cardTitleSelected,
-                            ]}
+                            className={cn(
+                              'text-base font-semibold',
+                              isSelected ? 'text-primary' : 'text-textPrimary'
+                            )}
                           >
                             {p.title}
                           </Text>
                           <View
-                            style={[
-                              styles.radioCircle,
-                              isSelected && styles.radioCircleSelected,
-                            ]}
+                            className={cn(
+                              'w-[22px] h-[22px] rounded-full border-[1.5px] items-center justify-center',
+                              isSelected ? 'bg-primary border-primary' : 'border-border'
+                            )}
                           >
                             {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
-                        <Text style={styles.cardTagline}>{p.tagline}</Text>
-                        <Text style={styles.cardDesc}>{p.desc}</Text>
+                        <Text className="text-xs font-semibold text-primary mb-1">{p.tagline}</Text>
+                        <Text className="text-[13px] text-textSecondary leading-[18px]">{p.desc}</Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -403,34 +402,38 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* SUB-STEP 2: INTERESTS */}
           {currentSubStep === 2 && (
-            <View style={styles.subStepContainer}>
-              <View style={styles.header}>
-                <Text style={styles.title}>What excites you?</Text>
-                <Text style={styles.subtitle}>
+            <View className="pt-2.5">
+              <View className="mb-6">
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">What excites you?</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   Select your favorite travel interests and activities (1 to 10 tags).
                 </Text>
               </View>
 
-              <View style={styles.chipsGrid}>
+              <View className="flex-row flex-wrap gap-2.5">
                 {INTEREST_TAGS.map((tag) => {
                   const isSelected = selectedInterests.includes(tag.value);
                   return (
                     <TouchableOpacity
                       key={tag.value}
-                      style={[styles.interestChip, isSelected && styles.interestChipSelected]}
+                      className={cn(
+                        'flex-row items-center py-3 px-4 rounded-full border-[1.2px] shadow-subtle',
+                        isSelected ? 'bg-primary border-primary' : 'bg-surface border-border'
+                      )}
+                      style={theme.shadows.subtle}
                       onPress={() => toggleInterest(tag.value)}
                       activeOpacity={0.7}
                     >
                       {isSelected ? (
-                        <Check size={15} color={theme.colors.white} style={{ marginRight: 6 }} strokeWidth={2.5} />
+                        <Check size={15} color={theme.colors.white} className="mr-1.5" strokeWidth={2.5} />
                       ) : (
-                        <Sparkles size={14} color={theme.colors.textMuted} style={{ marginRight: 6 }} />
+                        <Sparkles size={14} color={theme.colors.textMuted} className="mr-1.5" />
                       )}
                       <Text
-                        style={[
-                          styles.interestChipText,
-                          isSelected && styles.interestChipTextSelected,
-                        ]}
+                        className={cn(
+                          'text-sm',
+                          isSelected ? 'text-white font-semibold' : 'text-textPrimary font-medium'
+                        )}
                       >
                         {tag.label}
                       </Text>
@@ -439,8 +442,8 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                 })}
               </View>
 
-              <View style={styles.selectedCountBox}>
-                <Text style={styles.selectedCountText}>
+              <View className="mt-5 items-center">
+                <Text className="text-xs font-semibold text-textMuted">
                   {selectedInterests.length} of 10 selected
                 </Text>
               </View>
@@ -449,24 +452,25 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* SUB-STEP 3: MATCH PREFERENCE */}
           {currentSubStep === 3 && (
-            <View style={styles.subStepContainer}>
-              <View style={styles.header}>
-                <Text style={styles.title}>Who to explore with?</Text>
-                <Text style={styles.subtitle}>
+            <View className="pt-2.5">
+              <View className="mb-6">
+                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Who to explore with?</Text>
+                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
                   Choose who you are most comfortable discovering destinations with.
                 </Text>
               </View>
 
-              <View style={styles.cardList}>
+              <View className="gap-3.5">
                 {MATCH_PREFERENCES.map((pref) => {
                   const isSelected = matchPreference === pref.id;
                   return (
                     <TouchableOpacity
                       key={pref.id}
-                      style={[
-                        styles.choiceCard,
-                        isSelected && styles.choiceCardSelected,
-                      ]}
+                      className={cn(
+                        'flex-row bg-surface rounded-[18px] border-[1.5px] p-4 items-start shadow-subtle',
+                        isSelected ? 'border-primary' : 'border-border'
+                      )}
+                      style={theme.shadows.subtle}
                       onPress={() => {
                         haptics.selection();
                         setMatchPreference(pref.id);
@@ -474,36 +478,36 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                       activeOpacity={0.8}
                     >
                       <View
-                        style={[
-                          styles.cardIconBox,
-                          isSelected && styles.cardIconBoxSelected,
-                        ]}
+                        className={cn(
+                          'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
+                          isSelected ? 'bg-primary-mist' : 'bg-surface-subtle'
+                        )}
                       >
                         {pref.icon(
                           isSelected ? theme.colors.primary : theme.colors.textSecondary
                         )}
                       </View>
 
-                      <View style={{ flex: 1 }}>
-                        <View style={styles.cardTitleRow}>
+                      <View className="flex-1">
+                        <View className="flex-row items-center justify-between mb-1">
                           <Text
-                            style={[
-                              styles.cardTitle,
-                              isSelected && styles.cardTitleSelected,
-                            ]}
+                            className={cn(
+                              'text-base font-semibold',
+                              isSelected ? 'text-primary' : 'text-textPrimary'
+                            )}
                           >
                             {pref.title}
                           </Text>
                           <View
-                            style={[
-                              styles.radioCircle,
-                              isSelected && styles.radioCircleSelected,
-                            ]}
+                            className={cn(
+                              'w-[22px] h-[22px] rounded-full border-[1.5px] items-center justify-center',
+                              isSelected ? 'bg-primary border-primary' : 'border-border'
+                            )}
                           >
                             {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
                           </View>
                         </View>
-                        <Text style={styles.cardDesc}>{pref.subtitle}</Text>
+                        <Text className="text-[13px] text-textSecondary leading-[18px]">{pref.subtitle}</Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -514,14 +518,14 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
         </ScrollView>
 
         {/* Floating Bottom Button */}
-        <View style={styles.bottomBar}>
+        <View className="absolute bottom-0 left-0 right-0 bg-surface px-6 pt-3 pb-6 border-t border-border-subtle">
           {currentSubStep < TOTAL_SUBSTEPS - 1 ? (
             <Button
               title="Continue"
               variant="primary"
               size="lg"
               onPress={handleNextSubStep}
-              style={styles.actionButton}
+              className="rounded-2xl h-[54px] shadow-card"
             />
           ) : (
             <Button
@@ -531,7 +535,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
               loading={loading}
               disabled={loading}
               onPress={handleFinalSubmit}
-              style={styles.actionButton}
+              className="rounded-2xl h-[54px] shadow-card"
             />
           )}
         </View>
@@ -539,226 +543,3 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  container: {
-    flex: 1,
-  },
-  topNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 8,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
-    ...theme.shadows.subtle,
-  },
-  substepIndicator: {
-    alignItems: 'center',
-  },
-  substepText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  segmentedProgressBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 6,
-    marginVertical: 12,
-  },
-  segmentDash: {
-    flex: 1,
-    height: 3.5,
-    borderRadius: 2,
-    backgroundColor: theme.colors.borderSubtle,
-  },
-  segmentDashActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 110,
-  },
-  subStepContainer: {
-    paddingTop: 10,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-  },
-  bannerIcon: {
-    marginRight: 8,
-  },
-  errorBannerText: {
-    flex: 1,
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  cardList: {
-    gap: 14,
-  },
-  choiceCard: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    padding: 16,
-    alignItems: 'flex-start',
-    ...theme.shadows.subtle,
-  },
-  choiceCardSelected: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.surface,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardIconBox: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  cardIconBoxSelected: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  cardTitleSelected: {
-    color: theme.colors.primary,
-  },
-  radioCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioCircleSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  cardTagline: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginBottom: 4,
-  },
-  cardDesc: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-  },
-  chipsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  interestChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  interestChipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  interestChipText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  interestChipTextSelected: {
-    color: theme.colors.white,
-    fontWeight: '600',
-  },
-  selectedCountBox: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  selectedCountText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderSubtle,
-  },
-  actionButton: {
-    borderRadius: 16,
-    height: 54,
-    ...theme.shadows.card,
-  },
-});

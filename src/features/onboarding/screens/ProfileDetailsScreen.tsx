@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
@@ -25,6 +24,7 @@ import {
   useReverseGeocode,
 } from '../hooks/onboarding.hooks';
 import { SearchableSelectModal, SelectOption } from '../../../components/ui/SearchableSelectModal';
+import { cn } from '../../../utils/cn';
 import {
   Camera,
   Image as ImageIcon,
@@ -416,16 +416,16 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
+        className="flex-1"
       >
-        <View style={styles.container}>
+        <View className="flex-1">
           {/* Top Header Bar */}
-          <View style={styles.topNav}>
+          <View className="flex-row items-center justify-between px-5 pt-2.5 pb-2">
             <TouchableOpacity
-              style={styles.backButton}
+              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border-subtle shadow-subtle"
               onPress={handleBack}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               activeOpacity={0.7}
@@ -433,105 +433,114 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
               <ArrowLeft size={20} color={theme.colors.textPrimary} strokeWidth={2} />
             </TouchableOpacity>
 
-            <View style={styles.substepIndicator}>
-              <Text style={styles.substepText}>
+            <View className="items-center">
+              <Text className="text-[13px] font-semibold text-text-muted">
                 Profile • {currentSubStep + 1} of {TOTAL_SUBSTEPS}
               </Text>
             </View>
 
-            <View style={{ width: 40 }} />
+            <View className="w-10" />
           </View>
 
           {/* Segmented Progress Dashes */}
-          <View style={styles.segmentedProgressBar}>
+          <View className="flex-row px-5 gap-1.5 my-3">
             {Array.from({ length: TOTAL_SUBSTEPS }).map((_, index) => (
               <View
                 key={index}
-                style={[
-                  styles.segmentDash,
-                  index <= currentSubStep && styles.segmentDashActive,
-                ]}
+                className={cn(
+                  'flex-1 h-[3.5px] rounded-full bg-border-subtle',
+                  index <= currentSubStep && 'bg-primary'
+                )}
               />
             ))}
           </View>
 
           {/* Error Banner */}
           {errorMessage ? (
-            <View style={styles.errorBanner}>
-              <AlertCircle size={16} color={theme.colors.error} style={styles.bannerIcon} />
-              <Text style={styles.errorBannerText}>{errorMessage}</Text>
+            <View className="flex-row items-center bg-error-light py-2.5 px-3.5 rounded-xl mx-5 mb-2.5 border border-error/20">
+              <AlertCircle size={16} color={theme.colors.error} className="mr-2" />
+              <Text className="flex-1 text-error text-[13px] font-medium leading-[17px]">
+                {errorMessage}
+              </Text>
             </View>
           ) : null}
 
           {/* FOCUSED MICRO-STEPS */}
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 110 }}
             keyboardShouldPersistTaps="handled"
           >
             {/* SUB-STEP 0: PHOTOS */}
             {currentSubStep === 0 && (
-              <View style={styles.subStepContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.title}>Add your photos</Text>
-                  <Text style={styles.subtitle}>
+              <View className="pt-2.5">
+                <View className="mb-6">
+                  <Text className="text-[26px] font-medium text-text-primary tracking-tight">
+                    Add your photos
+                  </Text>
+                  <Text className="text-sm text-text-secondary mt-1.5 leading-5">
                     Profiles with both a cover banner and clear face photo connect 4x faster with travel buddies.
                   </Text>
                 </View>
 
                 {/* Profile Showcase Card */}
-                <View style={styles.showcaseCard}>
+                <View className="bg-surface rounded-[22px] border border-border-subtle overflow-visible pb-5 shadow-subtle">
                   {/* Cover Banner */}
                   <TouchableOpacity
-                    style={styles.coverBox}
+                    className="w-full h-[150px] rounded-t-[20px] bg-primary-mist overflow-hidden relative items-center justify-center"
                     onPress={handlePickCover}
                     activeOpacity={0.85}
                   >
                     {coverUri ? (
-                      <Image source={{ uri: coverUri }} style={styles.coverImage} />
+                      <Image source={{ uri: coverUri }} className="w-full h-full" resizeMode="cover" />
                     ) : (
-                      <View style={styles.coverPlaceholder}>
-                        <View style={styles.coverIconCircle}>
+                      <View className="items-center justify-center">
+                        <View className="w-11 h-11 rounded-full bg-surface items-center justify-center border border-border-subtle shadow-subtle">
                           <ImageIcon size={22} color={theme.colors.primary} />
                         </View>
-                        <Text style={styles.coverPrompt}>Upload Cover Banner</Text>
-                        <Text style={styles.coverSubtext}>Landscape 16:9 photo</Text>
+                        <Text className="text-[13px] font-semibold text-primary mt-1.5">
+                          Upload Cover Banner
+                        </Text>
+                        <Text className="text-[11px] text-text-muted mt-0.5">Landscape 16:9 photo</Text>
                       </View>
                     )}
-                    <View style={styles.coverBadge}>
+
+                    <View className="absolute top-3 right-3 bg-black/65 py-1 px-2.5 rounded-full flex-row items-center">
                       <Camera size={13} color={theme.colors.white} style={{ marginRight: 4 }} />
-                      <Text style={styles.coverBadgeText}>{coverUri ? 'Change' : 'Add Cover'}</Text>
+                      <Text className="text-white text-[11px] font-semibold">
+                        {coverUri ? 'Change' : 'Add Cover'}
+                      </Text>
                     </View>
                   </TouchableOpacity>
 
                   {/* Overlapping Avatar */}
-                  <View style={styles.avatarWrapper}>
+                  <View className="self-center -mt-[50px] z-10">
                     <TouchableOpacity
                       onPress={handlePickAvatar}
                       activeOpacity={0.85}
-                      style={styles.avatarTouchArea}
+                      className="relative w-[100px] h-[100px]"
                     >
-                      <View style={styles.avatarImageContainer}>
+                      <View className="w-[100px] h-[100px] rounded-full bg-surface-subtle border-4 border-white overflow-hidden items-center justify-center shadow-card">
                         {avatarUri ? (
-                          <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+                          <Image source={{ uri: avatarUri }} className="w-full h-full" resizeMode="cover" />
                         ) : (
-                          <View style={styles.avatarPlaceholder}>
+                          <View className="items-center justify-center">
                             <User size={38} color={theme.colors.textMuted} />
                           </View>
                         )}
                       </View>
-                      <View style={styles.cameraBadge}>
+                      <View className="absolute bottom-0 right-0 bg-primary w-8 h-8 rounded-full items-center justify-center border-2 border-white shadow-md">
                         <Camera size={15} color={theme.colors.white} strokeWidth={2.2} />
                       </View>
                     </TouchableOpacity>
                   </View>
 
                   {/* Caption & Status Below */}
-                  <View style={styles.showcaseMeta}>
-                    <Text style={styles.showcaseTitle}>
+                  <View className="items-center mt-3 px-5">
+                    <Text className="text-base font-semibold text-text-primary">
                       {avatarUri && coverUri ? 'Looking great!' : 'Your Traveler Visuals'}
                     </Text>
-                    <Text style={styles.showcaseSubtitle}>
+                    <Text className="text-xs text-text-secondary text-center mt-1 leading-[17px]">
                       {!coverUri && !avatarUri
                         ? 'Tap the banner and circle above to pick your photos'
                         : !coverUri
@@ -542,24 +551,36 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     </Text>
 
                     {/* Quick status pills */}
-                    <View style={styles.statusPillsRow}>
-                      <View style={[styles.statusPill, coverUri ? styles.statusPillDone : null]}>
+                    <View className="flex-row gap-2.5 mt-3.5">
+                      <View className={cn(
+                        'flex-row items-center gap-1.5 bg-surface-subtle py-1.5 px-3 rounded-xl',
+                        coverUri && 'bg-primary'
+                      )}>
                         {coverUri ? (
                           <Check size={12} color={theme.colors.white} strokeWidth={3} />
                         ) : (
                           <ImageIcon size={12} color={theme.colors.textMuted} />
                         )}
-                        <Text style={[styles.statusPillText, coverUri ? styles.statusPillTextDone : null]}>
+                        <Text className={cn(
+                          'text-[11px] font-semibold text-text-muted',
+                          coverUri && 'text-white'
+                        )}>
                           Cover {coverUri ? 'Added' : 'Pending'}
                         </Text>
                       </View>
-                      <View style={[styles.statusPill, avatarUri ? styles.statusPillDone : null]}>
+                      <View className={cn(
+                        'flex-row items-center gap-1.5 bg-surface-subtle py-1.5 px-3 rounded-xl',
+                        avatarUri && 'bg-primary'
+                      )}>
                         {avatarUri ? (
                           <Check size={12} color={theme.colors.white} strokeWidth={3} />
                         ) : (
                           <User size={12} color={theme.colors.textMuted} />
                         )}
-                        <Text style={[styles.statusPillText, avatarUri ? styles.statusPillTextDone : null]}>
+                        <Text className={cn(
+                          'text-[11px] font-semibold text-text-muted',
+                          avatarUri && 'text-white'
+                        )}>
                           Avatar {avatarUri ? 'Added' : 'Pending'}
                         </Text>
                       </View>
@@ -571,18 +592,20 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
 
             {/* SUB-STEP 1: BIO */}
             {currentSubStep === 1 && (
-              <View style={styles.subStepContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.title}>About You</Text>
-                  <Text style={styles.subtitle}>
+              <View className="pt-2.5">
+                <View className="mb-6">
+                  <Text className="text-[26px] font-medium text-text-primary tracking-tight">
+                    About You
+                  </Text>
+                  <Text className="text-sm text-text-secondary mt-1.5 leading-5">
                     Write a short bio so potential travel mates know what kind of trips you enjoy.
                   </Text>
                 </View>
 
                 {/* Bio Text Area */}
-                <View style={styles.bioBox}>
+                <View className="bg-surface rounded-[18px] border border-border p-4 shadow-subtle">
                   <TextInput
-                    style={styles.bioInput}
+                    className="text-[15px] text-text-primary min-h-[120px] leading-[22px]"
                     placeholder="Tell other travelers about your favorite destinations, what you love doing, or dream bucket list trips..."
                     placeholderTextColor={theme.colors.textMuted}
                     multiline
@@ -595,20 +618,25 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                     autoFocus
                   />
-                  <View style={styles.bioCounterRow}>
-                    <Text style={[styles.bioCounter, bio.length < 20 ? styles.bioCounterWarn : styles.bioCounterOk]}>
+                  <View className="items-end mt-2">
+                    <Text className={cn(
+                      'text-[11px] font-semibold',
+                      bio.length < 20 ? 'text-error' : 'text-text-muted'
+                    )}>
                       {bio.length}/500 {bio.length < 20 ? '(min 20 required)' : '✓'}
                     </Text>
                   </View>
                 </View>
 
                 {/* Quick Inspiration Prompts */}
-                <Text style={[styles.fieldLabel, { marginTop: 20 }]}>Inspiration Prompts</Text>
-                <View style={styles.promptList}>
+                <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-5">
+                  Inspiration Prompts
+                </Text>
+                <View className="gap-2">
                   {BIO_PROMPTS.map((prompt) => (
                     <TouchableOpacity
                       key={prompt}
-                      style={styles.promptPill}
+                      className="flex-row items-center bg-surface py-3 px-3.5 rounded-2xl border border-border shadow-subtle"
                       onPress={() => {
                         haptics.light();
                         setBio((prev) => (prev ? `${prev}\n${prompt}` : prompt));
@@ -616,7 +644,9 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       activeOpacity={0.7}
                     >
                       <Sparkles size={14} color={theme.colors.primary} style={{ marginRight: 6 }} />
-                      <Text style={styles.promptText}>{prompt}</Text>
+                      <Text className="text-[13px] text-text-primary font-medium flex-1">
+                        {prompt}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -625,26 +655,30 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
 
             {/* SUB-STEP 2: BASICS (Gender & DOB) */}
             {currentSubStep === 2 && (
-              <View style={styles.subStepContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.title}>A bit about you</Text>
-                  <Text style={styles.subtitle}>
+              <View className="pt-2.5">
+                <View className="mb-6">
+                  <Text className="text-[26px] font-medium text-text-primary tracking-tight">
+                    A bit about you
+                  </Text>
+                  <Text className="text-sm text-text-secondary mt-1.5 leading-5">
                     This helps us curate authentic, age-appropriate solo-traveler connections.
                   </Text>
                 </View>
 
                 {/* Gender */}
-                <Text style={styles.fieldLabel}>How do you identify?</Text>
-                <View style={styles.genderRow}>
+                <Text className="text-sm font-semibold text-text-primary mb-2.5">
+                  How do you identify?
+                </Text>
+                <View className="flex-row gap-2.5">
                   {GENDER_OPTIONS.map((g) => {
                     const isSelected = gender === g.value;
                     return (
                       <TouchableOpacity
                         key={g.value}
-                        style={[
-                          styles.genderCard,
-                          isSelected && styles.genderCardSelected,
-                        ]}
+                        className={cn(
+                          'flex-1 py-3.5 rounded-2xl bg-surface border border-border items-center justify-center shadow-subtle',
+                          isSelected && 'bg-primary border-primary'
+                        )}
                         onPress={() => {
                           haptics.selection();
                           setGender(g.value);
@@ -652,10 +686,10 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                         activeOpacity={0.7}
                       >
                         <Text
-                          style={[
-                            styles.genderLabel,
-                            isSelected && styles.genderLabelSelected,
-                          ]}
+                          className={cn(
+                            'text-sm font-semibold text-text-secondary',
+                            isSelected && 'text-white'
+                          )}
                         >
                           {g.label}
                         </Text>
@@ -665,11 +699,13 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
 
                 {/* Birthday */}
-                <Text style={[styles.fieldLabel, { marginTop: 28 }]}>Date of Birth</Text>
-                <View style={styles.dobContainer}>
-                  <View style={styles.dobCell}>
+                <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-7">
+                  Date of Birth
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <View className="flex-1 bg-surface rounded-2xl border border-border h-[54px] justify-center shadow-subtle">
                     <TextInput
-                      style={styles.dobInputField}
+                      className="text-base font-semibold text-text-primary text-center"
                       placeholder="DD"
                       placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
@@ -681,11 +717,11 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     />
                   </View>
-                  <Text style={styles.dobSlash}>/</Text>
-                  <View style={styles.dobCell}>
+                  <Text className="text-xl font-semibold text-text-muted">/</Text>
+                  <View className="flex-1 bg-surface rounded-2xl border border-border h-[54px] justify-center shadow-subtle">
                     <TextInput
                       ref={monthRef}
-                      style={styles.dobInputField}
+                      className="text-base font-semibold text-text-primary text-center"
                       placeholder="MM"
                       placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
@@ -697,11 +733,11 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       }}
                     />
                   </View>
-                  <Text style={styles.dobSlash}>/</Text>
-                  <View style={[styles.dobCell, { flex: 1.5 }]}>
+                  <Text className="text-xl font-semibold text-text-muted">/</Text>
+                  <View className="flex-[1.5] bg-surface rounded-2xl border border-border h-[54px] justify-center shadow-subtle">
                     <TextInput
                       ref={yearRef}
-                      style={styles.dobInputField}
+                      className="text-base font-semibold text-text-primary text-center"
                       placeholder="YYYY"
                       placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
@@ -711,65 +747,71 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     />
                   </View>
                 </View>
-                <Text style={styles.helperText}>You must be at least 18 years old to join Voymate.</Text>
+                <Text className="text-xs text-text-muted mt-2.5">
+                  You must be at least 18 years old to join Voymate.
+                </Text>
               </View>
             )}
 
             {/* SUB-STEP 3: LOCATION */}
             {currentSubStep === 3 && (
-              <View style={styles.subStepContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.title}>Where is home?</Text>
-                  <Text style={styles.subtitle}>
+              <View className="pt-2.5">
+                <View className="mb-6">
+                  <Text className="text-[26px] font-medium text-text-primary tracking-tight">
+                    Where is home?
+                  </Text>
+                  <Text className="text-sm text-text-secondary mt-1.5 leading-5">
                     Let other travelers know where you're starting your journeys from.
                   </Text>
                 </View>
 
                 {/* Use Current Location Quick Action */}
                 <TouchableOpacity
-                  style={styles.currentLocationButton}
+                  className="flex-row items-center bg-surface py-3.5 px-4 rounded-2xl border border-border shadow-subtle"
                   onPress={handleUseCurrentLocation}
                   disabled={locating}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.currentLocationIconBox}>
+                  <View className="w-[38px] h-[38px] rounded-full bg-primary-mist items-center justify-center mr-3.5">
                     {locating ? (
                       <ActivityIndicator size="small" color={theme.colors.primary} />
                     ) : (
                       <LocationIcon size={18} color={theme.colors.primary} />
                     )}
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.currentLocationTitle}>
+                  <View className="flex-1">
+                    <Text className="text-[15px] font-semibold text-primary">
                       {locating ? 'Detecting your location...' : 'Use current location'}
                     </Text>
-                    <Text style={styles.currentLocationSubtext}>
+                    <Text className="text-xs text-text-muted mt-0.5">
                       Auto-detects country, region & city via GPS
                     </Text>
                   </View>
                 </TouchableOpacity>
 
                 {/* Divider */}
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or select from list</Text>
-                  <View style={styles.dividerLine} />
+                <View className="flex-row items-center my-4.5 gap-3 py-1">
+                  <View className="flex-1 h-[1px] bg-border-subtle" />
+                  <Text className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                    or select from list
+                  </Text>
+                  <View className="flex-1 h-[1px] bg-border-subtle" />
                 </View>
 
                 {/* Country Dropdown */}
-                <View style={styles.locationGroup}>
-                  <Text style={styles.fieldLabel}>Country / Nationality</Text>
+                <View className="mt-1">
+                  <Text className="text-sm font-semibold text-text-primary mb-2.5">Country / Nationality</Text>
                   <TouchableOpacity
-                    style={styles.dropdownSelector}
+                    className="flex-row items-center bg-surface rounded-2xl border border-border px-4 h-[54px] shadow-subtle"
                     onPress={() => setCountryModalVisible(true)}
                     activeOpacity={0.7}
                   >
-                    <Globe size={18} color={theme.colors.textMuted} style={styles.selectorIcon} />
+                    <Globe size={18} color={theme.colors.textMuted} className="mr-3" />
                     <Text
-                      style={[
-                        styles.selectorValue,
-                        !nationality && styles.selectorPlaceholder,
-                      ]}
+                      className={cn(
+                        'flex-1 text-[15px] text-text-primary font-medium',
+                        !nationality && 'text-text-muted font-normal'
+                      )}
                       numberOfLines={1}
                     >
                       {nationality || 'Select your country'}
@@ -778,12 +820,12 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableOpacity>
 
                   {/* State Dropdown */}
-                  <Text style={[styles.fieldLabel, { marginTop: 16 }]}>State / Region</Text>
+                  <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-4">State / Region</Text>
                   <TouchableOpacity
-                    style={[
-                      styles.dropdownSelector,
-                      !selectedCountryCode && styles.dropdownDisabled,
-                    ]}
+                    className={cn(
+                      'flex-row items-center bg-surface rounded-2xl border border-border px-4 h-[54px] shadow-subtle',
+                      !selectedCountryCode && 'opacity-55 bg-surface-subtle'
+                    )}
                     onPress={() => {
                       if (!selectedCountryCode) {
                         haptics.error();
@@ -794,12 +836,12 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                     activeOpacity={0.7}
                   >
-                    <MapPin size={18} color={theme.colors.textMuted} style={styles.selectorIcon} />
+                    <MapPin size={18} color={theme.colors.textMuted} className="mr-3" />
                     <Text
-                      style={[
-                        styles.selectorValue,
-                        !stateName && styles.selectorPlaceholder,
-                      ]}
+                      className={cn(
+                        'flex-1 text-[15px] text-text-primary font-medium',
+                        !stateName && 'text-text-muted font-normal'
+                      )}
                       numberOfLines={1}
                     >
                       {stateName || (selectedCountryCode ? 'Select region / state' : 'Select country first')}
@@ -808,12 +850,12 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableOpacity>
 
                   {/* City Dropdown */}
-                  <Text style={[styles.fieldLabel, { marginTop: 16 }]}>City</Text>
+                  <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-4">City</Text>
                   <TouchableOpacity
-                    style={[
-                      styles.dropdownSelector,
-                      !stateName && styles.dropdownDisabled,
-                    ]}
+                    className={cn(
+                      'flex-row items-center bg-surface rounded-2xl border border-border px-4 h-[54px] shadow-subtle',
+                      !stateName && 'opacity-55 bg-surface-subtle'
+                    )}
                     onPress={() => {
                       if (!stateName) {
                         haptics.error();
@@ -824,12 +866,12 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     }}
                     activeOpacity={0.7}
                   >
-                    <MapPin size={18} color={theme.colors.textMuted} style={styles.selectorIcon} />
+                    <MapPin size={18} color={theme.colors.textMuted} className="mr-3" />
                     <Text
-                      style={[
-                        styles.selectorValue,
-                        !cityName && styles.selectorPlaceholder,
-                      ]}
+                      className={cn(
+                        'flex-1 text-[15px] text-text-primary font-medium',
+                        !cityName && 'text-text-muted font-normal'
+                      )}
                       numberOfLines={1}
                     >
                       {cityName || (stateName ? 'Select or type city' : 'Select state first')}
@@ -842,28 +884,38 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
 
             {/* SUB-STEP 4: SKILLS & LANGUAGES */}
             {currentSubStep === 4 && (
-              <View style={styles.subStepContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.title}>Skills & Languages</Text>
-                  <Text style={styles.subtitle}>
+              <View className="pt-2.5">
+                <View className="mb-6">
+                  <Text className="text-[26px] font-medium text-text-primary tracking-tight">
+                    Skills & Languages
+                  </Text>
+                  <Text className="text-sm text-text-secondary mt-1.5 leading-5">
                     Select your travel skills and the languages you speak.
                   </Text>
                 </View>
 
                 {/* Skills Section */}
-                <Text style={styles.fieldLabel}>Travel Skills (Tap to select)</Text>
-                <View style={styles.chipsWrap}>
+                <Text className="text-sm font-semibold text-text-primary mb-2.5">
+                  Travel Skills (Tap to select)
+                </Text>
+                <View className="flex-row flex-wrap gap-2 mb-3">
                   {POPULAR_SKILLS.map((skill) => {
                     const isSelected = selectedSkills.includes(skill);
                     return (
                       <TouchableOpacity
                         key={skill}
-                        style={[styles.chip, isSelected && styles.chipSelected]}
+                        className={cn(
+                          'flex-row items-center py-2.5 px-4 rounded-full bg-surface border border-border shadow-subtle',
+                          isSelected && 'bg-primary border-primary'
+                        )}
                         onPress={() => toggleSkill(skill)}
                         activeOpacity={0.7}
                       >
                         {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
-                        <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                        <Text className={cn(
+                          'text-[13px] font-medium text-text-primary',
+                          isSelected && 'text-white font-semibold'
+                        )}>
                           {skill}
                         </Text>
                       </TouchableOpacity>
@@ -872,9 +924,9 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
 
                 {/* Custom Skill Input */}
-                <View style={styles.addCustomRow}>
+                <View className="flex-row items-center gap-2">
                   <TextInput
-                    style={styles.customInput}
+                    className="flex-1 bg-surface rounded-xl border border-border px-3.5 h-[46px] text-[13px] text-text-primary shadow-subtle"
                     placeholder="Add custom skill..."
                     placeholderTextColor={theme.colors.textMuted}
                     value={customSkill}
@@ -882,7 +934,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     onSubmitEditing={handleAddCustomSkill}
                   />
                   <TouchableOpacity
-                    style={styles.addButton}
+                    className="w-[46px] h-[46px] rounded-xl bg-primary items-center justify-center shadow-subtle"
                     onPress={handleAddCustomSkill}
                     activeOpacity={0.7}
                   >
@@ -891,19 +943,27 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
 
                 {/* Languages Section */}
-                <Text style={[styles.fieldLabel, { marginTop: 24 }]}>Languages</Text>
-                <View style={styles.chipsWrap}>
+                <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-6">
+                  Languages
+                </Text>
+                <View className="flex-row flex-wrap gap-2 mb-3">
                   {POPULAR_LANGUAGES.map((lang) => {
                     const isSelected = selectedLanguages.includes(lang);
                     return (
                       <TouchableOpacity
                         key={lang}
-                        style={[styles.chip, isSelected && styles.chipSelected]}
+                        className={cn(
+                          'flex-row items-center py-2.5 px-4 rounded-full bg-surface border border-border shadow-subtle',
+                          isSelected && 'bg-primary border-primary'
+                        )}
                         onPress={() => toggleLanguage(lang)}
                         activeOpacity={0.7}
                       >
                         {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
-                        <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                        <Text className={cn(
+                          'text-[13px] font-medium text-text-primary',
+                          isSelected && 'text-white font-semibold'
+                        )}>
                           {lang}
                         </Text>
                       </TouchableOpacity>
@@ -912,9 +972,9 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 </View>
 
                 {/* Custom Language Input */}
-                <View style={styles.addCustomRow}>
+                <View className="flex-row items-center gap-2">
                   <TextInput
-                    style={styles.customInput}
+                    className="flex-1 bg-surface rounded-xl border border-border px-3.5 h-[46px] text-[13px] text-text-primary shadow-subtle"
                     placeholder="Add another language..."
                     placeholderTextColor={theme.colors.textMuted}
                     value={customLanguage}
@@ -922,7 +982,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     onSubmitEditing={handleAddCustomLanguage}
                   />
                   <TouchableOpacity
-                    style={styles.addButton}
+                    className="w-[46px] h-[46px] rounded-xl bg-primary items-center justify-center shadow-subtle"
                     onPress={handleAddCustomLanguage}
                     activeOpacity={0.7}
                   >
@@ -934,14 +994,14 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
           </ScrollView>
 
           {/* Floating Bottom Action Bar */}
-          <View style={styles.bottomBar}>
+          <View className="absolute bottom-0 left-0 right-0 bg-background px-6 pt-3 pb-6 border-t border-border-subtle">
             {currentSubStep < TOTAL_SUBSTEPS - 1 ? (
               <Button
                 title="Continue"
                 variant="primary"
                 size="lg"
                 onPress={handleNextSubStep}
-                style={styles.actionButton}
+                className="rounded-2xl h-[54px] shadow-card"
               />
             ) : (
               <Button
@@ -951,7 +1011,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 loading={loading}
                 disabled={loading}
                 onPress={handleFinalSubmit}
-                style={styles.actionButton}
+                className="rounded-2xl h-[54px] shadow-card"
               />
             )}
           </View>
@@ -995,522 +1055,3 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-  },
-  topNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 8,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
-    ...theme.shadows.subtle,
-  },
-  substepIndicator: {
-    alignItems: 'center',
-  },
-  substepText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  segmentedProgressBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 6,
-    marginVertical: 12,
-  },
-  segmentDash: {
-    flex: 1,
-    height: 3.5,
-    borderRadius: 2,
-    backgroundColor: 'rgba(0, 84, 64, 0.1)',
-  },
-  segmentDashActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 110,
-  },
-  subStepContainer: {
-    paddingTop: 10,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginTop: 6,
-    lineHeight: 20,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 10,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(186, 26, 26, 0.12)',
-  },
-  bannerIcon: {
-    marginRight: 8,
-  },
-  errorBannerText: {
-    flex: 1,
-    color: theme.colors.error,
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 17,
-  },
-  showcaseCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: 'rgba(0, 84, 64, 0.08)',
-    overflow: 'visible',
-    paddingBottom: 22,
-    ...theme.shadows.subtle,
-  },
-  coverBox: {
-    width: '100%',
-    height: 150,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: 'rgba(0, 84, 64, 0.05)',
-    overflow: 'hidden',
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  coverPlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  coverIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  coverPrompt: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginTop: 6,
-  },
-  coverSubtext: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  coverBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  coverBadgeText: {
-    color: theme.colors.white,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  avatarWrapper: {
-    alignSelf: 'center',
-    marginTop: -50,
-    zIndex: 10,
-  },
-  avatarTouchArea: {
-    position: 'relative',
-    width: 100,
-    height: 100,
-  },
-  avatarImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 4,
-    borderColor: theme.colors.white,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadows.card,
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  avatarPlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: theme.colors.primary,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2.5,
-    borderColor: theme.colors.white,
-    shadowColor: theme.colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.22,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  showcaseMeta: {
-    alignItems: 'center',
-    marginTop: 12,
-    paddingHorizontal: 20,
-  },
-  showcaseTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  showcaseSubtitle: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-    lineHeight: 17,
-  },
-  statusPillsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  statusPillDone: {
-    backgroundColor: theme.colors.primary,
-  },
-  statusPillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  statusPillTextDone: {
-    color: theme.colors.white,
-  },
-  bioBox: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    padding: 16,
-    ...theme.shadows.subtle,
-  },
-  bioInput: {
-    fontSize: 15,
-    color: theme.colors.textPrimary,
-    minHeight: 120,
-    textAlignVertical: 'top',
-    lineHeight: 22,
-  },
-  bioCounterRow: {
-    alignItems: 'flex-end',
-    marginTop: 8,
-  },
-  bioCounter: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  bioCounterOk: {
-    color: theme.colors.textMuted,
-  },
-  bioCounterWarn: {
-    color: theme.colors.error,
-  },
-  promptList: {
-    gap: 8,
-  },
-  promptPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  promptText: {
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-    flex: 1,
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  genderCard: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadows.subtle,
-  },
-  genderCardSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  genderLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  genderLabelSelected: {
-    color: theme.colors.white,
-  },
-  dobContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dobCell: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    height: 54,
-    justifyContent: 'center',
-    ...theme.shadows.subtle,
-  },
-  dobInputField: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-  },
-  dobSlash: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  helperText: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 10,
-  },
-  currentLocationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  currentLocationIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  currentLocationTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  currentLocationSubtext: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 18,
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: theme.colors.borderSubtle,
-  },
-  dividerText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  locationGroup: {
-    marginTop: 4,
-  },
-  dropdownSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 16,
-    height: 54,
-    ...theme.shadows.subtle,
-  },
-  dropdownDisabled: {
-    opacity: 0.55,
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  selectorIcon: {
-    marginRight: 12,
-  },
-  selectorValue: {
-    flex: 1,
-    fontSize: 15,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-  },
-  selectorPlaceholder: {
-    color: theme.colors.textMuted,
-    fontWeight: '400',
-  },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 22,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
-  chipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: theme.colors.textPrimary,
-  },
-  chipTextSelected: {
-    color: theme.colors.white,
-    fontWeight: '600',
-  },
-  addCustomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  customInput: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    borderWidth: 1.2,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 14,
-    height: 46,
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    ...theme.shadows.subtle,
-  },
-  addButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadows.subtle,
-  },
-  bottomBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderSubtle,
-  },
-  actionButton: {
-    borderRadius: 16,
-    height: 54,
-    ...theme.shadows.card,
-  },
-});
