@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   Image,
@@ -38,6 +37,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
+import { cn } from '../../../utils/cn';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Connections'>;
 
@@ -179,73 +179,82 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="dark" />
 
       {/* Header Bar */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View
+        className="flex-row items-center justify-between px-4 pb-3 bg-surface border-b border-border"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <TouchableOpacity
-          style={styles.backBtn}
+          className="w-9 h-9 rounded-full items-center justify-center"
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <ChevronLeft size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Network</Text>
-        <View style={styles.headerRightPlaceholder} />
+        <Text className="text-[17px] font-bold text-text-primary">Network</Text>
+        <View className="w-9" />
       </View>
 
       {/* Upper Segment Tabs (Instagram Style) */}
-      <View style={styles.tabsRow}>
+      <View className="flex-row bg-surface border-b border-border">
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'connections' && styles.tabBtnActive]}
+          className={cn(
+            'flex-1 py-3.5 items-center justify-center flex-row gap-1.5 border-b-2 border-transparent',
+            activeTab === 'connections' && 'border-b-primary'
+          )}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setActiveTab('connections');
           }}
         >
           <Text
-            style={[
-              styles.tabText,
-              activeTab === 'connections' && styles.tabTextActive,
-            ]}
+            className={cn(
+              'text-sm font-semibold text-text-muted',
+              activeTab === 'connections' && 'text-primary'
+            )}
           >
             Connections ({connections.length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'requests' && styles.tabBtnActive]}
+          className={cn(
+            'flex-1 py-3.5 items-center justify-center flex-row gap-1.5 border-b-2 border-transparent',
+            activeTab === 'requests' && 'border-b-primary'
+          )}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setActiveTab('requests');
           }}
         >
           <Text
-            style={[
-              styles.tabText,
-              activeTab === 'requests' && styles.tabTextActive,
-            ]}
+            className={cn(
+              'text-sm font-semibold text-text-muted',
+              activeTab === 'requests' && 'text-primary'
+            )}
           >
             Requests ({incomingRequests.length})
           </Text>
-          {incomingRequests.length > 0 && <View style={styles.unreadDot} />}
+          {incomingRequests.length > 0 && <View className="w-1.5 h-1.5 rounded-full bg-primary" />}
         </TouchableOpacity>
       </View>
 
       {/* Content Area */}
       {isLoading ? (
-        <View style={styles.loaderCenter}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : activeTab === 'connections' ? (
         /* CONNECTIONS TAB */
-        <View style={styles.tabContent}>
+        <View className="flex-1">
           {/* Search Bar */}
-          <View style={styles.searchBox}>
+          <View className="flex-row items-center bg-surface-subtle mx-4 mt-3.5 mb-2 px-3.5 h-11 rounded-[14px] border border-border gap-2.5">
             <Search size={16} color={theme.colors.textMuted} />
             <TextInput
-              style={styles.searchInput}
+              className="flex-1 text-sm text-text-primary font-medium"
               placeholder="Search by name or location..."
               placeholderTextColor={theme.colors.textPlaceholder}
               value={searchQuery}
@@ -257,18 +266,18 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
           <FlatList
             data={filteredConnections}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
             }
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <View style={styles.emptyIconCircle}>
+              <View className="py-16 items-center justify-center gap-2 px-6">
+                <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
                   <Users size={32} color={theme.colors.primary} />
                 </View>
-                <Text style={styles.emptyTitle}>No Travel Mates Yet</Text>
-                <Text style={styles.emptySubtitle}>
+                <Text className="text-base font-bold text-text-primary">No Travel Mates Yet</Text>
+                <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
                   Send connection requests to travelers on Home or Matches to build your travel circle.
                 </Text>
               </View>
@@ -277,30 +286,30 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               const location = [item.state, item.country].filter(Boolean).join(', ');
               return (
                 <TouchableOpacity
-                  style={styles.connectionCard}
+                  className="flex-row items-center bg-surface p-3.5 rounded-[18px] border border-border gap-3"
                   activeOpacity={0.85}
                   onPress={() => handleViewProfile(item.userId, item.fullName, item.avatarUrl)}
                 >
                   {/* Avatar */}
                   {item.avatarUrl ? (
-                    <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+                    <Image source={{ uri: item.avatarUrl }} className="w-12 h-12 rounded-full bg-surface-subtle" />
                   ) : (
-                    <View style={styles.avatarFallback}>
-                      <Text style={styles.avatarInitial}>
+                    <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
+                      <Text className="text-white text-lg font-semibold">
                         {item.fullName?.charAt(0)?.toUpperCase() || 'V'}
                       </Text>
                     </View>
                   )}
 
                   {/* Name & Details */}
-                  <View style={styles.connInfo}>
-                    <Text style={styles.connName} numberOfLines={1}>
+                  <View className="flex-1 gap-0.5">
+                    <Text className="text-[15px] font-semibold text-text-primary" numberOfLines={1}>
                       {item.fullName}
                     </Text>
                     {location ? (
-                      <View style={styles.locationRow}>
+                      <View className="flex-row items-center gap-1">
                         <MapPin size={11} color={theme.colors.textSecondary} />
-                        <Text style={styles.locationText} numberOfLines={1}>
+                        <Text className="text-xs text-text-secondary font-medium" numberOfLines={1}>
                           {location}
                         </Text>
                       </View>
@@ -308,17 +317,17 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   </View>
 
                   {/* Actions */}
-                  <View style={styles.connActions}>
+                  <View className="flex-row items-center gap-2">
                     <TouchableOpacity
-                      style={styles.messageBtn}
+                      className="flex-row items-center gap-1.5 bg-primary-mist px-3 py-[7px] rounded-xl"
                       onPress={() => handleMessage(item.userId, item.fullName, item.avatarUrl)}
                     >
                       <MessageSquare size={14} color={theme.colors.primary} />
-                      <Text style={styles.messageBtnText}>Message</Text>
+                      <Text className="text-xs font-semibold text-primary">Message</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={styles.disconnectBtn}
+                      className="p-1.5"
                       onPress={() => handleDisconnect(item)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
@@ -332,44 +341,44 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
       ) : (
         /* REQUESTS TAB */
-        <View style={styles.tabContent}>
+        <View className="flex-1">
           {/* Sub-tabs: Received vs Sent */}
-          <View style={styles.subTabsRow}>
+          <View className="flex-row px-4 pt-3.5 gap-2.5">
             <TouchableOpacity
-              style={[
-                styles.subTabPill,
-                requestSubTab === 'incoming' && styles.subTabPillActive,
-              ]}
+              className={cn(
+                'px-4 py-2 rounded-full bg-surface-subtle border border-border',
+                requestSubTab === 'incoming' && 'bg-primary border-primary'
+              )}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setRequestSubTab('incoming');
               }}
             >
               <Text
-                style={[
-                  styles.subTabText,
-                  requestSubTab === 'incoming' && styles.subTabTextActive,
-                ]}
+                className={cn(
+                  'text-xs font-semibold text-text-secondary',
+                  requestSubTab === 'incoming' && 'text-white'
+                )}
               >
                 Received ({incomingRequests.length})
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.subTabPill,
-                requestSubTab === 'sent' && styles.subTabPillActive,
-              ]}
+              className={cn(
+                'px-4 py-2 rounded-full bg-surface-subtle border border-border',
+                requestSubTab === 'sent' && 'bg-primary border-primary'
+              )}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setRequestSubTab('sent');
               }}
             >
               <Text
-                style={[
-                  styles.subTabText,
-                  requestSubTab === 'sent' && styles.subTabTextActive,
-                ]}
+                className={cn(
+                  'text-xs font-semibold text-text-secondary',
+                  requestSubTab === 'sent' && 'text-white'
+                )}
               >
                 Sent ({sentRequests.length})
               </Text>
@@ -381,18 +390,18 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
             <FlatList
               data={incomingRequests}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.listContent}
+              contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
               refreshControl={
                 <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
               }
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <View style={styles.emptyIconCircle}>
+                <View className="py-16 items-center justify-center gap-2 px-6">
+                  <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
                     <Users size={32} color={theme.colors.primary} />
                   </View>
-                  <Text style={styles.emptyTitle}>No Incoming Requests</Text>
-                  <Text style={styles.emptySubtitle}>
+                  <Text className="text-base font-bold text-text-primary">No Incoming Requests</Text>
+                  <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
                     Keep an active trip on your profile so travelers heading to your destination can find and connect with you.
                   </Text>
                 </View>
@@ -403,9 +412,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   .join(', ');
 
                 return (
-                  <View style={styles.requestCard}>
+                  <View className="bg-surface p-4 rounded-[20px] border border-border gap-3">
                     <TouchableOpacity
-                      style={styles.requestHeader}
+                      className="flex-row items-center gap-3"
                       activeOpacity={0.8}
                       onPress={() =>
                         handleViewProfile(
@@ -418,22 +427,22 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                       {item.sender.avatarUrl ? (
                         <Image
                           source={{ uri: item.sender.avatarUrl }}
-                          style={styles.avatar}
+                          className="w-12 h-12 rounded-full bg-surface-subtle"
                         />
                       ) : (
-                        <View style={styles.avatarFallback}>
-                          <Text style={styles.avatarInitial}>
+                        <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
+                          <Text className="text-white text-lg font-semibold">
                             {item.sender.fullName?.charAt(0)?.toUpperCase() || 'V'}
                           </Text>
                         </View>
                       )}
 
-                      <View style={styles.connInfo}>
-                        <Text style={styles.connName}>{item.sender.fullName}</Text>
+                      <View className="flex-1 gap-0.5">
+                        <Text className="text-[15px] font-semibold text-text-primary">{item.sender.fullName}</Text>
                         {senderLocation ? (
-                          <View style={styles.locationRow}>
+                          <View className="flex-row items-center gap-1">
                             <MapPin size={11} color={theme.colors.textSecondary} />
-                            <Text style={styles.locationText}>{senderLocation}</Text>
+                            <Text className="text-xs text-text-secondary font-medium">{senderLocation}</Text>
                           </View>
                         ) : null}
                       </View>
@@ -441,27 +450,27 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
 
                     {/* Request Note */}
                     {item.message ? (
-                      <View style={styles.messageBox}>
-                        <Text style={styles.messageText}>"{item.message}"</Text>
+                      <View className="bg-surface-subtle p-3 rounded-xl border border-border">
+                        <Text className="text-[13px] text-text-secondary leading-[18px] italic">"{item.message}"</Text>
                       </View>
                     ) : null}
 
                     {/* Accept / Decline Row */}
-                    <View style={styles.actionButtonsRow}>
+                    <View className="flex-row gap-2.5">
                       <TouchableOpacity
-                        style={styles.acceptBtn}
+                        className="flex-1 h-10 rounded-xl bg-primary flex-row items-center justify-center gap-1.5"
                         onPress={() => handleAccept(item)}
                       >
                         <Check size={14} color={theme.colors.white} strokeWidth={2.5} />
-                        <Text style={styles.acceptBtnText}>Accept</Text>
+                        <Text className="text-white text-[13px] font-semibold">Accept</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity
-                        style={styles.declineBtn}
+                        className="flex-1 h-10 rounded-xl bg-surface-subtle flex-row items-center justify-center gap-1.5"
                         onPress={() => handleReject(item.id)}
                       >
                         <X size={14} color={theme.colors.textSecondary} />
-                        <Text style={styles.declineBtnText}>Decline</Text>
+                        <Text className="text-text-secondary text-[13px] font-semibold">Decline</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -473,18 +482,18 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
             <FlatList
               data={sentRequests}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={styles.listContent}
+              contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
               refreshControl={
                 <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
               }
               ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <View style={styles.emptyIconCircle}>
+                <View className="py-16 items-center justify-center gap-2 px-6">
+                  <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
                     <Clock size={32} color={theme.colors.primary} />
                   </View>
-                  <Text style={styles.emptyTitle}>No Sent Requests</Text>
-                  <Text style={styles.emptySubtitle}>
+                  <Text className="text-base font-bold text-text-primary">No Sent Requests</Text>
+                  <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
                     Browse travelers on Home or Explore and send a request to plan a trip together.
                   </Text>
                 </View>
@@ -495,9 +504,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   .join(', ');
 
                 return (
-                  <View style={styles.requestCard}>
+                  <View className="bg-surface p-4 rounded-[20px] border border-border gap-3">
                     <TouchableOpacity
-                      style={styles.requestHeader}
+                      className="flex-row items-center gap-3"
                       activeOpacity={0.8}
                       onPress={() =>
                         handleViewProfile(
@@ -510,44 +519,44 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                       {item.receiver.avatarUrl ? (
                         <Image
                           source={{ uri: item.receiver.avatarUrl }}
-                          style={styles.avatar}
+                          className="w-12 h-12 rounded-full bg-surface-subtle"
                         />
                       ) : (
-                        <View style={styles.avatarFallback}>
-                          <Text style={styles.avatarInitial}>
+                        <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
+                          <Text className="text-white text-lg font-semibold">
                             {item.receiver.fullName?.charAt(0)?.toUpperCase() || 'V'}
                           </Text>
                         </View>
                       )}
 
-                      <View style={styles.connInfo}>
-                        <Text style={styles.connName}>{item.receiver.fullName}</Text>
+                      <View className="flex-1 gap-0.5">
+                        <Text className="text-[15px] font-semibold text-text-primary">{item.receiver.fullName}</Text>
                         {receiverLocation ? (
-                          <View style={styles.locationRow}>
+                          <View className="flex-row items-center gap-1">
                             <MapPin size={11} color={theme.colors.textSecondary} />
-                            <Text style={styles.locationText}>{receiverLocation}</Text>
+                            <Text className="text-xs text-text-secondary font-medium">{receiverLocation}</Text>
                           </View>
                         ) : null}
                       </View>
 
-                      <View style={styles.pendingBadge}>
+                      <View className="flex-row items-center gap-1 bg-surface-subtle px-2 py-1 rounded-[10px]">
                         <Clock size={11} color={theme.colors.textSecondary} />
-                        <Text style={styles.pendingText}>Pending</Text>
+                        <Text className="text-[11px] font-semibold text-text-secondary">Pending</Text>
                       </View>
                     </TouchableOpacity>
 
                     {item.message ? (
-                      <View style={styles.messageBox}>
-                        <Text style={styles.messageText}>"{item.message}"</Text>
+                      <View className="bg-surface-subtle p-3 rounded-xl border border-border">
+                        <Text className="text-[13px] text-text-secondary leading-[18px] italic">"{item.message}"</Text>
                       </View>
                     ) : null}
 
                     {/* Cancel Request Button */}
                     <TouchableOpacity
-                      style={styles.cancelSentBtn}
+                      className="h-[38px] rounded-xl bg-surface-subtle border border-border items-center justify-center"
                       onPress={() => handleCancelSent(item.id)}
                     >
-                      <Text style={styles.cancelSentText}>Cancel Request</Text>
+                      <Text className="text-[13px] font-semibold text-text-secondary">Cancel Request</Text>
                     </TouchableOpacity>
                   </View>
                 );
@@ -559,312 +568,3 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  headerRightPlaceholder: {
-    width: 36,
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabBtnActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  tabTextActive: {
-    color: theme.colors.primary,
-  },
-  unreadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.primary,
-  },
-  tabContent: {
-    flex: 1,
-  },
-  loaderCenter: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    marginHorizontal: 16,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingHorizontal: 14,
-    height: 44,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-  },
-  listContent: {
-    padding: 16,
-    gap: 12,
-    paddingBottom: 40,
-  },
-  connectionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 12,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  avatarFallback: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    color: theme.colors.white,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  connInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  connName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  locationText: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-  connActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  messageBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 12,
-  },
-  messageBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  disconnectBtn: {
-    padding: 6,
-  },
-  subTabsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    gap: 10,
-  },
-  subTabPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  subTabPillActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  subTabText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  subTabTextActive: {
-    color: theme.colors.white,
-  },
-  requestCard: {
-    backgroundColor: theme.colors.surface,
-    padding: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 12,
-  },
-  requestHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  pendingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  pendingText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  messageBox: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  messageText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    fontStyle: 'italic',
-  },
-  actionButtonsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  acceptBtn: {
-    flex: 1,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: theme.colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  acceptBtnText: {
-    color: theme.colors.white,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  declineBtn: {
-    flex: 1,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surfaceSubtle,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  declineBtnText: {
-    color: theme.colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  cancelSentBtn: {
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelSentText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  emptyContainer: {
-    paddingVertical: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 24,
-  },
-  emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-});

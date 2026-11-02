@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   Image,
@@ -30,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 const formatConversationTime = (dateStr?: string | Date) => {
   if (!dateStr) return '';
@@ -163,17 +163,19 @@ export const MessagesScreen: React.FC = () => {
     if (connections.length === 0) return null;
 
     return (
-      <View style={styles.connectionsSection}>
-        <Text style={styles.sectionTitle}>Mates</Text>
+      <View className="mb-4">
+        <Text className="text-[13px] font-semibold text-text-secondary mb-2.5 tracking-wide">
+          Mates
+        </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.connectionsScroll}
+          contentContainerStyle={{ gap: 14 }}
         >
           {connections.map((item) => (
             <TouchableOpacity
               key={item.userId}
-              style={styles.connectionAvatarItem}
+              className="items-center w-[58px]"
               onPress={() =>
                 handleOpenChat(
                   undefined,
@@ -184,18 +186,18 @@ export const MessagesScreen: React.FC = () => {
               }
               activeOpacity={0.8}
             >
-              <View style={styles.mateAvatarWrap}>
+              <View className="w-[52px] h-[52px] rounded-full border-2 border-primary p-0.5 bg-surface">
                 {item.avatarUrl ? (
-                  <Image source={{ uri: item.avatarUrl }} style={styles.mateAvatarImg} />
+                  <Image source={{ uri: item.avatarUrl }} className="w-full h-full rounded-full" />
                 ) : (
-                  <View style={styles.mateAvatarFallback}>
-                    <Text style={styles.mateAvatarInitial}>
+                  <View className="w-full h-full rounded-full bg-primary-mist items-center justify-center">
+                    <Text className="text-lg font-semibold text-primary">
                       {item.fullName?.charAt(0)?.toUpperCase() || 'M'}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={styles.mateName} numberOfLines={1}>
+              <Text className="text-[11px] font-semibold text-text-primary mt-1 text-center" numberOfLines={1}>
                 {item.fullName.split(' ')[0]}
               </Text>
             </TouchableOpacity>
@@ -211,7 +213,10 @@ export const MessagesScreen: React.FC = () => {
 
     return (
       <TouchableOpacity
-        style={[styles.conversationRow, hasUnread && styles.conversationRowUnread]}
+        className={cn(
+          'flex-row items-center bg-surface p-3.5 rounded-2xl border border-border mb-2.5 gap-3 shadow-subtle',
+          hasUnread && 'bg-primary-mist border-primary/20'
+        )}
         onPress={() =>
           handleOpenChat(
             item.conversationId,
@@ -222,41 +227,49 @@ export const MessagesScreen: React.FC = () => {
         }
         activeOpacity={0.7}
       >
-        <View style={styles.convAvatarWrap}>
+        <View className="w-12 h-12 rounded-full relative">
           {item.user?.profileImage ? (
-            <Image source={{ uri: item.user.profileImage }} style={styles.convAvatarImg} />
+            <Image source={{ uri: item.user.profileImage }} className="w-full h-full rounded-full" />
           ) : (
-            <View style={styles.convAvatarFallback}>
-              <Text style={styles.convAvatarInitial}>
+            <View className="w-full h-full rounded-full bg-primary items-center justify-center">
+              <Text className="text-lg font-semibold text-white">
                 {item.user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </Text>
             </View>
           )}
-          {item.user?.isOnline && <View style={styles.onlineDot} />}
+          {item.user?.isOnline && (
+            <View className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-success border-2 border-white" />
+          )}
         </View>
 
-        <View style={styles.convDetails}>
-          <View style={styles.convTopRow}>
+        <View className="flex-1 gap-1">
+          <View className="flex-row items-center justify-between">
             <Text
-              style={[styles.convName, hasUnread && styles.convNameUnread]}
+              className={cn(
+                'text-[15px] font-semibold text-text-primary flex-1 mr-2',
+                hasUnread && 'font-bold'
+              )}
               numberOfLines={1}
             >
               {item.user?.name || 'Traveler'}
             </Text>
             <Text
-              style={[styles.convTime, hasUnread && styles.convTimeUnread]}
+              className={cn(
+                'text-[11px] text-text-muted',
+                hasUnread && 'text-primary font-semibold'
+              )}
             >
               {timeStr}
             </Text>
           </View>
 
-          <View style={styles.convBottomRow}>
-            <View style={styles.lastMessageWrap}>
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center flex-1 mr-2.5">
               <Text
-                style={[
-                  styles.lastMessageText,
-                  hasUnread && styles.lastMessageTextUnread,
-                ]}
+                className={cn(
+                  'text-[13px] text-text-secondary flex-1',
+                  hasUnread && 'text-text-primary font-semibold'
+                )}
                 numberOfLines={1}
               >
                 {item.lastMessage?.content || 'Started a conversation'}
@@ -264,8 +277,8 @@ export const MessagesScreen: React.FC = () => {
             </View>
 
             {hasUnread && (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadBadgeText}>
+              <View className="min-w-[20px] h-5 rounded-full bg-primary items-center justify-center px-1.5">
+                <Text className="text-[10px] font-bold text-white">
                   {item.unreadCount! > 99 ? '99+' : item.unreadCount}
                 </Text>
               </View>
@@ -281,33 +294,41 @@ export const MessagesScreen: React.FC = () => {
 
     if (searchQuery.trim()) {
       return (
-        <View style={styles.emptyContainer}>
+        <View className="py-16 px-5 items-center justify-center gap-2.5">
           <Search size={36} color={theme.colors.textMuted} />
-          <Text style={styles.emptyTitle}>No Matching Chats</Text>
-          <Text style={styles.emptySubtitle}>Check the spelling or search for another name.</Text>
+          <Text className="text-base font-semibold text-text-primary">No Matching Chats</Text>
+          <Text className="text-[13px] text-text-secondary text-center">
+            Check the spelling or search for another name.
+          </Text>
         </View>
       );
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyIconCircle}>
+      <View className="py-16 px-5 items-center justify-center gap-2.5">
+        <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-1">
           <MessageSquare size={32} color={theme.colors.primary} />
         </View>
-        <Text style={styles.emptyTitle}>No Messages Yet</Text>
-        <Text style={styles.emptySubtitle}>
+        <Text className="text-base font-semibold text-text-primary">No Messages Yet</Text>
+        <Text className="text-[13px] text-text-secondary text-center leading-[18px] max-w-[260px]">
           Once a travel mate accepts your connection request, you can chat and plan your trip here.
         </Text>
         <TouchableOpacity
-          style={styles.emptyCta}
+          className="flex-row items-center gap-2 bg-primary px-4.5 py-2.5 rounded-2xl mt-3 shadow-card"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (connections.length > 0) { navigation.navigate('Connections', { initialTab: 'connections' }); } else { navigation.navigate('Main', { screen: 'HomeTab' } as any); }
+            if (connections.length > 0) {
+              navigation.navigate('Connections', { initialTab: 'connections' });
+            } else {
+              navigation.navigate('Main', { screen: 'HomeTab' } as any);
+            }
           }}
           activeOpacity={0.8}
         >
           <Users size={16} color={theme.colors.white} />
-          <Text style={styles.emptyCtaText}>{connections.length > 0 ? 'View My Connections' : 'Find Travel Mates'}</Text>
+          <Text className="text-white text-[13px] font-semibold">
+            {connections.length > 0 ? 'View My Connections' : 'Find Travel Mates'}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -316,23 +337,30 @@ export const MessagesScreen: React.FC = () => {
   const tabBarHeight = 82 + insets.bottom;
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View
+        className="flex-row items-center justify-between px-4.5 pb-3 bg-surface border-b border-border-subtle"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <View>
-          <Text style={styles.headerTitle}>Messages</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text className="text-2xl font-semibold text-text-primary tracking-tight">Messages</Text>
+          <Text className="text-xs font-semibold text-primary mt-0.5">
             {totalUnread > 0 ? `${totalUnread} new messages` : 'Direct chats'}
           </Text>
         </View>
 
         <TouchableOpacity
-          style={styles.newChatBtn}
+          className="w-10 h-10 rounded-full bg-primary-mist items-center justify-center"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            if (connections.length > 0) { navigation.navigate('Connections', { initialTab: 'connections' }); } else { navigation.navigate('Main', { screen: 'HomeTab' } as any); }
+            if (connections.length > 0) {
+              navigation.navigate('Connections', { initialTab: 'connections' });
+            } else {
+              navigation.navigate('Main', { screen: 'HomeTab' } as any);
+            }
           }}
           activeOpacity={0.8}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -342,10 +370,10 @@ export const MessagesScreen: React.FC = () => {
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchWrap}>
+      <View className="flex-row items-center bg-surface-subtle mx-4 mt-3 mb-2 px-3.5 py-2.5 rounded-2xl border border-border gap-2.5">
         <Search size={16} color={theme.colors.textMuted} />
         <TextInput
-          style={styles.searchInput}
+          className="flex-1 text-sm text-text-primary p-0"
           placeholder="Search messages or mates..."
           placeholderTextColor={theme.colors.textPlaceholder}
           value={searchQuery}
@@ -356,7 +384,7 @@ export const MessagesScreen: React.FC = () => {
 
       {/* Conversations List */}
       {isLoading ? (
-        <View style={styles.loadingContainer}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : (
@@ -365,10 +393,11 @@ export const MessagesScreen: React.FC = () => {
           keyExtractor={(item) => item.conversationId}
           renderItem={renderConversationItem}
           ListHeaderComponent={renderConnectionsBar}
-          contentContainerStyle={[
-            styles.listContent,
-            { paddingBottom: tabBarHeight + 20 },
-          ]}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 8,
+            paddingBottom: tabBarHeight + 20,
+          }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -384,278 +413,3 @@ export const MessagesScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderSubtle,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginTop: 2,
-  },
-  newChatBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    padding: 0,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  connectionsSection: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    marginBottom: 10,
-    letterSpacing: 0.4,
-  },
-  connectionsScroll: {
-    gap: 14,
-  },
-  connectionAvatarItem: {
-    alignItems: 'center',
-    width: 58,
-  },
-  mateAvatarWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-    padding: 2,
-    backgroundColor: theme.colors.surface,
-  },
-  mateAvatarImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-  },
-  mateAvatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mateAvatarInitial: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  mateName: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  conversationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    padding: 14,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 10,
-    gap: 12,
-  },
-  conversationRowUnread: {
-    backgroundColor: theme.colors.primaryMist,
-    borderColor: theme.colors.primaryBorder,
-  },
-  convAvatarWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    position: 'relative',
-  },
-  convAvatarImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-  },
-  convAvatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  convAvatarInitial: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  onlineDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: theme.colors.success,
-    borderWidth: 2,
-    borderColor: theme.colors.white,
-  },
-  convDetails: {
-    flex: 1,
-    gap: 4,
-  },
-  convTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  convName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    flex: 1,
-    marginRight: 8,
-  },
-  convNameUnread: {
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  convTime: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-  },
-  convTimeUnread: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  convBottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  lastMessageWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 10,
-  },
-  msgTypeIcon: {
-    marginRight: 4,
-  },
-  lastMessageText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    flex: 1,
-  },
-  lastMessageTextUnread: {
-    color: theme.colors.textPrimary,
-    fontWeight: '600',
-  },
-  unreadBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  unreadBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.white,
-  },
-  emptyContainer: {
-    paddingVertical: 70,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-    maxWidth: 260,
-  },
-  emptyCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 14,
-    marginTop: 12,
-  },
-  emptyCtaText: {
-    color: theme.colors.white,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});

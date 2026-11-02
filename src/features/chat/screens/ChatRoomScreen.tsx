@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   Image,
@@ -29,6 +28,7 @@ import {
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatRoom'>;
 
@@ -202,52 +202,54 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <View>
         {showDateDivider && (
-          <View style={styles.dateDivider}>
-            <Text style={styles.dateDividerText}>
+          <View className="items-center my-3">
+            <Text className="text-[11px] font-semibold text-text-muted bg-surface-subtle px-2.5 py-0.5 rounded-lg">
               {formatDateDivider(item.createdAt)}
             </Text>
           </View>
         )}
 
         <View
-          style={[
-            styles.bubbleRow,
-            isMe ? styles.bubbleRowMe : styles.bubbleRowOther,
-          ]}
+          className={cn(
+            'flex-row my-0.5',
+            isMe ? 'justify-end' : 'justify-start'
+          )}
         >
           <View
-            style={[
-              styles.bubble,
-              isMe ? styles.bubbleMe : styles.bubbleOther,
-            ]}
+            className={cn(
+              'max-w-[78%] rounded-2xl px-3.5 py-2.5',
+              isMe
+                ? 'bg-primary rounded-br-sm'
+                : 'bg-surface-subtle border border-border rounded-bl-sm'
+            )}
           >
             {item.content ? (
               <Text
-                style={[
-                  styles.messageText,
-                  isMe ? styles.messageTextMe : styles.messageTextOther,
-                ]}
+                className={cn(
+                  'text-sm leading-5',
+                  isMe ? 'text-white' : 'text-text-primary'
+                )}
               >
                 {item.content}
               </Text>
             ) : null}
 
-            <View style={styles.timeStatusRow}>
+            <View className="flex-row items-center justify-end gap-1 mt-1">
               <Text
-                style={[
-                  styles.timeText,
-                  isMe ? styles.timeTextMe : styles.timeTextOther,
-                ]}
+                className={cn(
+                  'text-[10px]',
+                  isMe ? 'text-white/70' : 'text-text-muted'
+                )}
               >
                 {timeStr}
               </Text>
 
               {isMe && (
-                <View style={styles.statusTick}>
+                <View className="ml-0.5">
                   {item.status === 'READ' ? (
                     <CheckCheck size={13} color={theme.colors.success} />
                   ) : (
-                    <Check size={13} color={theme.colors.onPrimaryMuted} />
+                    <Check size={13} color="rgba(255, 255, 255, 0.7)" />
                   )}
                 </View>
               )}
@@ -259,14 +261,17 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="dark" />
 
       {/* Top Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.headerLeft}>
+      <View
+        className="flex-row items-center justify-between px-4 pb-3 bg-surface border-b border-border-subtle"
+        style={{ paddingTop: insets.top + 8 }}
+      >
+        <View className="flex-row items-center flex-1 gap-2">
           <TouchableOpacity
-            style={styles.backBtn}
+            className="w-9 h-9 rounded-full items-center justify-center"
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -274,7 +279,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.userProfileLink}
+            className="flex-row items-center gap-2.5 flex-1"
             activeOpacity={0.8}
             onPress={() =>
               navigation.navigate('UserProfile', {
@@ -283,24 +288,26 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
               })
             }
           >
-            <View style={styles.avatarWrap}>
+            <View className="w-10 h-10 rounded-full relative">
               {targetUserAvatar ? (
-                <Image source={{ uri: targetUserAvatar }} style={styles.avatarImg} />
+                <Image source={{ uri: targetUserAvatar }} className="w-full h-full rounded-full" />
               ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarInitial}>
+                <View className="w-full h-full rounded-full bg-primary items-center justify-center">
+                  <Text className="text-base font-semibold text-white">
                     {targetUserName?.charAt(0)?.toUpperCase() || 'U'}
                   </Text>
                 </View>
               )}
-              {isTargetOnline && <View style={styles.onlineDot} />}
+              {isTargetOnline && (
+                <View className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-success border-2 border-white" />
+              )}
             </View>
 
-            <View style={styles.headerTextWrap}>
-              <Text style={styles.headerName} numberOfLines={1}>
+            <View className="flex-1">
+              <Text className="text-[15px] font-semibold text-text-primary" numberOfLines={1}>
                 {targetUserName || 'Traveler'}
               </Text>
-              <Text style={styles.headerStatus}>
+              <Text className="text-[11px] text-text-secondary mt-0.5">
                 {isTargetOnline ? 'Active now' : 'Direct message'}
               </Text>
             </View>
@@ -310,20 +317,19 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
 
       {/* Messages FlatList */}
       <KeyboardAvoidingView
-        style={styles.chatArea}
+        className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         {isLoading ? (
-          <View style={styles.centerLoading}>
+          <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : messages.length === 0 ? (
-          <View style={styles.emptyChatContainer}>
-            <Text style={styles.emptyChatTitle}>
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-base font-semibold text-text-primary text-center mb-1.5">
               Start planning with {targetUserName || 'your travel mate'}
             </Text>
-            <Text style={styles.emptyChatSubtitle}>
+            <Text className="text-[13px] text-text-secondary text-center leading-5">
               Say hello and share your travel dates or itinerary ideas.
             </Text>
           </View>
@@ -333,15 +339,18 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             inverted
             keyExtractor={(item) => item.id}
             renderItem={renderMessageItem}
-            contentContainerStyle={styles.messagesList}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 14, gap: 8 }}
             showsVerticalScrollIndicator={false}
           />
         )}
 
         {/* Input Bar */}
-        <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <View
+          className="flex-row items-center bg-surface px-3 pt-2 border-t border-border-subtle gap-2"
+          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
+        >
           <TextInput
-            style={styles.textInput}
+            className="flex-1 bg-surface-subtle rounded-2xl border border-border px-3.5 py-2 text-sm text-text-primary max-h-[100px]"
             placeholder="Type a message..."
             placeholderTextColor={theme.colors.textPlaceholder}
             value={inputText}
@@ -351,10 +360,10 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           />
 
           <TouchableOpacity
-            style={[
-              styles.sendBtn,
-              inputText.trim() ? styles.sendBtnActive : styles.sendBtnInactive,
-            ]}
+            className={cn(
+              'w-9.5 h-9.5 rounded-full items-center justify-center',
+              inputText.trim() ? 'bg-primary' : 'bg-border'
+            )}
             onPress={handleSendText}
             disabled={!inputText.trim()}
           >
@@ -365,222 +374,3 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderSubtle,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 8,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userProfileLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  avatarWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    position: 'relative',
-  },
-  avatarImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-  },
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  onlineDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: theme.colors.success,
-    borderWidth: 2,
-    borderColor: theme.colors.white,
-  },
-  headerTextWrap: {
-    flex: 1,
-  },
-  headerName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  headerStatus: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    marginTop: 1,
-  },
-  chatArea: {
-    flex: 1,
-  },
-  centerLoading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyChatContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyChatTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  emptyChatSubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 19,
-  },
-  messagesList: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 8,
-  },
-  dateDivider: {
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  dateDividerText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  bubbleRow: {
-    flexDirection: 'row',
-    marginVertical: 3,
-  },
-  bubbleRowMe: {
-    justifyContent: 'flex-end',
-  },
-  bubbleRowOther: {
-    justifyContent: 'flex-start',
-  },
-  bubble: {
-    maxWidth: '78%',
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  bubbleMe: {
-    backgroundColor: theme.colors.primary,
-    borderBottomRightRadius: 4,
-  },
-  bubbleOther: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderBottomLeftRadius: 4,
-  },
-  messageText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  messageTextMe: {
-    color: theme.colors.white,
-  },
-  messageTextOther: {
-    color: theme.colors.textPrimary,
-  },
-  timeStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 4,
-    marginTop: 4,
-  },
-  timeText: {
-    fontSize: 10,
-  },
-  timeTextMe: {
-    color: theme.colors.onPrimaryMuted,
-  },
-  timeTextOther: {
-    color: theme.colors.textMuted,
-  },
-  statusTick: {
-    marginLeft: 2,
-  },
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderSubtle,
-    gap: 8,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    maxHeight: 100,
-  },
-  sendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sendBtnActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  sendBtnInactive: {
-    backgroundColor: theme.colors.border,
-  },
-});
