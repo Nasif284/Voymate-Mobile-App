@@ -83,8 +83,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <View style={styles.contentCenter}>
               {/* Minimalist Creative Brand Mark */}
               <View style={styles.brandHero}>
-                <View style={styles.brandHaloRing}>
-                  <VoymateLogo size={54} withBackground />
+                <View style={styles.logoWrapper}>
+                  <VoymateLogo size={56} variant="rose" withBackground />
                 </View>
                 <Text style={styles.brandWordmark}>VOYMATE</Text>
               </View>
@@ -223,24 +223,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 24,
   },
-  brandHaloRing: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  brandIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
+  logoWrapper: {
+    marginBottom: 12,
     ...theme.shadows.subtle,
   },
   brandWordmark: {
