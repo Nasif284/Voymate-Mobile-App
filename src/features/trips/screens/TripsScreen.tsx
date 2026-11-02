@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   FlatList,
   Image,
@@ -37,6 +36,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
+import { cn } from '../../../utils/cn';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Trips'>;
 
@@ -140,7 +140,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   };
 
-  // Original Card Design
+  // Trip Card
   const renderTripItem = ({ item }: { item: UserTrip }) => {
     const dateRange = formatDateRange(item.dateFrom, item.dateTo);
     const destName =
@@ -151,75 +151,70 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     const isCurrentActive = activeTab === 'active';
 
     return (
-      <View style={styles.tripCard}>
+      <View className="bg-surface rounded-2xl overflow-hidden border border-border shadow-subtle mb-4">
         {/* Cover Image Banner */}
-        <View style={styles.imageWrap}>
+        <View className="h-[140px] bg-surface-subtle relative">
           {item.destination?.coverUrl ? (
             <Image
               source={{ uri: item.destination.coverUrl }}
-              style={styles.tripCoverImage}
+              className="w-full h-full"
               resizeMode="cover"
             />
           ) : (
-            <View style={styles.tripCoverFallback} />
+            <View className="w-full h-full bg-primary-dark opacity-85" />
           )}
-          <View style={styles.imageOverlay} />
+          <View className="absolute inset-0 bg-black/15" />
 
           {/* Status Badge */}
           <View
-            style={[
-              styles.statusPill,
-              isCurrentActive ? styles.statusPillActive : styles.statusPillPast,
-            ]}
+            className={cn(
+              'absolute top-3 left-3 px-2.5 py-1 rounded-lg',
+              isCurrentActive ? 'bg-primary' : 'bg-black/60'
+            )}
           >
-            <Text
-              style={[
-                styles.statusPillText,
-                isCurrentActive ? styles.statusPillTextActive : styles.statusPillTextPast,
-              ]}
-            >
+            <Text className="text-[11px] font-semibold text-white">
               {isCurrentActive ? 'Active' : 'Completed'}
             </Text>
           </View>
         </View>
 
         {/* Card Body */}
-        <View style={styles.cardBody}>
-          <Text style={styles.tripTitle} numberOfLines={1}>
+        <View className="p-4 gap-2">
+          <Text className="text-[17px] font-semibold text-text-primary" numberOfLines={1}>
             {item.name || destName}
           </Text>
 
           {/* Location row */}
-          <View style={styles.metaRow}>
+          <View className="flex-row items-center gap-1.5">
             <MapPin size={13} color={theme.colors.primary} />
-            <Text style={styles.metaText} numberOfLines={1}>
+            <Text className="text-[13px] font-medium text-primary flex-1" numberOfLines={1}>
               {destName}
             </Text>
           </View>
 
           {/* Date range row */}
           {dateRange ? (
-            <View style={styles.metaRow}>
+            <View className="flex-row items-center gap-1.5">
               <Calendar size={13} color={theme.colors.textSecondary} />
-              <Text style={styles.dateText}>{dateRange}</Text>
+              <Text className="text-xs font-medium text-text-secondary">{dateRange}</Text>
             </View>
           ) : null}
 
           {/* Chips row */}
-          <View style={styles.badgesRow}>
+          <View className="flex-row items-center gap-2 mt-1">
             {item.travelStyle || item.travelStyleCode ? (
-              <View style={styles.tagBadge}>
+              <View className="flex-row items-center gap-1 bg-primary-mist px-2.5 py-1 rounded-lg">
                 <Compass size={11} color={theme.colors.primary} />
-                <Text style={styles.tagText}>
+                <Text className="text-[11px] font-semibold text-primary">
                   {item.travelStyle || item.travelStyleCode}
                 </Text>
               </View>
             ) : null}
 
             {item.budgetStyle || item.budgetStyleCode ? (
-              <View style={[styles.tagBadge, styles.tagBadgeMuted]}>
+              <View className="flex-row items-center gap-1 bg-surface-subtle px-2.5 py-1 rounded-lg">
                 <Wallet size={11} color={theme.colors.textSecondary} />
-                <Text style={[styles.tagText, styles.tagTextMuted]}>
+                <Text className="text-[11px] font-semibold text-text-secondary">
                   {item.budgetStyle || item.budgetStyleCode}
                 </Text>
               </View>
@@ -228,9 +223,9 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
           {/* Action Buttons for Active Trips */}
           {isCurrentActive && (
-            <View style={styles.cardActions}>
+            <View className="flex-row items-center gap-2.5 mt-2.5 pt-3 border-t border-border">
               <TouchableOpacity
-                style={styles.editBtn}
+                className="flex-1 flex-row items-center justify-center gap-1.5 bg-primary-mist py-2.5 rounded-xl"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setEditingTrip(item);
@@ -238,16 +233,16 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
                 activeOpacity={0.8}
               >
                 <Edit3 size={14} color={theme.colors.primary} />
-                <Text style={styles.editBtnText}>Edit</Text>
+                <Text className="text-[13px] font-semibold text-primary">Edit</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.deleteBtn}
+                className="flex-1 flex-row items-center justify-center gap-1.5 bg-error-light py-2.5 rounded-xl"
                 onPress={() => handleDeleteTrip(item.id)}
                 activeOpacity={0.8}
               >
                 <Trash2 size={14} color={theme.colors.error} />
-                <Text style={styles.deleteBtnText}>Delete</Text>
+                <Text className="text-[13px] font-semibold text-error">Delete</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -256,18 +251,18 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   };
 
-  // Render Empty State matching connection listing template
+  // Render Empty State
   const renderEmptyState = () => {
     if (isLoading) return null;
 
     if (searchQuery.trim()) {
       return (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
+        <View className="py-14 items-center justify-center gap-2 px-6">
+          <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
             <Search size={32} color={theme.colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>No Trips Found</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text className="text-base font-semibold text-text-primary">No Trips Found</Text>
+          <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
             No trips match your search. Try another destination name.
           </Text>
         </View>
@@ -276,16 +271,16 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
     if (activeTab === 'active') {
       return (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIconCircle}>
+        <View className="py-14 items-center justify-center gap-2 px-6">
+          <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
             <Compass size={32} color={theme.colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>No Active Trips</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text className="text-base font-semibold text-text-primary">No Active Trips</Text>
+          <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
             Create a trip plan so we can match you with travelers going to the same destination.
           </Text>
           <TouchableOpacity
-            style={styles.emptyCta}
+            className="flex-row items-center gap-1.5 bg-primary px-4.5 py-2.5 rounded-2xl mt-2.5 shadow-card"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               setShowCreateModal(true);
@@ -293,39 +288,44 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             activeOpacity={0.85}
           >
             <Plus size={16} color={theme.colors.white} strokeWidth={2.5} />
-            <Text style={styles.emptyCtaText}>Create Trip Plan</Text>
+            <Text className="text-white text-[13px] font-semibold">Create Trip Plan</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyIconCircle}>
+      <View className="py-14 items-center justify-center gap-2 px-6">
+        <View className="w-16 h-16 rounded-full bg-primary-mist items-center justify-center mb-2">
           <Clock size={32} color={theme.colors.primary} />
         </View>
-        <Text style={styles.emptyTitle}>No Past Trips</Text>
-        <Text style={styles.emptySubtitle}>Your completed trips will be saved here.</Text>
+        <Text className="text-base font-semibold text-text-primary">No Past Trips</Text>
+        <Text className="text-[13px] text-text-secondary text-center leading-[18px]">
+          Your completed trips will be saved here.
+        </Text>
       </View>
     );
   };
 
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-background">
       <StatusBar style="dark" />
 
-      {/* Header Bar matching Connections Screen template */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      {/* Header Bar */}
+      <View
+        className="flex-row items-center justify-between px-4 pb-3 bg-surface border-b border-border"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <TouchableOpacity
-          style={styles.backBtn}
+          className="w-9 h-9 items-center justify-center"
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <ChevronLeft size={24} color={theme.colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Trips</Text>
+        <Text className="text-base font-semibold text-text-primary">My Trips</Text>
         <TouchableOpacity
-          style={styles.headerRightBtn}
+          className="w-9 h-9 rounded-full bg-primary-mist items-center justify-center"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setShowCreateModal(true);
@@ -336,37 +336,43 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Upper Segment Tabs (Instagram Style) matching Connections Screen */}
-      <View style={styles.tabsRow}>
+      {/* Upper Segment Tabs */}
+      <View className="flex-row bg-surface border-b border-border">
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'active' && styles.tabBtnActive]}
+          className={cn(
+            'flex-1 py-3.5 items-center justify-center flex-row gap-1.5 border-b-2 border-transparent',
+            activeTab === 'active' && 'border-primary'
+          )}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setActiveTab('active');
           }}
         >
           <Text
-            style={[
-              styles.tabText,
-              activeTab === 'active' && styles.tabTextActive,
-            ]}
+            className={cn(
+              'text-sm font-semibold text-text-muted',
+              activeTab === 'active' && 'text-primary'
+            )}
           >
             Active ({activeTrips.length})
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'past' && styles.tabBtnActive]}
+          className={cn(
+            'flex-1 py-3.5 items-center justify-center flex-row gap-1.5 border-b-2 border-transparent',
+            activeTab === 'past' && 'border-primary'
+          )}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             setActiveTab('past');
           }}
         >
           <Text
-            style={[
-              styles.tabText,
-              activeTab === 'past' && styles.tabTextActive,
-            ]}
+            className={cn(
+              'text-sm font-semibold text-text-muted',
+              activeTab === 'past' && 'text-primary'
+            )}
           >
             Past ({pastTrips.length})
           </Text>
@@ -374,12 +380,12 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
       </View>
 
       {/* Tab Content Area */}
-      <View style={styles.tabContent}>
-        {/* Search Bar matching Connections Screen */}
-        <View style={styles.searchBox}>
+      <View className="flex-1">
+        {/* Search Bar */}
+        <View className="flex-row items-center bg-surface-subtle mx-4 mt-3.5 mb-2 px-3.5 h-11 rounded-2xl border border-border gap-2.5">
           <Search size={16} color={theme.colors.textMuted} />
           <TextInput
-            style={styles.searchInput}
+            className="flex-1 text-sm text-text-primary font-medium p-0"
             placeholder="Search by destination or trip name..."
             placeholderTextColor={theme.colors.textPlaceholder}
             value={searchQuery}
@@ -390,7 +396,7 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Trips FlatList */}
         {isLoading ? (
-          <View style={styles.loaderCenter}>
+          <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : (
@@ -398,10 +404,11 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             data={displayedTrips}
             keyExtractor={(item) => item.id}
             renderItem={renderTripItem}
-            contentContainerStyle={[
-              styles.listContent,
-              { paddingBottom: insets.bottom + 24 },
-            ]}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 8,
+              paddingBottom: insets.bottom + 24,
+            }}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
@@ -433,286 +440,3 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  backBtn: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  headerRightBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabsRow: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabBtnActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  tabTextActive: {
-    color: theme.colors.primary,
-  },
-  tabContent: {
-    flex: 1,
-  },
-  loaderCenter: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    marginHorizontal: 16,
-    marginTop: 14,
-    marginBottom: 8,
-    paddingHorizontal: 14,
-    height: 44,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    gap: 16,
-  },
-  tripCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  imageWrap: {
-    height: 140,
-    backgroundColor: theme.colors.surfaceSubtle,
-    position: 'relative',
-  },
-  tripCoverImage: {
-    width: '100%',
-    height: '100%',
-  },
-  tripCoverFallback: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-    opacity: 0.85,
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-  },
-  statusPill: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusPillActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  statusPillPast: {
-    backgroundColor: theme.colors.overlay,
-  },
-  statusPillText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  statusPillTextActive: {
-    color: theme.colors.white,
-  },
-  statusPillTextPast: {
-    color: theme.colors.white,
-  },
-  cardBody: {
-    padding: 16,
-    gap: 8,
-  },
-  tripTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  metaText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    flex: 1,
-  },
-  dateText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-  },
-  badgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  tagBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  tagBadgeMuted: {
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  tagTextMuted: {
-    color: theme.colors.textSecondary,
-  },
-  cardActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  editBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primaryMist,
-    paddingVertical: 9,
-    borderRadius: 12,
-  },
-  editBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  deleteBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.errorLight,
-    paddingVertical: 9,
-    borderRadius: 12,
-  },
-  deleteBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.error,
-  },
-  emptyContainer: {
-    paddingVertical: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 24,
-  },
-  emptyIconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  emptyCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 14,
-    marginTop: 10,
-  },
-  emptyCtaText: {
-    color: theme.colors.white,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-});

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Modal,
   TouchableOpacity,
   ScrollView,
@@ -27,6 +26,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
+import { cn } from '../../../utils/cn';
 
 interface EditTripModalProps {
   visible: boolean;
@@ -144,50 +144,50 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
-          <View style={styles.sheetContainer}>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-surface rounded-t-[28px] max-h-[90%] pb-6">
             {/* Header */}
-            <View style={styles.header}>
+            <View className="flex-row items-center justify-between px-5 pt-4.5 pb-3.5 border-b border-border">
               <View>
-                <Text style={styles.headerTitle}>Edit Trip</Text>
-                <View style={styles.destRow}>
+                <Text className="text-lg font-semibold text-text-primary tracking-tight">Edit Trip</Text>
+                <View className="flex-row items-center gap-1 mt-0.5">
                   <MapPin size={12} color={theme.colors.primary} />
-                  <Text style={styles.destText} numberOfLines={1}>
+                  <Text className="text-xs font-semibold text-primary" numberOfLines={1}>
                     {destinationName}
                   </Text>
                 </View>
               </View>
               <TouchableOpacity
-                style={styles.closeBtn}
+                className="w-8.5 h-8.5 rounded-full bg-surface-subtle items-center justify-center"
                 onPress={onClose}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <X size={20} color={theme.colors.textPrimary} />
+                <X size={18} color={theme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
             <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.scrollContent}
+              className="flex-grow-0"
+              contentContainerStyle={{ padding: 20, gap: 20 }}
               showsVerticalScrollIndicator={false}
             >
               {/* Date Selection Section */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
+              <View className="gap-2.5">
+                <View className="flex-row items-center gap-2">
                   <Calendar size={16} color={theme.colors.primary} />
-                  <Text style={styles.sectionTitle}>Travel Dates</Text>
-                  <View style={styles.durationPill}>
+                  <Text className="text-sm font-semibold text-text-primary flex-1">Travel Dates</Text>
+                  <View className="flex-row items-center gap-1 bg-primary-mist px-2 py-0.5 rounded-lg">
                     <Clock size={11} color={theme.colors.primary} />
-                    <Text style={styles.durationText}>{durationDays} days</Text>
+                    <Text className="text-[11px] font-semibold text-primary">{durationDays} days</Text>
                   </View>
                 </View>
 
                 {/* Departure Card */}
                 <TouchableOpacity
-                  style={[
-                    styles.dateCard,
-                    activePicker === 'from' && styles.dateCardActive,
-                  ]}
+                  className={cn(
+                    'flex-row items-center justify-between bg-surface-subtle border border-border rounded-2xl px-4 py-3',
+                    activePicker === 'from' && 'border-primary bg-primary-mist'
+                  )}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setActivePicker(activePicker === 'from' ? null : 'from');
@@ -195,14 +195,18 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                   activeOpacity={0.8}
                 >
                   <View>
-                    <Text style={styles.dateLabel}>DEPARTURE</Text>
-                    <Text style={styles.dateValue}>{formatDisplayDate(dateFrom)}</Text>
+                    <Text className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+                      DEPARTURE
+                    </Text>
+                    <Text className="text-sm font-semibold text-text-primary mt-0.5">
+                      {formatDisplayDate(dateFrom)}
+                    </Text>
                   </View>
                   <Calendar size={18} color={theme.colors.primary} />
                 </TouchableOpacity>
 
                 {activePicker === 'from' && (
-                  <View style={styles.pickerBox}>
+                  <View className="bg-surface rounded-2xl border border-border mt-1 overflow-hidden">
                     <DateTimePicker
                       value={dateFrom}
                       mode="date"
@@ -216,10 +220,10 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
 
                 {/* Return Card */}
                 <TouchableOpacity
-                  style={[
-                    styles.dateCard,
-                    activePicker === 'to' && styles.dateCardActive,
-                  ]}
+                  className={cn(
+                    'flex-row items-center justify-between bg-surface-subtle border border-border rounded-2xl px-4 py-3',
+                    activePicker === 'to' && 'border-primary bg-primary-mist'
+                  )}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setActivePicker(activePicker === 'to' ? null : 'to');
@@ -227,14 +231,18 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                   activeOpacity={0.8}
                 >
                   <View>
-                    <Text style={styles.dateLabel}>RETURN</Text>
-                    <Text style={styles.dateValue}>{formatDisplayDate(dateTo)}</Text>
+                    <Text className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+                      RETURN
+                    </Text>
+                    <Text className="text-sm font-semibold text-text-primary mt-0.5">
+                      {formatDisplayDate(dateTo)}
+                    </Text>
                   </View>
                   <Calendar size={18} color={theme.colors.primary} />
                 </TouchableOpacity>
 
                 {activePicker === 'to' && (
-                  <View style={styles.pickerBox}>
+                  <View className="bg-surface rounded-2xl border border-border mt-1 overflow-hidden">
                     <DateTimePicker
                       value={dateTo}
                       mode="date"
@@ -248,33 +256,33 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               </View>
 
               {/* Travel Style Section */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
+              <View className="gap-2.5">
+                <View className="flex-row items-center gap-2">
                   <Compass size={16} color={theme.colors.primary} />
-                  <Text style={styles.sectionTitle}>Travel Style</Text>
+                  <Text className="text-sm font-semibold text-text-primary">Travel Style</Text>
                 </View>
-                <View style={styles.chipsWrap}>
+                <View className="flex-row flex-wrap gap-2">
                   {TRAVEL_STYLES.map((style) => {
                     const isSelected = travelStyle === style.id;
                     return (
                       <TouchableOpacity
                         key={style.id}
-                        style={[
-                          styles.chip,
-                          isSelected && styles.chipSelected,
-                        ]}
+                        className={cn(
+                          'flex-row items-center gap-1.5 bg-surface-subtle border border-border rounded-2xl px-3.5 py-2.5',
+                          isSelected && 'bg-primary border-primary'
+                        )}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           setTravelStyle(style.id);
                         }}
                         activeOpacity={0.8}
                       >
-                        <Text style={styles.chipIcon}>{style.icon}</Text>
+                        <Text className="text-sm">{style.icon}</Text>
                         <Text
-                          style={[
-                            styles.chipText,
-                            isSelected && styles.chipTextSelected,
-                          ]}
+                          className={cn(
+                            'text-[13px] font-semibold text-text-secondary',
+                            isSelected && 'text-white'
+                          )}
                         >
                           {style.label}
                         </Text>
@@ -286,48 +294,48 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
               </View>
 
               {/* Budget Style Section */}
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
+              <View className="gap-2.5">
+                <View className="flex-row items-center gap-2">
                   <Wallet size={16} color={theme.colors.primary} />
-                  <Text style={styles.sectionTitle}>Budget Style</Text>
+                  <Text className="text-sm font-semibold text-text-primary">Budget Style</Text>
                 </View>
-                <View style={styles.budgetGrid}>
+                <View className="flex-row flex-wrap gap-2">
                   {BUDGET_STYLES.map((b) => {
                     const isSelected = budgetStyle === b.id;
                     return (
                       <TouchableOpacity
                         key={b.id}
-                        style={[
-                          styles.budgetCard,
-                          isSelected && styles.budgetCardSelected,
-                        ]}
+                        className={cn(
+                          'w-[48.5%] bg-surface-subtle border border-border rounded-2xl p-3',
+                          isSelected && 'bg-primary border-primary'
+                        )}
                         onPress={() => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           setBudgetStyle(b.id);
                         }}
                         activeOpacity={0.8}
                       >
-                        <View style={styles.budgetTopRow}>
-                          <Text style={styles.budgetIcon}>{b.icon}</Text>
+                        <View className="flex-row items-center justify-between mb-1.5">
+                          <Text className="text-lg">{b.icon}</Text>
                           {isSelected && (
-                            <View style={styles.selectedDot}>
-                              <Check size={10} color={theme.colors.white} strokeWidth={3} />
+                            <View className="w-4.5 h-4.5 rounded-full bg-white items-center justify-center">
+                              <Check size={10} color={theme.colors.primary} strokeWidth={3} />
                             </View>
                           )}
                         </View>
                         <Text
-                          style={[
-                            styles.budgetTitle,
-                            isSelected && styles.budgetTitleSelected,
-                          ]}
+                          className={cn(
+                            'text-[13px] font-semibold text-text-primary',
+                            isSelected && 'text-white'
+                          )}
                         >
                           {b.label}
                         </Text>
                         <Text
-                          style={[
-                            styles.budgetDesc,
-                            isSelected && styles.budgetDescSelected,
-                          ]}
+                          className={cn(
+                            'text-[11px] text-text-secondary mt-0.5',
+                            isSelected && 'text-primary-light'
+                          )}
                         >
                           {b.description}
                         </Text>
@@ -339,18 +347,18 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
             </ScrollView>
 
             {/* Bottom Actions */}
-            <View style={styles.footer}>
+            <View className="flex-row gap-3 px-5 pt-3.5 border-t border-border">
               <TouchableOpacity
-                style={styles.cancelBtn}
+                className="flex-1 py-3.5 rounded-2xl bg-surface-subtle items-center justify-center border border-border"
                 onPress={onClose}
                 activeOpacity={0.8}
                 disabled={isSubmitting}
               >
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text className="text-sm font-semibold text-text-secondary">Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.submitBtn}
+                className="flex-[2] py-3.5 rounded-2xl bg-primary items-center justify-center shadow-card"
                 onPress={handleSave}
                 activeOpacity={0.8}
                 disabled={isSubmitting}
@@ -358,7 +366,7 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
                 {isSubmitting ? (
                   <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
-                  <Text style={styles.submitBtnText}>Save Changes</Text>
+                  <Text className="text-sm font-semibold text-white">Save Changes</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -368,237 +376,3 @@ export const EditTripModal: React.FC<EditTripModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: theme.colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheetContainer: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: '90%',
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  destRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 3,
-  },
-  destText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  closeBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scroll: {
-    flexGrow: 0,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 20,
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    flex: 1,
-  },
-  durationPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  durationText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  dateCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  dateCardActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.primaryMist,
-  },
-  dateLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  dateValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginTop: 2,
-  },
-  pickerBox: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginTop: 4,
-    overflow: 'hidden',
-  },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  chipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  chipIcon: {
-    fontSize: 14,
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  chipTextSelected: {
-    color: theme.colors.white,
-  },
-  budgetGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  budgetCard: {
-    width: '48.5%',
-    backgroundColor: theme.colors.surfaceSubtle,
-    borderWidth: 1.5,
-    borderColor: theme.colors.border,
-    borderRadius: 14,
-    padding: 12,
-  },
-  budgetCardSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  budgetTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  budgetIcon: {
-    fontSize: 18,
-  },
-  selectedDot: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: theme.colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  budgetTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  budgetTitleSelected: {
-    color: theme.colors.white,
-  },
-  budgetDesc: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-  },
-  budgetDescSelected: {
-    color: theme.colors.primaryLight,
-  },
-  footer: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 13,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  submitBtn: {
-    flex: 2,
-    paddingVertical: 13,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-});
