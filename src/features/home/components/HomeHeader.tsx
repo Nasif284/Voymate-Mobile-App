@@ -9,6 +9,7 @@ import {
 import { theme } from '../../../config/theme';
 import { Compass, MapPin } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { cn } from '../../../utils/cn';
 
 interface HomeHeaderProps {
   userName: string;
@@ -45,31 +46,21 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
     onToggleTraveling();
   };
 
-  const travelPillClasses = [
-    'flex-row items-center py-[7px] px-[11px] rounded-full border gap-1.5',
-    isTraveling ? 'bg-primary-mist border-primary-border' : 'bg-surface border-border',
-  ].join(' ');
-
-  const statusDotClasses = [
-    'w-[7px] h-[7px] rounded-full',
-    isTraveling ? 'bg-success shadow-sm' : 'bg-surface-dim',
-  ].join(' ');
-
   return (
     <View className="px-5 pt-2 pb-3.5">
       <View className="flex-row justify-between items-center">
         {/* Left: Greeting & Name */}
         <View className="flex-1 pr-3">
-          <Text className="text-xs font-medium text-textMuted capitalize tracking-wide">
+          <Text className="text-xs font-medium text-text-muted capitalize tracking-wide">
             {greeting},
           </Text>
-          <Text className="text-[22px] font-bold text-textPrimary mt-0.5 tracking-tight" numberOfLines={1}>
+          <Text className="text-[22px] font-semibold text-text-primary mt-0.5 tracking-tight" numberOfLines={1}>
             {firstName} 👋
           </Text>
           {location && (
             <View className="flex-row items-center bg-surface-subtle self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1">
               <MapPin size={10} color={theme.colors.primary} />
-              <Text className="text-[11px] font-medium text-textSecondary" numberOfLines={1}>
+              <Text className="text-[11px] font-medium text-text-secondary" numberOfLines={1}>
                 {location}
               </Text>
             </View>
@@ -79,7 +70,10 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         {/* Right: Traveling Toggle Button & User Avatar */}
         <View className="flex-row items-center gap-2.5">
           <TouchableOpacity
-            className={travelPillClasses}
+            className={cn(
+              'flex-row items-center py-[7px] px-[11px] rounded-full border gap-1.5',
+              isTraveling ? 'bg-primary-mist border-primary/25' : 'bg-surface border-border'
+            )}
             onPress={handleToggle}
             activeOpacity={0.7}
             disabled={isUpdatingStatus}
@@ -96,11 +90,15 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               />
             ) : (
               <>
-                <View className={statusDotClasses} />
+                <View className={cn(
+                  'w-[7px] h-[7px] rounded-full',
+                  isTraveling ? 'bg-success shadow-sm' : 'bg-surface-dim'
+                )} />
                 <Text
-                  className={`text-[11px] font-semibold ${
-                    isTraveling ? 'text-primary' : 'text-textSecondary'
-                  }`}
+                  className={cn(
+                    'text-[11px] font-semibold',
+                    isTraveling ? 'text-primary' : 'text-text-secondary'
+                  )}
                 >
                   {isTraveling ? 'Traveling' : 'At Home'}
                 </Text>
@@ -120,7 +118,10 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
             disabled={!onAvatarPress}
           >
             {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle" />
+              <Image
+                source={{ uri: avatarUrl }}
+                className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle"
+              />
             ) : (
               <View className="w-11 h-11 rounded-full bg-primary items-center justify-center border-2 border-surface">
                 <Text className="text-base font-semibold text-white">
@@ -128,7 +129,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
                 </Text>
               </View>
             )}
-            {isTraveling && <View className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-surface" />}
+            {isTraveling && (
+              <View className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-surface" />
+            )}
           </TouchableOpacity>
         </View>
       </View>

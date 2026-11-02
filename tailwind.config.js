@@ -32,6 +32,10 @@ module.exports = {
         textSecondary: tokens.colors.textSecondary,
         textMuted: tokens.colors.textMuted,
         textPlaceholder: tokens.colors.textPlaceholder,
+        'text-primary': tokens.colors.textPrimary,
+        'text-secondary': tokens.colors.textSecondary,
+        'text-muted': tokens.colors.textMuted,
+        'text-placeholder': tokens.colors.textPlaceholder,
         border: {
           DEFAULT: tokens.colors.border,
           subtle: tokens.colors.borderSubtle,

@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Image,
@@ -32,20 +31,22 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
   if (users.length === 0) return null;
 
   return (
-    <View style={styles.container}>
+    <View className="mb-6">
       {/* Section Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.iconCircle}>
+      <View className="flex-row justify-between items-center px-5 mb-3">
+        <View className="flex-row items-center gap-2.5">
+          <View className="w-8 h-8 rounded-full bg-primary-mist items-center justify-center">
             <MapPin size={15} color={theme.colors.primary} />
           </View>
           <View>
-            <Text style={styles.sectionTitle}>Travelers Near You</Text>
-            <Text style={styles.sectionSubtitle}>Solo travelers within 50 km</Text>
+            <Text className="text-base font-semibold text-text-primary tracking-tight">
+              Travelers Near You
+            </Text>
+            <Text className="text-xs text-text-muted">Solo travelers within 50 km</Text>
           </View>
         </View>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{users.length}</Text>
+        <View className="bg-surface-subtle px-2.5 py-1 rounded-full border border-border">
+          <Text className="text-xs font-semibold text-text-primary">{users.length}</Text>
         </View>
       </View>
 
@@ -53,9 +54,9 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
         decelerationRate="fast"
-        snapToInterval={220}
+        snapToInterval={212}
         snapToAlignment="start"
       >
         {users.map((user) => {
@@ -66,32 +67,35 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
           return (
             <TouchableOpacity
               key={user.id}
-              style={styles.card}
+              className="w-[200px] bg-surface rounded-2xl border border-border overflow-hidden shadow-subtle"
               activeOpacity={0.92}
               onPress={() => onUserPress?.(user)}
               disabled={!onUserPress}
             >
               {/* Cover Banner */}
-              <View style={styles.coverWrapper}>
+              <View className="h-[75px] w-full relative bg-primary-dark">
                 {user.coverUrl ? (
-                  <Image source={{ uri: user.coverUrl }} style={styles.coverImage} />
+                  <Image source={{ uri: user.coverUrl }} className="w-full h-full" resizeMode="cover" />
                 ) : (
-                  <View style={styles.coverPlaceholder} />
+                  <View className="w-full h-full bg-primary-dark" />
                 )}
                 {/* Distance Badge */}
-                <View style={styles.distanceBadge}>
-                  <MapPin size={10} color={theme.colors.white} />
-                  <Text style={styles.distanceText}>{distance}</Text>
+                <View className="absolute top-2 right-2 flex-row items-center bg-black/60 px-2 py-0.5 rounded-full gap-1">
+                  <MapPin size={9} color={theme.colors.white} />
+                  <Text className="text-white text-[10px] font-semibold">{distance}</Text>
                 </View>
               </View>
 
               {/* Avatar Floating */}
-              <View style={styles.avatarWrapper}>
+              <View className="absolute top-[52px] left-3 z-10">
                 {user.avatarUrl ? (
-                  <Image source={{ uri: user.avatarUrl }} style={styles.avatar} />
+                  <Image
+                    source={{ uri: user.avatarUrl }}
+                    className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle"
+                  />
                 ) : (
-                  <View style={styles.avatarFallback}>
-                    <Text style={styles.avatarFallbackText}>
+                  <View className="w-11 h-11 rounded-full bg-primary items-center justify-center border-2 border-surface">
+                    <Text className="text-white text-base font-semibold">
                       {user.fullName?.charAt(0) || 'U'}
                     </Text>
                   </View>
@@ -99,21 +103,21 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
               </View>
 
               {/* Card Body */}
-              <View style={styles.cardBody}>
-                <Text style={styles.userName} numberOfLines={1}>
+              <View className="pt-7 px-3 pb-3">
+                <Text className="text-sm font-semibold text-text-primary" numberOfLines={1}>
                   {user.fullName}
                 </Text>
 
-                <Text style={styles.userLocation} numberOfLines={1}>
+                <Text className="text-[11px] text-text-muted mt-0.5" numberOfLines={1}>
                   {user.city ? `${user.city}, ` : ''}{user.state || user.country || 'Traveling'}
                 </Text>
 
                 {/* Interest Tags */}
                 {user.interests && user.interests.length > 0 && (
-                  <View style={styles.interestsRow}>
+                  <View className="flex-row gap-1 my-2">
                     {user.interests.slice(0, 2).map((item, idx) => (
-                      <View key={idx} style={styles.interestTag}>
-                        <Text style={styles.interestText} numberOfLines={1}>
+                      <View key={idx} className="bg-surface-subtle px-2 py-0.5 rounded-md flex-shrink">
+                        <Text className="text-[10px] text-text-secondary font-medium" numberOfLines={1}>
                           {item}
                         </Text>
                       </View>
@@ -122,35 +126,35 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                 )}
 
                 {/* Action Button */}
-                <View style={styles.actionContainer}>
+                <View className="mt-2">
                   {status === 'CONNECTED' ? (
                     <TouchableOpacity
-                      style={[styles.actionBtn, styles.btnConnected]}
+                      className="flex-row items-center justify-center py-2 rounded-xl gap-1 bg-primary-dark"
                       onPress={() => onMessagePress ? onMessagePress(user) : onConnectPress(user)}
                     >
                       <MessageSquare size={13} color={theme.colors.white} />
-                      <Text style={styles.btnTextLight}>Message</Text>
+                      <Text className="text-white text-xs font-semibold">Message</Text>
                     </TouchableOpacity>
                   ) : status === 'REQUEST_SENT' ? (
-                    <View style={[styles.actionBtn, styles.btnSent]}>
-                      <Text style={styles.btnTextMuted}>Sent</Text>
+                    <View className="flex-row items-center justify-center py-2 rounded-xl bg-surface-subtle">
+                      <Text className="text-text-muted text-xs font-semibold">Sent</Text>
                     </View>
                   ) : status === 'REQUEST_RECEIVED' ? (
                     <TouchableOpacity
-                      style={[styles.actionBtn, styles.btnAccept]}
+                      className="flex-row items-center justify-center py-2 rounded-xl gap-1 bg-primary"
                       onPress={() => onAcceptPress ? onAcceptPress(user) : onConnectPress(user)}
                     >
                       <Check size={13} color={theme.colors.white} />
-                      <Text style={styles.btnTextLight}>Accept</Text>
+                      <Text className="text-white text-xs font-semibold">Accept</Text>
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
-                      style={[styles.actionBtn, styles.btnConnect]}
+                      className="flex-row items-center justify-center py-2 rounded-xl gap-1 bg-primary shadow-subtle"
                       onPress={() => onConnectPress(user)}
                       activeOpacity={0.8}
                     >
-                      <UserPlus size={13} color={theme.colors.primary} />
-                      <Text style={styles.btnTextConnect}>Connect</Text>
+                      <UserPlus size={13} color={theme.colors.white} />
+                      <Text className="text-white text-xs font-semibold">Connect</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -162,204 +166,3 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 24,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 14,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  sectionSubtitle: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    marginTop: 1,
-  },
-  countBadge: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 12,
-  },
-  countText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  scrollContent: {
-    paddingLeft: 20,
-    paddingRight: 10,
-    gap: 12,
-  },
-  card: {
-    width: 205,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  coverWrapper: {
-    height: 75,
-    width: '100%',
-    position: 'relative',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  coverImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  coverPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: theme.colors.primaryDark,
-  },
-  distanceBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  distanceText: {
-    color: theme.colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.1,
-  },
-  avatarWrapper: {
-    position: 'absolute',
-    top: 50,
-    left: 14,
-    zIndex: 10,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2.5,
-    borderColor: theme.colors.surface,
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  avatarFallback: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2.5,
-    borderColor: theme.colors.surface,
-  },
-  avatarFallbackText: {
-    color: theme.colors.onPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  cardBody: {
-    paddingTop: 26,
-    paddingHorizontal: 14,
-    paddingBottom: 14,
-  },
-  userName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  userLocation: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  },
-  interestsRow: {
-    flexDirection: 'row',
-    gap: 4,
-    marginTop: 8,
-    marginBottom: 10,
-  },
-  interestTag: {
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    maxWidth: 80,
-  },
-  interestText: {
-    fontSize: 9,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
-  },
-  actionContainer: {
-    marginTop: 6,
-  },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 7,
-    borderRadius: 10,
-    gap: 5,
-  },
-  btnConnect: {
-    backgroundColor: theme.colors.primaryMist,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  btnTextConnect: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.primary,
-  },
-  btnConnected: {
-    backgroundColor: theme.colors.primary,
-  },
-  btnAccept: {
-    backgroundColor: theme.colors.primaryDark,
-  },
-  btnSent: {
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  btnTextLight: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.onPrimary,
-  },
-  btnTextMuted: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-});

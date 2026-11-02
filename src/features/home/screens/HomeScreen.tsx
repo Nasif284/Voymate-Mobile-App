@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   RefreshControl,
   ActivityIndicator,
@@ -195,7 +194,7 @@ export const HomeScreen: React.FC = () => {
   const tabBarHeight = 82 + insets.bottom;
 
   const renderHeader = () => (
-    <View style={styles.headerContainer}>
+    <View className="mb-1">
       <HomeHeader
         userName={currentUserProfile?.fullName || authUser?.fullName || 'Traveler'}
         avatarUrl={currentUserProfile?.avatarUrl || authUser?.avatarUrl}
@@ -222,14 +221,16 @@ export const HomeScreen: React.FC = () => {
       )}
 
       {buddyUsers.length > 0 && (
-        <View style={styles.feedHeader}>
-          <View style={styles.feedHeaderLeft}>
-            <View style={styles.feedIconCircle}>
+        <View className="flex-row justify-between items-center px-5 mt-2.5 mb-4">
+          <View className="flex-row items-center gap-2.5 flex-1">
+            <View className="w-8.5 h-8.5 rounded-full bg-surface-subtle items-center justify-center">
               <Users size={16} color={theme.colors.primary} />
             </View>
             <View>
-              <Text style={styles.feedTitle}>Travelers Looking for Mates</Text>
-              <Text style={styles.feedSubtitle}>
+              <Text className="text-[17px] font-semibold text-text-primary tracking-tight">
+                Travelers Looking for Mates
+              </Text>
+              <Text className="text-xs text-text-muted mt-0.5">
                 Connect with solo travelers planning upcoming trips
               </Text>
             </View>
@@ -242,18 +243,18 @@ export const HomeScreen: React.FC = () => {
   const renderFooter = () => {
     if (isFetchingNextPage) {
       return (
-        <View style={styles.footerLoader}>
+        <View className="flex-row items-center justify-center py-4.5 gap-2">
           <ActivityIndicator size="small" color={theme.colors.primary} />
-          <Text style={styles.footerLoaderText}>Loading more travelers...</Text>
+          <Text className="text-xs font-semibold text-text-muted">Loading more travelers...</Text>
         </View>
       );
     }
 
     if (!isLoading && !hasNextPage && buddyUsers.length > 0) {
       return (
-        <View style={styles.caughtUpContainer}>
+        <View className="flex-row items-center justify-center py-5 gap-1.5">
           <Sparkles size={13} color={theme.colors.primary} />
-          <Text style={styles.caughtUpText}>You have seen all travelers for now</Text>
+          <Text className="text-xs font-semibold text-primary">You have seen all travelers for now</Text>
         </View>
       );
     }
@@ -278,12 +279,12 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.screen}>
+    <View className="flex-1 bg-background">
       <FlatList
         data={buddyUsers}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.cardWrapper}>
+          <View className="px-5">
             <BuddyTravelerCard
               user={item}
               connectionStatus={connectionsMap[item.id] || item.connectionStatus || 'NONE'}
@@ -297,10 +298,10 @@ export const HomeScreen: React.FC = () => {
         ListHeaderComponent={renderHeader()}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingTop: insets.top + 8, paddingBottom: tabBarHeight + 24 },
-        ]}
+        contentContainerStyle={{
+          paddingTop: insets.top + 8,
+          paddingBottom: tabBarHeight + 24,
+        }}
         showsVerticalScrollIndicator={false}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
@@ -335,76 +336,3 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-  },
-  listContent: {
-    paddingBottom: 40,
-  },
-  headerContainer: {
-    marginBottom: 4,
-  },
-  cardWrapper: {
-    paddingHorizontal: 20,
-  },
-  feedHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 16,
-  },
-  feedHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  feedIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: theme.colors.surfaceSubtle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  feedTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-  },
-  feedSubtitle: {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: 1,
-  },
-  footerLoader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    gap: 8,
-  },
-  footerLoaderText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  caughtUpContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-    gap: 6,
-  },
-  caughtUpText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-});

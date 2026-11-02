@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
 } from 'react-native';
 import { theme } from '../../../config/theme';
@@ -58,33 +57,33 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
   // -------------------------------------------------------------
   if (activeTrip) {
     return (
-      <View style={styles.container}>
+      <View className="px-5 pt-1 pb-6">
         {/* Active Journey Radar Card */}
-        <View style={styles.activeTripCard}>
+        <View className="bg-text-primary rounded-3xl p-5 mb-3.5 relative overflow-hidden shadow-floating">
           {/* Ambient Lighting Accents */}
-          <View style={styles.ambientGlowTop} />
-          <View style={styles.ambientGlowBottom} />
+          <View className="absolute -top-10 -right-7 w-36 h-36 rounded-full bg-white/10" />
+          <View className="absolute -bottom-12 left-5 w-28 h-28 rounded-full bg-white/5" />
 
           {/* Destination & Meta */}
-          <View style={styles.tripInfoRow}>
-            <View style={styles.tripIconBox}>
+          <View className="flex-row items-center gap-3.5">
+            <View className="w-12 h-12 rounded-2xl bg-white/10 items-center justify-center border border-white/20">
               <MapPin size={22} color={theme.colors.primaryLight} />
             </View>
-            <View style={styles.tripTextCol}>
-              <Text style={styles.tripDestination} numberOfLines={1}>
+            <View className="flex-1">
+              <Text className="text-[19px] font-semibold text-white tracking-tight" numberOfLines={1}>
                 {destinationTitle}
               </Text>
-              <View style={styles.tripMetaRow}>
-                <View style={styles.metaPill}>
+              <View className="flex-row items-center gap-2 mt-1.5 flex-wrap">
+                <View className="flex-row items-center bg-white/10 px-2 py-1 rounded-lg gap-1">
                   <Calendar size={11} color={theme.colors.primaryLight} />
-                  <Text style={styles.metaPillText}>
+                  <Text className="text-[11px] font-semibold text-primary-light">
                     {formatDateRange(activeTrip.dateFrom, activeTrip.dateTo)}
                   </Text>
                 </View>
                 {activeTrip.travelStyle && (
-                  <View style={styles.metaPill}>
+                  <View className="flex-row items-center bg-white/10 px-2 py-1 rounded-lg gap-1">
                     <Flame size={11} color={theme.colors.primaryLight} />
-                    <Text style={styles.metaPillText}>
+                    <Text className="text-[11px] font-semibold text-primary-light">
                       {activeTrip.travelStyle}
                     </Text>
                   </View>
@@ -95,43 +94,45 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
         </View>
 
         {/* Psychological Reassurance Body */}
-        <View style={styles.bodyCard}>
-          <View style={styles.badgeRow}>
-            <View style={styles.sparkleCircle}>
+        <View className="bg-surface rounded-3xl p-5 border border-border shadow-subtle">
+          <View className="flex-row items-center gap-2 mb-2.5">
+            <View className="w-7 h-7 rounded-full bg-primary-mist items-center justify-center">
               <Sparkles size={16} color={theme.colors.primary} />
             </View>
-            <Text style={styles.badgeCategoryText}>TRIP ACTIVE</Text>
+            <Text className="text-[11px] font-semibold text-primary tracking-wider uppercase">
+              TRIP ACTIVE
+            </Text>
           </View>
 
-          <Text style={styles.headline}>
+          <Text className="text-lg font-semibold text-text-primary tracking-tight leading-6 mb-2">
             Looking for travel mates for {destinationTitle}
           </Text>
 
-          <Text style={styles.persuasiveText}>
+          <Text className="text-[13px] text-text-secondary leading-5 mb-4.5">
             Your trip is live. New travelers add trips every day—check your trip matches or browse other destinations while we find people heading to {destinationTitle}.
           </Text>
 
           {/* Value Highlights */}
-          <View style={styles.tipsList}>
-            <View style={styles.tipItem}>
-              <View style={styles.tipIconWrap}>
+          <View className="gap-3 mb-5 bg-surface-subtle p-3.5 rounded-2xl border border-border">
+            <View className="flex-row items-start gap-2.5">
+              <View className="w-7 h-7 rounded-lg bg-surface items-center justify-center mt-0.5">
                 <Users size={14} color={theme.colors.primary} />
               </View>
-              <View style={styles.tipContent}>
-                <Text style={styles.tipTitle}>Smart Destination Matches</Text>
-                <Text style={styles.tipDesc}>
+              <View className="flex-1">
+                <Text className="text-[13px] font-semibold text-text-primary">Smart Destination Matches</Text>
+                <Text className="text-[11.5px] text-text-muted leading-4 mt-0.5">
                   We match you with travelers visiting {destinationTitle} on overlapping dates.
                 </Text>
               </View>
             </View>
 
-            <View style={styles.tipItem}>
-              <View style={styles.tipIconWrap}>
+            <View className="flex-row items-start gap-2.5">
+              <View className="w-7 h-7 rounded-lg bg-surface items-center justify-center mt-0.5">
                 <ShieldCheck size={14} color={theme.colors.primary} />
               </View>
-              <View style={styles.tipContent}>
-                <Text style={styles.tipTitle}>Direct Trip Planning</Text>
-                <Text style={styles.tipDesc}>
+              <View className="flex-1">
+                <Text className="text-[13px] font-semibold text-text-primary">Direct Trip Planning</Text>
+                <Text className="text-[11.5px] text-text-muted leading-4 mt-0.5">
                   Chat directly before your trip to coordinate transport, stays, and activities.
                 </Text>
               </View>
@@ -139,9 +140,9 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.actionCol}>
+          <View className="gap-2.5 mb-4">
             <TouchableOpacity
-              style={styles.primaryBtn}
+              className="flex-row items-center justify-center bg-primary py-3.5 px-5 rounded-2xl gap-2 shadow-card"
               activeOpacity={0.88}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -149,13 +150,13 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
               }}
             >
               <Users size={17} color={theme.colors.white} strokeWidth={2.2} />
-              <Text style={styles.primaryBtnText}>View Trip Matches</Text>
+              <Text className="text-sm font-semibold text-white tracking-wide">View Trip Matches</Text>
               <ArrowRight size={16} color={theme.colors.white} />
             </TouchableOpacity>
 
-            <View style={styles.secondaryBtnRow}>
+            <View className="flex-row gap-2.5">
               <TouchableOpacity
-                style={styles.secondaryBtn}
+                className="flex-1 flex-row items-center justify-center bg-surface-subtle py-3 rounded-xl gap-1.5 border border-border"
                 activeOpacity={0.8}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -163,11 +164,11 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
                 }}
               >
                 <Calendar size={14} color={theme.colors.primary} />
-                <Text style={styles.secondaryBtnText}>My Trips</Text>
+                <Text className="text-[12.5px] font-semibold text-text-primary">My Trips</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.secondaryBtn}
+                className="flex-1 flex-row items-center justify-center bg-surface-subtle py-3 rounded-xl gap-1.5 border border-border"
                 activeOpacity={0.8}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -175,16 +176,16 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
                 }}
               >
                 <Plus size={14} color={theme.colors.primary} />
-                <Text style={styles.secondaryBtnText}>Add Another Trip</Text>
+                <Text className="text-[12.5px] font-semibold text-text-primary">Add Another Trip</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Retention Micro-Tip */}
-          <View style={styles.proTipBox}>
-            <Text style={styles.proTipEmoji}>💡</Text>
-            <Text style={styles.proTipText}>
-              <Text style={styles.proTipBold}>Tip: </Text>
+          <View className="flex-row items-start bg-accent-goldLight p-3 rounded-xl gap-2 border border-accent-gold/25">
+            <Text className="text-sm">💡</Text>
+            <Text className="flex-1 text-[11.5px] text-text-primary leading-4">
+              <Text className="font-semibold">Tip: </Text>
               Complete your bio and travel interests to get 3x more connection requests.
             </Text>
           </View>
@@ -197,69 +198,71 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
   // Scenario 2: User has NO Active Trip (Activation & Retention)
   // -------------------------------------------------------------
   return (
-    <View style={styles.container}>
-      <View style={styles.activationCard}>
+    <View className="px-5 pt-1 pb-6">
+      <View className="bg-surface rounded-3xl p-6 items-center border border-border relative overflow-hidden shadow-subtle">
         {/* Soft Background Geometry */}
-        <View style={styles.activationGlowOne} />
-        <View style={styles.activationGlowTwo} />
+        <View className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-primary-mist" />
+        <View className="absolute -bottom-14 -left-10 w-36 h-36 rounded-full bg-surface-subtle" />
 
         {/* Hero Visual Icon Badge */}
-        <View style={styles.heroIconBadge}>
+        <View className="w-[72px] h-[72px] rounded-full bg-primary-mist items-center justify-center border border-primary/20 mb-4 relative">
           <Compass size={32} color={theme.colors.primary} strokeWidth={2.2} />
-          <View style={styles.heroSparkleWrap}>
+          <View className="absolute -top-0.5 -right-0.5 w-6 h-6 rounded-full bg-primary-light items-center justify-center border-2 border-surface">
             <Sparkles size={14} color={theme.colors.primaryDark} />
           </View>
         </View>
 
         {/* Motivational Tag */}
-        <View style={styles.motivationPill}>
+        <View className="flex-row items-center bg-primary-mist px-2.5 py-1.5 rounded-xl mb-3 gap-1">
           <Globe2 size={11} color={theme.colors.primary} />
-          <Text style={styles.motivationPillText}>GET STARTED</Text>
+          <Text className="text-[10.5px] font-semibold text-primary uppercase tracking-wider">
+            GET STARTED
+          </Text>
         </View>
 
         {/* Core Psychological Headline */}
-        <Text style={styles.activationTitle}>
+        <Text className="text-[21px] font-semibold text-text-primary text-center tracking-tight leading-7 mb-2.5">
           Plan a Trip to Find Travel Mates
         </Text>
 
         {/* Empathetic & Persuasive Copy */}
-        <Text style={styles.activationSubtitle}>
+        <Text className="text-[13.5px] text-text-secondary text-center leading-5 mb-5 px-1.5">
           Add your destination and travel dates. We will match you with solo travelers going to the same place.
         </Text>
 
         {/* 3 Core Value Props to Reduce Hesitation */}
-        <View style={styles.valuePropsContainer}>
-          <View style={styles.valuePropCard}>
-            <View style={styles.valuePropIconCircle}>
-              <Text style={styles.valuePropEmoji}>🎯</Text>
+        <View className="w-full gap-2.5 mb-5.5">
+          <View className="flex-row items-center bg-surface-subtle py-2.5 px-3.5 rounded-2xl border border-border gap-3">
+            <View className="w-8 h-8 rounded-xl bg-surface items-center justify-center border border-border">
+              <Text className="text-[15px]">🎯</Text>
             </View>
-            <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Smart Matching</Text>
-              <Text style={styles.valuePropDesc}>
+            <View className="flex-1">
+              <Text className="text-[13px] font-semibold text-text-primary">Smart Matching</Text>
+              <Text className="text-[11px] text-text-muted leading-4 mt-0.5">
                 Match by destination, travel dates, and budget.
               </Text>
             </View>
           </View>
 
-          <View style={styles.valuePropCard}>
-            <View style={styles.valuePropIconCircle}>
-              <Text style={styles.valuePropEmoji}>💬</Text>
+          <View className="flex-row items-center bg-surface-subtle py-2.5 px-3.5 rounded-2xl border border-border gap-3">
+            <View className="w-8 h-8 rounded-xl bg-surface items-center justify-center border border-border">
+              <Text className="text-[15px]">💬</Text>
             </View>
-            <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Chat Before You Go</Text>
-              <Text style={styles.valuePropDesc}>
+            <View className="flex-1">
+              <Text className="text-[13px] font-semibold text-text-primary">Chat Before You Go</Text>
+              <Text className="text-[11px] text-text-muted leading-4 mt-0.5">
                 Message potential travel mates and align plans before your trip.
               </Text>
             </View>
           </View>
 
-          <View style={styles.valuePropCard}>
-            <View style={styles.valuePropIconCircle}>
-              <Text style={styles.valuePropEmoji}>🚗</Text>
+          <View className="flex-row items-center bg-surface-subtle py-2.5 px-3.5 rounded-2xl border border-border gap-3">
+            <View className="w-8 h-8 rounded-xl bg-surface items-center justify-center border border-border">
+              <Text className="text-[15px]">🚗</Text>
             </View>
-            <View style={styles.valuePropTextCol}>
-              <Text style={styles.valuePropHeading}>Share the Trip</Text>
-              <Text style={styles.valuePropDesc}>
+            <View className="flex-1">
+              <Text className="text-[13px] font-semibold text-text-primary">Share the Trip</Text>
+              <Text className="text-[11px] text-text-muted leading-4 mt-0.5">
                 Split costs, share rides, and explore together.
               </Text>
             </View>
@@ -268,30 +271,32 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
 
         {/* Big Activation CTA Button */}
         <TouchableOpacity
-          style={styles.heroActionBtn}
+          className="w-full flex-row items-center justify-between bg-primary py-3.5 px-5 rounded-2xl shadow-card mb-3"
           activeOpacity={0.9}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             onPlanTripPress();
           }}
         >
-          <View style={styles.heroActionContent}>
+          <View className="flex-row items-center gap-2.5">
             <Plus size={18} color={theme.colors.white} strokeWidth={2.5} />
-            <Text style={styles.heroActionBtnText}>Create Travel Plan</Text>
+            <Text className="text-[15px] font-semibold text-white tracking-wide">
+              Create Travel Plan
+            </Text>
           </View>
           <ArrowRight size={17} color={theme.colors.primaryLight} strokeWidth={2.2} />
         </TouchableOpacity>
 
         {/* Secondary Gentle Discovery Link */}
         <TouchableOpacity
-          style={styles.exploreLinkBtn}
+          className="flex-row items-center gap-1.5 py-1.5 px-3"
           activeOpacity={0.75}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             onExplorePress();
           }}
         >
-          <Text style={styles.exploreLinkText}>
+          <Text className="text-[12.5px] font-semibold text-primary">
             Explore Destinations
           </Text>
           <ArrowRight size={13} color={theme.colors.primary} />
@@ -300,419 +305,3 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 24,
-  },
-
-  // -------------------------------------------------------------
-  // Scenario 1: Active Trip Styles
-  // -------------------------------------------------------------
-  activeTripCard: {
-    backgroundColor: theme.colors.textPrimary,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 14,
-    position: 'relative',
-    overflow: 'hidden',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    elevation: 4,
-  },
-  ambientGlowTop: {
-    position: 'absolute',
-    top: -40,
-    right: -30,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  ambientGlowBottom: {
-    position: 'absolute',
-    bottom: -50,
-    left: 20,
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  tripInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  tripIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-  },
-  tripTextCol: {
-    flex: 1,
-  },
-  tripDestination: {
-    fontSize: 19,
-    fontWeight: '700',
-    color: theme.colors.white,
-    letterSpacing: -0.3,
-  },
-  tripMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
-    flexWrap: 'wrap',
-  },
-  metaPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    gap: 4,
-  },
-  metaPillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primaryLight,
-  },
-  bodyCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  sparkleCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeCategoryText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    letterSpacing: 0.5,
-  },
-  headline: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
-    lineHeight: 24,
-    marginBottom: 8,
-  },
-  persuasiveText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 18,
-  },
-  tipsList: {
-    gap: 12,
-    marginBottom: 20,
-    backgroundColor: theme.colors.surfaceSubtle,
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  tipIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  tipContent: {
-    flex: 1,
-  },
-  tipTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-  },
-  tipDesc: {
-    fontSize: 11.5,
-    color: theme.colors.textMuted,
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  actionCol: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  primaryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    gap: 8,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  primaryBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.onPrimary,
-    letterSpacing: 0.1,
-  },
-  secondaryBtnRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  secondaryBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingVertical: 11,
-    borderRadius: 14,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  secondaryBtnText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  proTipBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: theme.colors.accentGoldLight,
-    padding: 12,
-    borderRadius: 14,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.25)',
-  },
-  proTipEmoji: {
-    fontSize: 14,
-  },
-  proTipText: {
-    flex: 1,
-    fontSize: 11.5,
-    color: theme.colors.textPrimary,
-    lineHeight: 16,
-  },
-  proTipBold: {
-    fontWeight: '700',
-  },
-
-  // -------------------------------------------------------------
-  // Scenario 2: Activation (No Active Trip) Styles
-  // -------------------------------------------------------------
-  activationCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 26,
-    padding: 24,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    position: 'relative',
-    overflow: 'hidden',
-    shadowColor: theme.colors.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 2,
-  },
-  activationGlowOne: {
-    position: 'absolute',
-    top: -50,
-    right: -40,
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: theme.colors.primaryMist,
-  },
-  activationGlowTwo: {
-    position: 'absolute',
-    bottom: -60,
-    left: -40,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: theme.colors.surfaceSubtle,
-  },
-  heroIconBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: theme.colors.primaryMist,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: theme.colors.primaryBorder,
-    marginBottom: 16,
-    position: 'relative',
-  },
-  heroSparkleWrap: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: theme.colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.surface,
-  },
-  motivationPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primaryMist,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 5,
-  },
-  motivationPillText: {
-    fontSize: 10.5,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    letterSpacing: 0.5,
-  },
-  activationTitle: {
-    fontSize: 21,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
-    letterSpacing: -0.4,
-    lineHeight: 27,
-    marginBottom: 10,
-  },
-  activationSubtitle: {
-    fontSize: 13.5,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-    paddingHorizontal: 6,
-  },
-  valuePropsContainer: {
-    width: '100%',
-    gap: 10,
-    marginBottom: 22,
-  },
-  valuePropCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceSubtle,
-    paddingVertical: 11,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 12,
-  },
-  valuePropIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  valuePropEmoji: {
-    fontSize: 15,
-  },
-  valuePropTextCol: {
-    flex: 1,
-  },
-  valuePropHeading: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  valuePropDesc: {
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    lineHeight: 15,
-    marginTop: 1,
-  },
-  heroActionBtn: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 18,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 4,
-    marginBottom: 12,
-  },
-  heroActionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  heroActionBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: theme.colors.onPrimary,
-    letterSpacing: 0.2,
-  },
-  exploreLinkBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  exploreLinkText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-});
