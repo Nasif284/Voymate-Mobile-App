@@ -52,4 +52,5 @@ export type RootStackParamList = {
   Trips: {
     initialTab?: 'active' | 'past';
   };
+  Notifications: undefined;
 };

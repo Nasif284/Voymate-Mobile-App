@@ -95,4 +95,14 @@ export const ENDPOINTS = {
     UPDATE: '/location',
     GET: '/location',
   },
+
+  // Notifications
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    UNREAD_COUNT: '/notifications/unread-count',
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    MARK_ALL_READ: '/notifications/read-all',
+    REGISTER_DEVICE: '/notifications/devices',
+    UNREGISTER_DEVICE: '/notifications/devices',
+  },
 } as const;

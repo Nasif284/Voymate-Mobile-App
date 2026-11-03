@@ -7,9 +7,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { theme } from '../../../config/theme';
-import { Compass, MapPin } from 'lucide-react-native';
+import { Compass, MapPin, Bell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { cn } from '../../../utils/cn';
+import { useUnreadNotificationCount } from '../../notifications/hooks/useNotifications';
 
 interface HomeHeaderProps {
   userName: string;
@@ -19,6 +20,7 @@ interface HomeHeaderProps {
   onToggleTraveling: () => void;
   isUpdatingStatus?: boolean;
   onAvatarPress?: () => void;
+  onNotificationsPress?: () => void;
 }
 
 const getTimeGreeting = () => {
@@ -36,9 +38,11 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   onToggleTraveling,
   isUpdatingStatus,
   onAvatarPress,
+  onNotificationsPress,
 }) => {
   const firstName = userName ? userName.split(' ')[0] : 'Traveler';
   const greeting = getTimeGreeting();
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
   const handleToggle = () => {
     if (isUpdatingStatus) return;
@@ -107,6 +111,27 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
                   color={isTraveling ? theme.colors.primary : theme.colors.textMuted}
                 />
               </>
+            )}
+          </TouchableOpacity>
+
+          {/* Notifications Bell */}
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-surface border border-border items-center justify-center relative"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              onNotificationsPress?.();
+            }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Notifications"
+          >
+            <Bell size={18} color={theme.colors.textPrimary} />
+            {unreadCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-primary min-w-[18px] h-[18px] rounded-full items-center justify-center px-1 border-2 border-surface">
+                <Text className="text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
 

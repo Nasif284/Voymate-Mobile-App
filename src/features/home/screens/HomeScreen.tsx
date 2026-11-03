@@ -203,6 +203,7 @@ export const HomeScreen: React.FC = () => {
         onToggleTraveling={handleToggleTraveling}
         isUpdatingStatus={toggleTravelingMutation.isPending}
         onAvatarPress={() => navigation.navigate('Main', { screen: 'ProfileTab' } as any)}
+        onNotificationsPress={() => navigation.navigate('Notifications')}
       />
 
       {!isLoading && !activeTrip && buddyUsers.length > 0 && (
