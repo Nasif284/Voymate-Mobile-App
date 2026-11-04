@@ -8,6 +8,10 @@ import { notificationApi } from '../api/notification.api';
 import { pushNotificationService } from '../services/pushNotification.service';
 import { socketService } from '../../chat/services/socket.service';
 import { useAuthStore } from '../../../store/authStore';
+import {
+  NotificationItem,
+  NotificationPaginationResult,
+} from '../../../types/notification.types';
 
 export const NOTIFICATION_QUERY_KEYS = {
   all: ['notifications'] as const,
@@ -24,7 +28,7 @@ export function useNotificationsQuery(params?: {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.list(params),
     queryFn: () => notificationApi.getNotifications(params),
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 60, // 1 minute stale time (kept fresh via Socket.io)
   });
 }
 
@@ -34,7 +38,7 @@ export function useUnreadNotificationCount() {
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount,
     queryFn: () => notificationApi.getUnreadCount(),
     enabled: isAuthenticated,
-    refetchInterval: 1000 * 60, // Poll every minute as fallback
+    staleTime: 1000 * 60 * 5, // Kept live via Socket.io events
   });
 }
 
@@ -43,10 +47,30 @@ export function useMarkNotificationReadMutation() {
 
   return useMutation({
     mutationFn: (id: string) => notificationApi.markAsRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_QUERY_KEYS.all,
-      });
+    onMutate: async (id: string) => {
+      // Optimistically mark as read in cache
+      queryClient.setQueriesData<NotificationPaginationResult>(
+        { queryKey: ['notifications', 'list'] },
+        (old) => {
+          if (!old) return old;
+          const target = old.notifications.find((n) => n.id === id);
+          const wasUnread = target && !target.isRead;
+          return {
+            ...old,
+            unreadCount: wasUnread
+              ? Math.max(0, old.unreadCount - 1)
+              : old.unreadCount,
+            notifications: old.notifications.map((n) =>
+              n.id === id ? { ...n, isRead: true } : n,
+            ),
+          };
+        },
+      );
+
+      queryClient.setQueryData<number>(
+        NOTIFICATION_QUERY_KEYS.unreadCount,
+        (old) => (typeof old === 'number' ? Math.max(0, old - 1) : 0),
+      );
     },
   });
 }
@@ -56,16 +80,30 @@ export function useMarkAllNotificationsReadMutation() {
 
   return useMutation({
     mutationFn: () => notificationApi.markAllAsRead(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_QUERY_KEYS.all,
-      });
+    onMutate: async () => {
+      queryClient.setQueriesData<NotificationPaginationResult>(
+        { queryKey: ['notifications', 'list'] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            unreadCount: 0,
+            notifications: old.notifications.map((n) => ({
+              ...n,
+              isRead: true,
+            })),
+          };
+        },
+      );
+
+      queryClient.setQueryData<number>(NOTIFICATION_QUERY_KEYS.unreadCount, 0);
     },
   });
 }
 
 /**
  * Hook to automatically register push token on auth and handle real-time socket events
+ * with zero-refetch optimistic cache updates.
  */
 export function usePushNotificationSetup(
   onNotificationTap?: (data?: Record<string, unknown> | null) => void,
@@ -84,17 +122,102 @@ export function usePushNotificationSetup(
     socketService.connect().then((socket) => {
       if (!socket) return;
 
-      const handleNewNotification = () => {
-        // Invalidate queries so badges and notification lists update live
-        queryClient.invalidateQueries({
-          queryKey: NOTIFICATION_QUERY_KEYS.all,
-        });
+      const handleNewNotification = (
+        rawPayload: NotificationItem & { props?: NotificationItem },
+      ) => {
+        const incoming: NotificationItem =
+          rawPayload && 'props' in rawPayload && rawPayload.props
+            ? rawPayload.props
+            : rawPayload;
+
+        if (!incoming?.id) return;
+
+        let isCollapsedUpdate = false;
+
+        // Optimistically update notification lists in memory
+        queryClient.setQueriesData<NotificationPaginationResult>(
+          { queryKey: ['notifications', 'list'] },
+          (old) => {
+            if (!old) return old;
+            const existingIndex = old.notifications.findIndex(
+              (n) => n.id === incoming.id,
+            );
+
+            if (existingIndex !== -1) {
+              // Collapsed update for an existing unread chat notification
+              isCollapsedUpdate = true;
+              const wasRead = old.notifications[existingIndex].isRead;
+              const filtered = old.notifications.filter(
+                (n) => n.id !== incoming.id,
+              );
+              return {
+                ...old,
+                unreadCount: wasRead ? old.unreadCount + 1 : old.unreadCount,
+                notifications: [incoming, ...filtered],
+              };
+            }
+
+            return {
+              ...old,
+              total: old.total + 1,
+              unreadCount: old.unreadCount + 1,
+              notifications: [incoming, ...old.notifications],
+            };
+          },
+        );
+
+        // Optimistically increment badge count only if not an already-unread collapsed row
+        if (!isCollapsedUpdate) {
+          queryClient.setQueryData<number>(
+            NOTIFICATION_QUERY_KEYS.unreadCount,
+            (old) => (typeof old === 'number' ? old + 1 : 1),
+          );
+        }
+      };
+
+      const handleConversationRead = (payload: {
+        conversationId: string;
+        updatedCount: number;
+      }) => {
+        if (!payload?.conversationId) return;
+
+        queryClient.setQueriesData<NotificationPaginationResult>(
+          { queryKey: ['notifications', 'list'] },
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              unreadCount: Math.max(
+                0,
+                old.unreadCount - (payload.updatedCount || 1),
+              ),
+              notifications: old.notifications.map((n) => {
+                const convId = (n.data as Record<string, unknown> | null)
+                  ?.conversationId;
+                if (n.type === 'CHAT_MESSAGE' && convId === payload.conversationId) {
+                  return { ...n, isRead: true };
+                }
+                return n;
+              }),
+            };
+          },
+        );
+
+        queryClient.setQueryData<number>(
+          NOTIFICATION_QUERY_KEYS.unreadCount,
+          (old) =>
+            typeof old === 'number'
+              ? Math.max(0, old - (payload.updatedCount || 1))
+              : 0,
+        );
       };
 
       socket.on('notification:new', handleNewNotification);
+      socket.on('notification:conversation_read', handleConversationRead);
 
       cleanupSocket = () => {
         socket.off('notification:new', handleNewNotification);
+        socket.off('notification:conversation_read', handleConversationRead);
       };
     });
 

@@ -16,7 +16,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { RootStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { QUERY_KEYS } from '../../../api/queryClient';
-import { useGetDirectChat, useGetMessages } from '../hooks/chat.hooks';
+import {
+  useGetDirectChat,
+  useGetMessages,
+  markConversationAsReadInCache,
+  updateConversationInCache,
+} from '../hooks/chat.hooks';
 import { socketService } from '../services/socket.service';
 import { ChatMessage } from '../types';
 import { useAuthStore } from '../../../store/authStore';
@@ -141,8 +146,9 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             }
           );
           socketService.markAsRead(targetConvId);
+          markConversationAsReadInCache(queryClient, targetConvId);
         }
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+        updateConversationInCache(queryClient, newMsg, currentUser?.id);
       }
     };
 
@@ -177,6 +183,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       if (targetConvId) {
         socketService.joinConversation(targetConvId);
         socketService.markAsRead(targetConvId);
+        markConversationAsReadInCache(queryClient, targetConvId);
       }
     });
 
@@ -188,6 +195,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
       const targetConvId = activeConvId || conversationId;
       if (targetConvId) {
         socketService.leaveConversation(targetConvId);
+        markConversationAsReadInCache(queryClient, targetConvId);
       }
     };
   }, [conversationId, activeConvId, targetUserId, currentUser?.id, queryClient, navigation]);
@@ -219,6 +227,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
         QUERY_KEYS.messages(targetConvId),
         (prev = []) => [optimisticMsg, ...prev]
       );
+      updateConversationInCache(queryClient, optimisticMsg, currentUser?.id);
     }
 
     socketService.sendMessage(

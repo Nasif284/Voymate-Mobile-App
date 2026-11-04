@@ -16,8 +16,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import { RootStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
-import { QUERY_KEYS } from '../../../api/queryClient';
-import { useGetConversations } from '../hooks/chat.hooks';
+import {
+  useGetConversations,
+  markConversationAsReadInCache,
+  updateConversationInCache,
+} from '../hooks/chat.hooks';
 import { useGetConnections } from '../../connections/hooks/connection.hooks';
 import { socketService } from '../services/socket.service';
 import { Conversation, ChatMessage } from '../types';
@@ -88,30 +91,9 @@ export const MessagesScreen: React.FC = () => {
     let isMounted = true;
     let unsubMessage: (() => void) | undefined;
 
-    // Listen for new messages in any conversation and update React Query cache
+    // Listen for new messages in any conversation and update React Query cache in-memory
     const handleNewMessage = (newMsg: ChatMessage) => {
-      queryClient.setQueryData<Conversation[]>(QUERY_KEYS.conversations, (prev = []) => {
-        const existingIdx = prev.findIndex((c) => c.conversationId === newMsg.conversationId);
-        if (existingIdx !== -1) {
-          const updated = [...prev];
-          const target = { ...updated[existingIdx] };
-          target.lastMessage = {
-            content: newMsg.content,
-            createdAt: newMsg.createdAt,
-            senderId: newMsg.senderId,
-            type: newMsg.type,
-            status: newMsg.status,
-          };
-          if (newMsg.senderId !== currentUser?.id) {
-            target.unreadCount = (target.unreadCount || 0) + 1;
-          }
-          updated.splice(existingIdx, 1);
-          return [target, ...updated];
-        } else {
-          refetchConversations();
-          return prev;
-        }
-      });
+      updateConversationInCache(queryClient, newMsg, currentUser?.id);
     };
 
     socketService.connect().then(() => {
@@ -154,6 +136,10 @@ export const MessagesScreen: React.FC = () => {
     targetUserAvatar?: string | null
   ) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (conversationId) {
+      markConversationAsReadInCache(queryClient, conversationId);
+      socketService.markAsRead(conversationId);
+    }
     navigation.navigate('ChatRoom', {
       conversationId,
       targetUserId,

@@ -5,9 +5,12 @@ import { ChatMessage } from '../types';
 
 let socket: Socket | null = null;
 let connectingPromise: Promise<Socket | null> | null = null;
+let activeConversationId: string | null = null;
 
 export const socketService = {
   getSocket: (): Socket | null => socket,
+
+  getActiveConversationId: (): string | null => activeConversationId,
 
   connect: async (): Promise<Socket | null> => {
     if (socket?.connected) {
@@ -50,6 +53,10 @@ export const socketService = {
           socket.connect();
         }
 
+        if (activeConversationId) {
+          socket.emit('chat:join', activeConversationId);
+        }
+
         return socket;
       } catch (err) {
         if (__DEV__) {
@@ -66,6 +73,7 @@ export const socketService = {
 
   disconnect: () => {
     connectingPromise = null;
+    activeConversationId = null;
     if (socket) {
       socket.removeAllListeners();
       socket.disconnect();
@@ -74,11 +82,15 @@ export const socketService = {
   },
 
   joinConversation: (conversationId: string) => {
+    activeConversationId = conversationId;
     if (!socket?.connected) return;
     socket.emit('chat:join', conversationId);
   },
 
   leaveConversation: (conversationId: string) => {
+    if (activeConversationId === conversationId) {
+      activeConversationId = null;
+    }
     if (!socket?.connected) return;
     socket.emit('chat:leave', conversationId);
   },
