@@ -46,8 +46,10 @@ const getNotificationIcon = (type: NotificationType) => {
   }
 };
 
-const formatTimeAgo = (dateString: string) => {
+const formatTimeAgo = (dateString?: string) => {
+  if (!dateString) return '';
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
@@ -192,7 +194,7 @@ export const NotificationsScreen: React.FC = () => {
       ) : (
         <FlatList
           data={notifications}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => item.id || String(index)}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}

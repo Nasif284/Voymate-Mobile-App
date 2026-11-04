@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { notificationApi } from '../api/notification.api';
 
@@ -25,6 +26,19 @@ export const pushNotificationService = {
     if (!Device.isDevice) {
       if (__DEV__) {
         console.log('[Push] Must use physical device for push notifications');
+      }
+      return null;
+    }
+
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+
+    if (!projectId) {
+      if (__DEV__) {
+        console.info(
+          '[Push] Skipping Expo push token registration (no EAS projectId configured in app.json). Real-time Socket.io notifications are active.',
+        );
       }
       return null;
     }
@@ -55,7 +69,9 @@ export const pushNotificationService = {
         return null;
       }
 
-      const tokenData = await Notifications.getExpoPushTokenAsync();
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId,
+      });
       const token = tokenData.data;
 
       if (token && token !== registeredPushToken) {

@@ -1,9 +1,19 @@
 import { apiClient } from '../../../api/client';
 import { ENDPOINTS } from '../../../api/endpoints';
 import {
+  NotificationItem,
   NotificationPaginationResult,
   RegisterDevicePayload,
 } from '../../../types/notification.types';
+
+const normalizeNotificationItem = (
+  item: NotificationItem & { props?: NotificationItem },
+): NotificationItem => {
+  if (item && typeof item === 'object' && 'props' in item && item.props) {
+    return item.props;
+  }
+  return item;
+};
 
 export const notificationApi = {
   async registerDevice(payload: RegisterDevicePayload): Promise<void> {
@@ -25,7 +35,14 @@ export const notificationApi = {
       success: boolean;
       data: NotificationPaginationResult;
     }>(ENDPOINTS.NOTIFICATIONS.LIST, { params });
-    return res.data.data;
+
+    const payload = res.data.data;
+    return {
+      ...payload,
+      notifications: (payload?.notifications ?? []).map(
+        normalizeNotificationItem,
+      ),
+    };
   },
 
   async getUnreadCount(): Promise<number> {
