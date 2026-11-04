@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import {
   useQuery,
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
+  InfiniteData,
 } from '@tanstack/react-query';
 import { notificationApi } from '../api/notification.api';
 import { pushNotificationService } from '../services/pushNotification.service';
@@ -17,6 +19,8 @@ export const NOTIFICATION_QUERY_KEYS = {
   all: ['notifications'] as const,
   list: (params?: { page?: number; limit?: number; unreadOnly?: boolean }) =>
     ['notifications', 'list', params] as const,
+  infinite: (params?: { limit?: number; unreadOnly?: boolean }) =>
+    ['notifications', 'infinite', params] as const,
   unreadCount: ['notifications', 'unread-count'] as const,
 };
 
@@ -28,7 +32,27 @@ export function useNotificationsQuery(params?: {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.list(params),
     queryFn: () => notificationApi.getNotifications(params),
-    staleTime: 1000 * 60, // 1 minute stale time (kept fresh via Socket.io)
+    staleTime: 1000 * 60,
+  });
+}
+
+export function useInfiniteNotificationsQuery(params?: {
+  limit?: number;
+  unreadOnly?: boolean;
+}) {
+  const limit = params?.limit ?? 20;
+  return useInfiniteQuery({
+    queryKey: NOTIFICATION_QUERY_KEYS.infinite(params),
+    queryFn: ({ pageParam = 1 }) =>
+      notificationApi.getNotifications({
+        page: pageParam,
+        limit,
+        unreadOnly: params?.unreadOnly,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.hasMore ? allPages.length + 1 : undefined,
+    staleTime: 1000 * 60,
   });
 }
 
@@ -38,7 +62,7 @@ export function useUnreadNotificationCount() {
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount,
     queryFn: () => notificationApi.getUnreadCount(),
     enabled: isAuthenticated,
-    staleTime: 1000 * 60 * 5, // Kept live via Socket.io events
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -48,7 +72,35 @@ export function useMarkNotificationReadMutation() {
   return useMutation({
     mutationFn: (id: string) => notificationApi.markAsRead(id),
     onMutate: async (id: string) => {
-      // Optimistically mark as read in cache
+      // 1. Update infinite query pages optimistically
+      queryClient.setQueriesData<InfiniteData<NotificationPaginationResult>>(
+        { queryKey: ['notifications', 'infinite'] },
+        (old) => {
+          if (!old) return old;
+          let wasUnread = false;
+          for (const page of old.pages) {
+            const target = page.notifications.find((n) => n.id === id);
+            if (target && !target.isRead) {
+              wasUnread = true;
+              break;
+            }
+          }
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              unreadCount: wasUnread
+                ? Math.max(0, page.unreadCount - 1)
+                : page.unreadCount,
+              notifications: page.notifications.map((n) =>
+                n.id === id ? { ...n, isRead: true } : n,
+              ),
+            })),
+          };
+        },
+      );
+
+      // 2. Update standard list query optimistically
       queryClient.setQueriesData<NotificationPaginationResult>(
         { queryKey: ['notifications', 'list'] },
         (old) => {
@@ -67,6 +119,7 @@ export function useMarkNotificationReadMutation() {
         },
       );
 
+      // 3. Decrement unread count badge
       queryClient.setQueryData<number>(
         NOTIFICATION_QUERY_KEYS.unreadCount,
         (old) => (typeof old === 'number' ? Math.max(0, old - 1) : 0),
@@ -81,6 +134,24 @@ export function useMarkAllNotificationsReadMutation() {
   return useMutation({
     mutationFn: () => notificationApi.markAllAsRead(),
     onMutate: async () => {
+      queryClient.setQueriesData<InfiniteData<NotificationPaginationResult>>(
+        { queryKey: ['notifications', 'infinite'] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              unreadCount: 0,
+              notifications: page.notifications.map((n) => ({
+                ...n,
+                isRead: true,
+              })),
+            })),
+          };
+        },
+      );
+
       queryClient.setQueriesData<NotificationPaginationResult>(
         { queryKey: ['notifications', 'list'] },
         (old) => {
@@ -103,7 +174,7 @@ export function useMarkAllNotificationsReadMutation() {
 
 /**
  * Hook to automatically register push token on auth and handle real-time socket events
- * with zero-refetch optimistic cache updates.
+ * with zero-refetch optimistic cache updates and foreground local banner presentation.
  */
 export function usePushNotificationSetup(
   onNotificationTap?: (data?: Record<string, unknown> | null) => void,
@@ -114,7 +185,7 @@ export function usePushNotificationSetup(
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // 1. Register device token for push notifications
+    // 1. Register device token & permissions
     pushNotificationService.registerForPushNotificationsAsync();
 
     // 2. Real-time socket event listener for in-app updates
@@ -134,7 +205,71 @@ export function usePushNotificationSetup(
 
         let isCollapsedUpdate = false;
 
-        // Optimistically update notification lists in memory
+        // Present native drop-down banner for incoming real-time notification
+        pushNotificationService.presentLocalNotification({
+          title: incoming.title,
+          body: incoming.body,
+          data: incoming.data ?? null,
+        });
+
+        // Optimistically update infinite query pages
+        queryClient.setQueriesData<InfiniteData<NotificationPaginationResult>>(
+          { queryKey: ['notifications', 'infinite'] },
+          (old) => {
+            if (!old || old.pages.length === 0) return old;
+
+            let wasFound = false;
+            let wasPreviouslyRead = false;
+
+            const strippedPages = old.pages.map((page) => {
+              const match = page.notifications.find(
+                (n) => n.id === incoming.id,
+              );
+              if (match) {
+                wasFound = true;
+                wasPreviouslyRead = match.isRead;
+              }
+              return {
+                ...page,
+                notifications: page.notifications.filter(
+                  (n) => n.id !== incoming.id,
+                ),
+              };
+            });
+
+            if (wasFound) {
+              isCollapsedUpdate = true;
+            }
+
+            return {
+              ...old,
+              pages: strippedPages.map((page, index) => {
+                const nextUnread = wasFound
+                  ? wasPreviouslyRead
+                    ? page.unreadCount + 1
+                    : page.unreadCount
+                  : page.unreadCount + 1;
+                const nextTotal = wasFound ? page.total : page.total + 1;
+
+                if (index === 0) {
+                  return {
+                    ...page,
+                    total: nextTotal,
+                    unreadCount: nextUnread,
+                    notifications: [incoming, ...page.notifications],
+                  };
+                }
+                return {
+                  ...page,
+                  total: nextTotal,
+                  unreadCount: nextUnread,
+                };
+              }),
+            };
+          },
+        );
+
+        // Optimistically update standard list queries
         queryClient.setQueriesData<NotificationPaginationResult>(
           { queryKey: ['notifications', 'list'] },
           (old) => {
@@ -144,7 +279,6 @@ export function usePushNotificationSetup(
             );
 
             if (existingIndex !== -1) {
-              // Collapsed update for an existing unread chat notification
               isCollapsedUpdate = true;
               const wasRead = old.notifications[existingIndex].isRead;
               const filtered = old.notifications.filter(
@@ -166,7 +300,6 @@ export function usePushNotificationSetup(
           },
         );
 
-        // Optimistically increment badge count only if not an already-unread collapsed row
         if (!isCollapsedUpdate) {
           queryClient.setQueryData<number>(
             NOTIFICATION_QUERY_KEYS.unreadCount,
@@ -181,6 +314,34 @@ export function usePushNotificationSetup(
       }) => {
         if (!payload?.conversationId) return;
 
+        queryClient.setQueriesData<InfiniteData<NotificationPaginationResult>>(
+          { queryKey: ['notifications', 'infinite'] },
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                unreadCount: Math.max(
+                  0,
+                  page.unreadCount - (payload.updatedCount || 1),
+                ),
+                notifications: page.notifications.map((n) => {
+                  const convId = (n.data as Record<string, unknown> | null)
+                    ?.conversationId;
+                  if (
+                    n.type === 'CHAT_MESSAGE' &&
+                    convId === payload.conversationId
+                  ) {
+                    return { ...n, isRead: true };
+                  }
+                  return n;
+                }),
+              })),
+            };
+          },
+        );
+
         queryClient.setQueriesData<NotificationPaginationResult>(
           { queryKey: ['notifications', 'list'] },
           (old) => {
@@ -194,7 +355,10 @@ export function usePushNotificationSetup(
               notifications: old.notifications.map((n) => {
                 const convId = (n.data as Record<string, unknown> | null)
                   ?.conversationId;
-                if (n.type === 'CHAT_MESSAGE' && convId === payload.conversationId) {
+                if (
+                  n.type === 'CHAT_MESSAGE' &&
+                  convId === payload.conversationId
+                ) {
                   return { ...n, isRead: true };
                 }
                 return n;

@@ -23,26 +23,6 @@ export const pushNotificationService = {
       return null;
     }
 
-    if (!Device.isDevice) {
-      if (__DEV__) {
-        console.log('[Push] Must use physical device for push notifications');
-      }
-      return null;
-    }
-
-    const projectId =
-      Constants.expoConfig?.extra?.eas?.projectId ??
-      Constants.easConfig?.projectId;
-
-    if (!projectId) {
-      if (__DEV__) {
-        console.info(
-          '[Push] Skipping Expo push token registration (no EAS projectId configured in app.json). Real-time Socket.io notifications are active.',
-        );
-      }
-      return null;
-    }
-
     try {
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('default', {
@@ -64,7 +44,24 @@ export const pushNotificationService = {
 
       if (finalStatus !== 'granted') {
         if (__DEV__) {
-          console.warn('[Push] Permission not granted for push notifications');
+          console.warn('[Push] Permission not granted for notifications');
+        }
+        return null;
+      }
+
+      if (!Device.isDevice) {
+        return null;
+      }
+
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        Constants.easConfig?.projectId;
+
+      if (!projectId) {
+        if (__DEV__) {
+          console.info(
+            '[Push] Local notification permissions granted. Remote Expo token registration skipped (no EAS projectId configured).',
+          );
         }
         return null;
       }
@@ -90,6 +87,29 @@ export const pushNotificationService = {
         console.warn('[Push] Error registering push notifications:', error);
       }
       return null;
+    }
+  },
+
+  async presentLocalNotification(payload: {
+    title: string;
+    body: string;
+    data?: Record<string, unknown> | null;
+  }): Promise<void> {
+    if (Platform.OS === 'web') return;
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: payload.title,
+          body: payload.body,
+          data: (payload.data as Record<string, unknown>) ?? {},
+          sound: 'default',
+        },
+        trigger: null,
+      });
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('[Push] Failed to present local notification:', err);
+      }
     }
   },
 

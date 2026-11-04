@@ -22,7 +22,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { RootStackParamList } from '../../../navigation/types';
 import {
-  useNotificationsQuery,
+  useInfiniteNotificationsQuery,
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
 } from '../hooks/useNotifications';
@@ -67,9 +67,16 @@ export const NotificationsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { data, isLoading, refetch, isRefetching } = useNotificationsQuery({
-    page: 1,
-    limit: 30,
+  const {
+    data,
+    isLoading,
+    refetch,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteNotificationsQuery({
+    limit: 20,
   });
 
   const markReadMutation = useMarkNotificationReadMutation();
@@ -132,8 +139,14 @@ export const NotificationsScreen: React.FC = () => {
     [markReadMutation, navigation],
   );
 
-  const notifications = data?.notifications ?? [];
-  const unreadCount = data?.unreadCount ?? 0;
+  const notifications = data?.pages.flatMap((page) => page.notifications) ?? [];
+  const unreadCount = data?.pages[0]?.unreadCount ?? 0;
+
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <SafeAreaView className="flex-1 bg-surface-base" edges={['top']}>
@@ -195,9 +208,18 @@ export const NotificationsScreen: React.FC = () => {
         <FlatList
           data={notifications}
           keyExtractor={(item, index) => item.id || String(index)}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View className="py-4 items-center justify-center">
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : undefined
+          }
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
+              refreshing={isRefetching && !isFetchingNextPage}
               onRefresh={() => {
                 refetch();
               }}

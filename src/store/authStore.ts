@@ -5,6 +5,7 @@ import { apiClient, setOnUnauthorizedCallback } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 import { queryClient } from '../api/queryClient';
 import { socketService } from '../features/chat/services/socket.service';
+import { pushNotificationService } from '../features/notifications/services/pushNotification.service';
 import { useConnectionStore } from './connectionStore';
 
 interface AuthState {
@@ -140,6 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
     logout: async () => {
       try {
+        await pushNotificationService.unregisterCurrentDevice();
         const refreshToken = await storageService.getRefreshToken();
         await apiClient.post(ENDPOINTS.AUTH.LOGOUT, { refreshToken }).catch(() => {});
       } finally {
