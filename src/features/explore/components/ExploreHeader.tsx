@@ -22,6 +22,16 @@ interface ExploreHeaderProps {
   onClearAllFilters: () => void;
 }
 
+const formatShortDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
 export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
   filters,
   searchQuery,
@@ -31,9 +41,11 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
   onRemoveFilter,
   onClearAllFilters,
 }) => {
+  const hasDateFilter = Boolean(filters.dateFrom || filters.dateTo);
   const activeFilterCount = [
     filters.travelStyle,
     filters.budgetStyle,
+    hasDateFilter ? 'dates' : undefined,
   ].filter(Boolean).length;
 
   const handleOpenFilter = () => {
@@ -49,7 +61,7 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
           Explore Destinations
         </Text>
         <Text className="text-xs text-text-muted mt-0.5">
-          Find solo travelers by city, travel dates, and budget
+          Find travelers by city, travel dates, and budget
         </Text>
       </View>
 
@@ -105,6 +117,24 @@ export const ExploreHeader: React.FC<ExploreHeaderProps> = ({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, marginTop: 10 }}
         >
+          {hasDateFilter && (
+            <TouchableOpacity
+              className="flex-row items-center bg-surface py-1.5 px-3 rounded-xl border border-primary gap-1.5"
+              onPress={() => onRemoveFilter('dateFrom')}
+              activeOpacity={0.7}
+            >
+              <Text className="text-xs font-medium text-primary">
+                📅{' '}
+                {filters.dateFrom && filters.dateTo
+                  ? `${formatShortDate(filters.dateFrom)} - ${formatShortDate(filters.dateTo)}`
+                  : filters.dateFrom
+                    ? `From ${formatShortDate(filters.dateFrom)}`
+                    : `Until ${formatShortDate(filters.dateTo)}`}
+              </Text>
+              <X size={12} color={theme.colors.primary} />
+            </TouchableOpacity>
+          )}
+
           {filters.travelStyle && (
             <TouchableOpacity
               className="flex-row items-center bg-surface py-1.5 px-3 rounded-xl border border-primary gap-1.5"

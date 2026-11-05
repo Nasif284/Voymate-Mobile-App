@@ -91,4 +91,33 @@ export const profileService = {
     });
     return res.data;
   },
+
+  deleteAccount: async (): Promise<any> => {
+    const res = await apiClient.delete(ENDPOINTS.PROFILE.DELETE_ACCOUNT);
+    return res.data;
+  },
+
+  blockUser: async (targetUserId: string): Promise<any> => {
+    const res = await apiClient.post(ENDPOINTS.PROFILE.BLOCK, { targetUserId });
+    return res.data;
+  },
+
+  unblockUser: async (targetUserId: string): Promise<any> => {
+    const res = await apiClient.delete(ENDPOINTS.PROFILE.UNBLOCK(targetUserId));
+    return res.data;
+  },
+
+  getBlockedUsers: async (): Promise<{ id: string; name: string; avatarUrl: string | null; blockedAt: string }[]> => {
+    const res = await apiClient.get(ENDPOINTS.PROFILE.BLOCKED_USERS);
+    return res.data?.data || res.data || [];
+  },
+
+  reportUser: async (targetUserId: string, reason: string, details?: string): Promise<any> => {
+    const res = await apiClient.post(ENDPOINTS.PROFILE.REPORT, {
+      targetUserId,
+      reason,
+      details,
+    });
+    return res.data;
+  },
 };

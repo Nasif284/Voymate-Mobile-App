@@ -28,6 +28,7 @@ import { ProfileBioCard } from '../components/ProfileBioCard';
 import { ProfileAttributesCard } from '../components/ProfileAttributesCard';
 import { ProfileUpcomingTrips } from '../components/ProfileUpcomingTrips';
 import { ConnectModal } from '../../home/components/ConnectModal';
+import { UserSafetyModal } from '../../../components/common/UserSafetyModal';
 import { theme } from '../../../config/theme';
 import * as Haptics from 'expo-haptics';
 
@@ -44,6 +45,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const relationships = useConnectionStore((s) => s.relationships);
   const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
 
   // TanStack Query Hooks
   const {
@@ -175,6 +177,7 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           onConnectPress={() => setShowConnectModal(true)}
           onAcceptPress={handleAcceptConnection}
           onMessagePress={handleMessagePress}
+          onSafetyPress={() => setShowSafetyModal(true)}
         />
 
         {effectiveVariant === 'COMPANION' && featuredCompanionTrip && (
@@ -223,6 +226,17 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         recipientName={user.fullName}
         onClose={() => setShowConnectModal(false)}
         onSend={handleSendConnection}
+      />
+
+      <UserSafetyModal
+        visible={showSafetyModal}
+        targetUserId={user.id}
+        targetUserName={user.fullName}
+        targetUserAvatar={user.avatarUrl || undefined}
+        onClose={() => setShowSafetyModal(false)}
+        onUserBlocked={() => {
+          navigation.goBack();
+        }}
       />
     </View>
   );

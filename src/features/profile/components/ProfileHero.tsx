@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
   Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { UserProfileData, ProfileVariant } from '../types';
 import {
   ChevronLeft,
@@ -16,10 +16,13 @@ import {
   UserPlus,
   Check,
   Clock,
+  MoreVertical,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
 import { formatDistanceKm } from '../../../utils/formatters';
+import { formatTravelerLocation } from '../../../utils/locationFormat';
+import { useViewerCountry } from '../hooks/profile.hooks';
 
 interface ProfileHeroProps {
   user: UserProfileData;
@@ -35,6 +38,7 @@ interface ProfileHeroProps {
   onEditPress?: () => void;
   onAvatarPress?: () => void;
   onCoverPress?: () => void;
+  onSafetyPress?: () => void;
 }
 
 const formatMemberDate = (dateVal?: string | Date) => {
@@ -60,10 +64,16 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   onEditPress,
   onAvatarPress,
   onCoverPress,
+  onSafetyPress,
 }) => {
-  const locationString = [user.city, user.state, user.country]
-    .filter(Boolean)
-    .join(', ');
+  const viewerCountry = useViewerCountry();
+  const locationString = isOwnProfile
+    ? [user.city, user.state, user.country].filter(Boolean).join(', ')
+    : formatTravelerLocation(
+        { city: user.city, state: user.state, country: user.country },
+        viewerCountry,
+        ''
+      );
 
   const memberSince = formatMemberDate(user.createdAt);
 
@@ -79,7 +89,10 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           <Image
             source={{ uri: user.coverUrl }}
             className="w-full h-full"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`cover_${user.id}`}
+            transition={150}
           />
         ) : (
           <View className="w-full h-full bg-primary-dark">
@@ -123,6 +136,19 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
               <Text className="text-white text-[11px] font-bold tracking-[0.3px]">Traveling Now</Text>
             </View>
           )}
+
+          {onSafetyPress && (
+            <TouchableOpacity
+              className="w-[34px] h-[34px] rounded-full bg-black/40 items-center justify-center border border-white/20"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                onSafetyPress();
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MoreVertical size={18} color={theme.colors.white} />
+            </TouchableOpacity>
+          )}
         </View>
       </TouchableOpacity>
 
@@ -136,7 +162,14 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
             className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle items-center justify-center relative"
           >
             {user.avatarUrl ? (
-              <Image source={{ uri: user.avatarUrl }} className="w-full h-full rounded-full" />
+              <Image
+                source={{ uri: user.avatarUrl }}
+                className="w-full h-full rounded-full"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                recyclingKey={`avatar_${user.id}`}
+                transition={150}
+              />
             ) : (
               <View className="w-full h-full rounded-full bg-primary items-center justify-center">
                 <Text className="text-[34px] font-bold text-white">

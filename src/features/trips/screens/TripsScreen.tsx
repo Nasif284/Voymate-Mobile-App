@@ -4,12 +4,12 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
   TextInput,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
@@ -158,7 +158,10 @@ export const TripsScreen: React.FC<Props> = ({ route, navigation }) => {
             <Image
               source={{ uri: item.destination.coverUrl }}
               className="w-full h-full"
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={`trip_card_${item.id}`}
+              transition={150}
             />
           ) : (
             <View className="w-full h-full bg-primary-dark opacity-85" />

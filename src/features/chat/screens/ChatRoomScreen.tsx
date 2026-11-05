@@ -4,12 +4,12 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
   TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,7 +30,9 @@ import {
   Send,
   Check,
   CheckCheck,
+  MoreVertical,
 } from 'lucide-react-native';
+import { UserSafetyModal } from '../../../components/common/UserSafetyModal';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { cn } from '../../../utils/cn';
@@ -76,6 +78,7 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
   const [inputText, setInputText] = useState('');
   const [isTargetOnline, setIsTargetOnline] = useState(false);
   const [activeConvId, setActiveConvId] = useState<string | null>(initialConvId || null);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
 
   // TanStack Query Hooks
   const {
@@ -340,7 +343,14 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           >
             <View className="w-10 h-10 rounded-full relative">
               {targetUserAvatar ? (
-                <Image source={{ uri: targetUserAvatar }} className="w-full h-full rounded-full" />
+                <Image
+                  source={{ uri: targetUserAvatar }}
+                  className="w-full h-full rounded-full"
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  recyclingKey={`chat_target_${targetUserId}`}
+                  transition={150}
+                />
               ) : (
                 <View className="w-full h-full rounded-full bg-primary items-center justify-center">
                   <Text className="text-base font-semibold text-white">
@@ -363,6 +373,19 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
           </TouchableOpacity>
         </View>
+
+        {Boolean(targetUserId) && (
+          <TouchableOpacity
+            className="w-9 h-9 rounded-full items-center justify-center bg-surface-subtle border border-border/50 ml-2"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowSafetyModal(true);
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MoreVertical size={18} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Messages FlatList */}
@@ -436,6 +459,19 @@ export const ChatRoomScreen: React.FC<Props> = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {Boolean(targetUserId) && (
+        <UserSafetyModal
+          visible={showSafetyModal}
+          targetUserId={targetUserId}
+          targetUserName={targetUserName || 'Traveler'}
+          targetUserAvatar={targetUserAvatar}
+          onClose={() => setShowSafetyModal(false)}
+          onUserBlocked={() => {
+            navigation.goBack();
+          }}
+        />
+      )}
     </View>
   );
 };

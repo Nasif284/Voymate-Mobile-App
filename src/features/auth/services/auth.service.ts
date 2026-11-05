@@ -39,6 +39,11 @@ export const authService = {
     return res.data?.data || res.data;
   },
 
+  googleAuth: async (token: string) => {
+    const res = await apiClient.post(ENDPOINTS.AUTH.GOOGLE, { token });
+    return res.data?.data || res.data;
+  },
+
   register: async (payload: RegisterPayload) => {
     const res = await apiClient.post(ENDPOINTS.AUTH.REGISTER, payload);
     return res.data?.data || res.data;

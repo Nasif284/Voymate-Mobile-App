@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   Keyboard,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,7 +18,8 @@ import { Button } from '../../../components/ui/Button';
 import { GoogleIcon } from '../../../components/ui/GoogleIcon';
 import { Mail, Lock, User, ArrowLeft, AlertCircle } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
-import { useRegister } from '../hooks/auth.hooks';
+import { useRegister, useGoogleAuth } from '../hooks/auth.hooks';
+import { signInWithGoogle, isGoogleSignInAvailable } from '../../../services/auth/googleAuth.service';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -44,7 +46,24 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
     },
     onError: (msg) => setErrorMessage(msg),
   });
-  const loading = registerMutation.isPending;
+  const googleAuthMutation = useGoogleAuth({
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = registerMutation.isPending || googleAuthMutation.isPending;
+
+  const handleGoogleSignIn = async () => {
+    try {
+      haptics.selection();
+      const token = await signInWithGoogle();
+      if (token) {
+        googleAuthMutation.mutate(token);
+      }
+    } catch (err: any) {
+      if (err?.code !== 'SIGN_IN_CANCELLED') {
+        setErrorMessage('Google Sign-In failed. Please try again.');
+      }
+    }
+  };
 
   const handleNameChange = (text: string) => {
     setFullName(text);
@@ -187,32 +206,48 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
                   className="rounded-2xl h-[54px] mt-1.5 shadow-card"
                 />
 
-                {/* Terms Micro-Notice */}
+                {/* Terms Micro-Notice (Apple Guideline 1.2 UGC compliance) */}
                 <Text className="text-xs text-textMuted text-center mt-4 leading-[18px] px-2">
                   By creating an account, you agree to Voymate's{' '}
-                  <Text className="text-primary font-semibold">Terms</Text> and{' '}
-                  <Text className="text-primary font-semibold">Privacy Policy</Text>.
+                  <Text
+                    className="text-primary font-semibold underline"
+                    onPress={() => Linking.openURL('https://voymate.app/terms').catch(() => {})}
+                  >
+                    Terms
+                  </Text>{' '}
+                  and{' '}
+                  <Text
+                    className="text-primary font-semibold underline"
+                    onPress={() => Linking.openURL('https://voymate.app/privacy').catch(() => {})}
+                  >
+                    Privacy Policy
+                  </Text>
+                  . Voymate enforces zero tolerance for objectionable content, harassment, or abusive behavior.
                 </Text>
 
-                {/* Divider */}
-                <View className="flex-row items-center my-[22px]">
-                  <View className="flex-1 h-[1px] bg-border" />
-                  <Text className="mx-3.5 text-xs text-textMuted font-medium tracking-wide">or sign up with</Text>
-                  <View className="flex-1 h-[1px] bg-border" />
-                </View>
+                {/* Android-Only: Google Sign In (hidden on iOS to comply with Apple Guideline 4.8 and in Expo Go) */}
+                {isGoogleSignInAvailable() && (
+                  <>
+                    <View className="flex-row items-center my-[22px]">
+                      <View className="flex-1 h-[1px] bg-border" />
+                      <Text className="mx-3.5 text-xs text-textMuted font-medium tracking-wide">or sign up with</Text>
+                      <View className="flex-1 h-[1px] bg-border" />
+                    </View>
 
-                {/* Google Sign In */}
-                <TouchableOpacity
-                  className="flex-row items-center justify-center bg-surface border border-border rounded-2xl h-[52px] shadow-subtle"
-                  style={theme.shadows.subtle}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    haptics.light();
-                  }}
-                >
-                  <GoogleIcon size={19} />
-                  <Text className="text-[15px] font-medium text-textPrimary ml-2.5 tracking-wide">Continue with Google</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-row items-center justify-center bg-surface border border-border rounded-2xl h-[52px] shadow-subtle"
+                      style={theme.shadows.subtle}
+                      activeOpacity={0.85}
+                      onPress={handleGoogleSignIn}
+                      disabled={loading}
+                    >
+                      <GoogleIcon size={19} />
+                      <Text className="text-[15px] font-medium text-textPrimary ml-2.5 tracking-wide">
+                        Continue with Google
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
 
               {/* Footer Switcher */}

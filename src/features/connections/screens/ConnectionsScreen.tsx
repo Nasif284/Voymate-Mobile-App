@@ -4,12 +4,12 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
   TextInput,
   ActivityIndicator,
   Alert,
   RefreshControl,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
@@ -23,6 +23,7 @@ import {
   useDisconnectConnection,
 } from '../hooks/connection.hooks';
 import { ConnectionUser, IncomingRequest } from '../types';
+import { useSafetyStore } from '../../../store/safetyStore';
 import {
   ChevronLeft,
   Search,
@@ -38,6 +39,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
 import { cn } from '../../../utils/cn';
+import { formatTravelerLocation } from '../../../utils/locationFormat';
+import { useViewerCountry } from '../../profile/hooks/profile.hooks';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Connections'>;
 
@@ -51,6 +54,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const [activeTab, setActiveTab] = useState<MainTab>(initialTab);
   const [requestSubTab, setRequestSubTab] = useState<RequestSubTab>(initialSubTab);
   const [searchQuery, setSearchQuery] = useState('');
+  const viewerCountry = useViewerCountry();
 
   // TanStack Query Hooks
   const {
@@ -78,6 +82,20 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
   const rejectMutation = useRejectConnectionRequest();
   const withdrawMutation = useWithdrawConnectionRequest();
   const disconnectMutation = useDisconnectConnection();
+
+  const blockedUserIds = useSafetyStore((s) => s.blockedUserIds);
+
+  const activeConnections = useMemo(() => {
+    return connections.filter((c) => !blockedUserIds.includes(c.userId));
+  }, [connections, blockedUserIds]);
+
+  const activeIncomingRequests = useMemo(() => {
+    return incomingRequests.filter((r) => !blockedUserIds.includes(r.sender?.id));
+  }, [incomingRequests, blockedUserIds]);
+
+  const activeSentRequests = useMemo(() => {
+    return sentRequests.filter((r) => !blockedUserIds.includes(r.receiver?.id));
+  }, [sentRequests, blockedUserIds]);
 
   const isLoading = isLoadingConnections || isLoadingIncoming || isLoadingSent;
   const isRefreshing =
@@ -149,15 +167,15 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Filtered connections based on search query
   const filteredConnections = useMemo(() => {
-    if (!searchQuery.trim()) return connections;
+    if (!searchQuery.trim()) return activeConnections;
     const q = searchQuery.toLowerCase();
-    return connections.filter(
+    return activeConnections.filter(
       (c) =>
         c.fullName.toLowerCase().includes(q) ||
         c.state?.toLowerCase().includes(q) ||
         c.country?.toLowerCase().includes(q)
     );
-  }, [connections, searchQuery]);
+  }, [activeConnections, searchQuery]);
 
   // Navigate to Chat
   const handleMessage = (userId: string, name: string, avatarUrl?: string | null) => {
@@ -216,7 +234,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               activeTab === 'connections' && 'text-primary'
             )}
           >
-            Connections ({connections.length})
+            Connections ({activeConnections.length})
           </Text>
         </TouchableOpacity>
 
@@ -236,9 +254,9 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               activeTab === 'requests' && 'text-primary'
             )}
           >
-            Requests ({incomingRequests.length})
+            Requests ({activeIncomingRequests.length})
           </Text>
-          {incomingRequests.length > 0 && <View className="w-1.5 h-1.5 rounded-full bg-primary" />}
+          {activeIncomingRequests.length > 0 && <View className="w-1.5 h-1.5 rounded-full bg-primary" />}
         </TouchableOpacity>
       </View>
 
@@ -283,7 +301,11 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
               </View>
             }
             renderItem={({ item }) => {
-              const location = [item.state, item.country].filter(Boolean).join(', ');
+              const location = formatTravelerLocation(
+                { city: (item as any).city, state: item.state, country: item.country },
+                viewerCountry,
+                ''
+              );
               return (
                 <TouchableOpacity
                   className="flex-row items-center bg-surface p-3.5 rounded-[18px] border border-border gap-3"
@@ -292,7 +314,14 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                 >
                   {/* Avatar */}
                   {item.avatarUrl ? (
-                    <Image source={{ uri: item.avatarUrl }} className="w-12 h-12 rounded-full bg-surface-subtle" />
+                    <Image
+                      source={{ uri: item.avatarUrl }}
+                      className="w-12 h-12 rounded-full bg-surface-subtle"
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                      recyclingKey={`connection_${item.userId}`}
+                      transition={150}
+                    />
                   ) : (
                     <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
                       <Text className="text-white text-lg font-semibold">
@@ -360,7 +389,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   requestSubTab === 'incoming' && 'text-white'
                 )}
               >
-                Received ({incomingRequests.length})
+                Received ({activeIncomingRequests.length})
               </Text>
             </TouchableOpacity>
 
@@ -380,7 +409,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                   requestSubTab === 'sent' && 'text-white'
                 )}
               >
-                Sent ({sentRequests.length})
+                Sent ({activeSentRequests.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -388,7 +417,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
           {requestSubTab === 'incoming' ? (
             /* Received Requests List */
             <FlatList
-              data={incomingRequests}
+              data={activeIncomingRequests}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
@@ -407,9 +436,11 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               }
               renderItem={({ item }) => {
-                const senderLocation = [item.sender.state, item.sender.country]
-                  .filter(Boolean)
-                  .join(', ');
+                const senderLocation = formatTravelerLocation(
+                  { city: (item.sender as any).city, state: item.sender.state, country: item.sender.country },
+                  viewerCountry,
+                  ''
+                );
 
                 return (
                   <View className="bg-surface p-4 rounded-[20px] border border-border gap-3">
@@ -428,6 +459,10 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         <Image
                           source={{ uri: item.sender.avatarUrl }}
                           className="w-12 h-12 rounded-full bg-surface-subtle"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
+                          recyclingKey={`req_sender_${item.id}`}
+                          transition={150}
                         />
                       ) : (
                         <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
@@ -480,7 +515,7 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
           ) : (
             /* Sent Requests List */
             <FlatList
-              data={sentRequests}
+              data={activeSentRequests}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
@@ -499,9 +534,11 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               }
               renderItem={({ item }) => {
-                const receiverLocation = [item.receiver.state, item.receiver.country]
-                  .filter(Boolean)
-                  .join(', ');
+                const receiverLocation = formatTravelerLocation(
+                  { city: (item.receiver as any).city, state: item.receiver.state, country: item.receiver.country },
+                  viewerCountry,
+                  ''
+                );
 
                 return (
                   <View className="bg-surface p-4 rounded-[20px] border border-border gap-3">
@@ -520,6 +557,10 @@ export const ConnectionsScreen: React.FC<Props> = ({ route, navigation }) => {
                         <Image
                           source={{ uri: item.receiver.avatarUrl }}
                           className="w-12 h-12 rounded-full bg-surface-subtle"
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
+                          recyclingKey={`req_receiver_${item.id}`}
+                          transition={150}
                         />
                       ) : (
                         <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">

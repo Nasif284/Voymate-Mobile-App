@@ -3,6 +3,7 @@ export const ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
+    GOOGLE: '/auth/google',
     VERIFY_EMAIL: '/auth/verify',
     SEND_OTP: '/auth/send-otp',
     VERIFY_OTP: '/auth/verify-otp',
@@ -38,6 +39,11 @@ export const ENDPOINTS = {
     COVER: '/profile/cover',
     SETTINGS: '/profile/settings',
     VERIFY_DOCS: '/profile/verify/documents',
+    DELETE_ACCOUNT: '/profile/account',
+    BLOCK: '/profile/block',
+    UNBLOCK: (targetUserId: string) => `/profile/block/${targetUserId}`,
+    BLOCKED_USERS: '/profile/blocked-users',
+    REPORT: '/profile/report',
   },
 
   // Connections
@@ -89,11 +95,16 @@ export const ENDPOINTS = {
     STATUS: '/user/verification/status',
   },
 
-  // Location
+  // Location & Places
   LOCATION: {
     REVERSE_GEOCODE: '/location/reverse-geocode',
     UPDATE: '/location',
     GET: '/location',
+    PLACES_AUTOCOMPLETE: '/location/places/autocomplete',
+    PLACES_DETAILS: (placeId: string) => `/location/places/${placeId}`,
+    CATALOG_COUNTRIES: '/location/catalog/countries',
+    CATALOG_STATES: '/location/catalog/states',
+    CATALOG_CITIES: '/location/catalog/cities',
   },
 
   // Notifications

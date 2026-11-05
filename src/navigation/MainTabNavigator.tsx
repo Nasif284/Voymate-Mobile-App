@@ -58,7 +58,7 @@ const FloatingIslandTabBar: React.FC<BottomTabBarProps> = ({
 
   return (
     <View
-      className="absolute left-4 right-4 h-16 rounded-[34px] shadow-floating"
+      className="absolute left-4 right-4 max-w-[460px] self-center h-16 rounded-[34px] shadow-floating"
       style={[{ bottom: bottomOffset }, theme.shadows.floating]}
       pointerEvents="box-none"
     >

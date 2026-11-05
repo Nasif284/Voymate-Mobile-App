@@ -18,7 +18,8 @@ import { VoymateLogo } from '../../../components/ui/VoymateLogo';
 import { GoogleIcon } from '../../../components/ui/GoogleIcon';
 import { Mail, Lock, AlertCircle } from 'lucide-react-native';
 import { useHaptics } from '../../../hooks/useHaptics';
-import { useLogin } from '../hooks/auth.hooks';
+import { useLogin, useGoogleAuth } from '../hooks/auth.hooks';
+import { signInWithGoogle, isGoogleSignInAvailable } from '../../../services/auth/googleAuth.service';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -38,7 +39,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const loginMutation = useLogin({
     onError: (msg) => setErrorMessage(msg),
   });
-  const loading = loginMutation.isPending;
+  const googleAuthMutation = useGoogleAuth({
+    onError: (msg) => setErrorMessage(msg),
+  });
+  const loading = loginMutation.isPending || googleAuthMutation.isPending;
+
+  const handleGoogleSignIn = async () => {
+    try {
+      haptics.selection();
+      const token = await signInWithGoogle();
+      if (token) {
+        googleAuthMutation.mutate(token);
+      }
+    } catch (err: any) {
+      if (err?.code !== 'SIGN_IN_CANCELLED') {
+        setErrorMessage('Google Sign-In failed. Please try again.');
+      }
+    }
+  };
 
   const handleEmailChange = (text: string) => {
     setEmail(text);
@@ -155,25 +173,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   className="rounded-2xl h-[54px] shadow-card"
                 />
 
-                {/* Creative Divider */}
-                <View className="flex-row items-center my-[22px]">
-                  <View className="flex-1 h-[1px] bg-border" />
-                  <Text className="mx-3.5 text-xs text-textMuted font-medium tracking-wide">or continue with</Text>
-                  <View className="flex-1 h-[1px] bg-border" />
-                </View>
+                {/* Android-Only: Google Sign In (hidden on iOS to comply with Apple Guideline 4.8 and in Expo Go) */}
+                {isGoogleSignInAvailable() && (
+                  <>
+                    <View className="flex-row items-center my-[22px]">
+                      <View className="flex-1 h-[1px] bg-border" />
+                      <Text className="mx-3.5 text-xs text-textMuted font-medium tracking-wide">or continue with</Text>
+                      <View className="flex-1 h-[1px] bg-border" />
+                    </View>
 
-                {/* Google Sign In */}
-                <TouchableOpacity
-                  className="flex-row items-center justify-center bg-surface border border-border rounded-2xl h-[52px] shadow-subtle"
-                  style={theme.shadows.subtle}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    haptics.light();
-                  }}
-                >
-                  <GoogleIcon size={19} />
-                  <Text className="text-[15px] font-medium text-textPrimary ml-2.5 tracking-wide">Continue with Google</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-row items-center justify-center bg-surface border border-border rounded-2xl h-[52px] shadow-subtle"
+                      style={theme.shadows.subtle}
+                      activeOpacity={0.85}
+                      onPress={handleGoogleSignIn}
+                      disabled={loading}
+                    >
+                      <GoogleIcon size={19} />
+                      <Text className="text-[15px] font-medium text-textPrimary ml-2.5 tracking-wide">
+                        Continue with Google
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
 
               {/* Bottom Switcher */}

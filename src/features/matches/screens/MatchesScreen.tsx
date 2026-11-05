@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { useConnectionStore } from '../../../store/connectionStore';
+import { useSafetyStore } from '../../../store/safetyStore';
 import {
   useGetMatchesActiveTrip,
   useGetMatchesUpcomingTrips,
@@ -81,9 +82,17 @@ export const MatchesScreen: React.FC = () => {
   const acceptConnectionMutation = useAcceptConnectionRequest();
 
   const relationships = useConnectionStore((s) => s.relationships);
+  const blockedUserIds = useSafetyStore((s) => s.blockedUserIds);
 
-  const matches = matchesResponse?.matches || [];
-  const buddiesOnRoad = matchesResponse?.buddiesOnRoad || [];
+  const matches = useMemo(() => {
+    const list = matchesResponse?.matches || [];
+    return list.filter((m) => !blockedUserIds.includes(m.user?.id));
+  }, [matchesResponse?.matches, blockedUserIds]);
+
+  const buddiesOnRoad = useMemo(() => {
+    const list = matchesResponse?.buddiesOnRoad || [];
+    return list.filter((b) => !blockedUserIds.includes(b.user?.id));
+  }, [matchesResponse?.buddiesOnRoad, blockedUserIds]);
   const isLoading =
     isLoadingPrimaryTrip ||
     isLoadingUpcomingTrips ||

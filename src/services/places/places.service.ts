@@ -1,6 +1,5 @@
-import { ENV } from '../../config/env';
-
-const GOOGLE_PLACES_API_KEY = ENV.GOOGLE_PLACES_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '';
+import { apiClient } from '../../api/client';
+import { ENDPOINTS } from '../../api/endpoints';
 
 export interface PlaceSuggestion {
   placeId: string;
@@ -19,33 +18,35 @@ export interface PlaceDetails {
   longitude: number | null;
 }
 
+function generateSessionToken(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+let activeSessionToken: string = generateSessionToken();
+
 export const placesService = {
+  getSessionToken: () => activeSessionToken,
+
+  resetSessionToken: () => {
+    activeSessionToken = generateSessionToken();
+  },
+
   searchPlaces: async (input: string): Promise<PlaceSuggestion[]> => {
     if (!input || input.trim().length < 2) return [];
 
     try {
-      const response = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'suggestions.placePrediction.place,suggestions.placePrediction.text.text',
-        },
-        body: JSON.stringify({ input: input.trim() }),
-      });
-
-      const data = await response.json();
-      const suggestions = data?.suggestions || [];
-
-      return suggestions.map((s: any) => {
-        const placeId = s.placePrediction?.place || '';
-        // Remove 'places/' prefix if present
-        const cleanId = placeId.startsWith('places/') ? placeId.replace('places/', '') : placeId;
-        return {
-          placeId: cleanId,
-          displayName: s.placePrediction?.text?.text || '',
-        };
-      });
+      const res = await apiClient.post(
+        ENDPOINTS.LOCATION.PLACES_AUTOCOMPLETE,
+        {
+          input: input.trim(),
+          sessionToken: activeSessionToken,
+        }
+      );
+      return res.data?.data || res.data || [];
     } catch {
       return [];
     }
@@ -53,48 +54,22 @@ export const placesService = {
 
   getPlaceDetails: async (placeId: string): Promise<PlaceDetails | null> => {
     if (!placeId) return null;
-    const cleanId = placeId.startsWith('places/') ? placeId.replace('places/', '') : placeId;
+    const cleanId = placeId.startsWith('places/')
+      ? placeId.replace('places/', '')
+      : placeId;
 
     try {
-      const response = await fetch(`https://places.googleapis.com/v1/places/${cleanId}`, {
-        headers: {
-          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'id,displayName,formattedAddress,location,addressComponents',
-        },
-      });
+      const res = await apiClient.get(
+        ENDPOINTS.LOCATION.PLACES_DETAILS(cleanId),
+        {
+          params: { sessionToken: activeSessionToken },
+        }
+      );
+      // Once details are retrieved, this autocomplete session is completed.
+      // Generate a fresh session token for subsequent searches to optimize billing.
+      activeSessionToken = generateSessionToken();
 
-      const data = await response.json();
-      if (!data?.id) return null;
-
-      const components = data.addressComponents || [];
-      const city =
-        components.find((c: any) => c.types?.includes('locality'))?.longText ||
-        components.find((c: any) => c.types?.includes('administrative_area_level_2'))?.longText ||
-        null;
-
-      const state =
-        components.find((c: any) => c.types?.includes('administrative_area_level_1'))?.longText ||
-        null;
-
-      const country =
-        components.find((c: any) => c.types?.includes('country'))?.longText ||
-        null;
-
-      const countryCode =
-        components.find((c: any) => c.types?.includes('country'))?.shortText ||
-        'IN';
-
-      return {
-        placeId: data.id,
-        displayName: data.displayName?.text || data.formattedAddress?.split(',')[0] || '',
-        formattedAddress: data.formattedAddress || '',
-        city,
-        state,
-        country,
-        countryCode,
-        latitude: data.location?.latitude ?? null,
-        longitude: data.location?.longitude ?? null,
-      };
+      return res.data?.data || res.data || null;
     } catch {
       return null;
     }

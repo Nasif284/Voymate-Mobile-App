@@ -9,7 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.voymate.app",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Voymate uses your location to help you discover nearby travelers and autofill your city during profile setup.",
         "NSPhotoLibraryUsageDescription": "Voymate needs access to your photo library so you can upload a profile avatar and cover photo."
@@ -27,10 +27,15 @@
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION"
       ],
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ],
       "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-secure-store",
@@ -38,13 +43,15 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Voymate uses your location to help you discover nearby travelers and autofill your city."
+          "locationWhenInUsePermission": "Voymate uses your location to help you discover nearby travelers and autofill your city during profile setup."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Voymate needs access to your photo library so you can upload a profile avatar and cover photo."
+          "photosPermission": "Voymate needs access to your photo library so you can upload a profile avatar and cover photo.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [
@@ -54,7 +61,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#FFFFFF"
         }
-      ]
+      ],
+      "expo-image",
+      "@react-native-google-signin/google-signin"
     ]
   }
 }

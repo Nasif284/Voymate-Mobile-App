@@ -3,9 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { theme } from '../../../config/theme';
 import { Compass, MapPin, Bell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +16,9 @@ interface HomeHeaderProps {
   userName: string;
   avatarUrl?: string | null;
   location?: string | null;
+  isLocating?: boolean;
+  locationPermissionDenied?: boolean;
+  onEnableLocationPress?: () => void;
   isTraveling: boolean;
   onToggleTraveling: () => void;
   isUpdatingStatus?: boolean;
@@ -34,6 +37,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   userName,
   avatarUrl,
   location,
+  isLocating,
+  locationPermissionDenied,
+  onEnableLocationPress,
   isTraveling,
   onToggleTraveling,
   isUpdatingStatus,
@@ -61,13 +67,39 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           <Text className="text-[22px] font-semibold text-text-primary mt-0.5 tracking-tight" numberOfLines={1}>
             {firstName} 👋
           </Text>
-          {location && (
-            <View className="flex-row items-center bg-surface-subtle self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1">
-              <MapPin size={10} color={theme.colors.primary} />
-              <Text className="text-[11px] font-medium text-text-secondary" numberOfLines={1}>
-                {location}
-              </Text>
-            </View>
+          {isTraveling && (
+            <>
+              {location ? (
+                <View className="flex-row items-center bg-surface-subtle self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1">
+                  <MapPin size={10} color={theme.colors.primary} />
+                  <Text className="text-[11px] font-medium text-text-secondary" numberOfLines={1}>
+                    {location}
+                  </Text>
+                </View>
+              ) : isLocating ? (
+                <View className="flex-row items-center bg-surface-subtle self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1.5">
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.primary}
+                    style={{ transform: [{ scale: 0.55 }], width: 10, height: 10 }}
+                  />
+                  <Text className="text-[11px] font-medium text-text-muted" numberOfLines={1}>
+                    Locating...
+                  </Text>
+                </View>
+              ) : locationPermissionDenied ? (
+                <TouchableOpacity
+                  className="flex-row items-center bg-surface border border-primary self-start px-2 py-1 rounded-[10px] mt-1.5 gap-1"
+                  onPress={onEnableLocationPress}
+                  activeOpacity={0.7}
+                >
+                  <MapPin size={10} color={theme.colors.primary} />
+                  <Text className="text-[11px] font-semibold text-primary" numberOfLines={1}>
+                    Enable location
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </>
           )}
         </View>
 
@@ -146,6 +178,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               <Image
                 source={{ uri: avatarUrl }}
                 className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={150}
               />
             ) : (
               <View className="w-11 h-11 rounded-full bg-primary items-center justify-center border-2 border-surface">

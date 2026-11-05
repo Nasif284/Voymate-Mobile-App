@@ -2,10 +2,10 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Compass, Calendar, MapPin } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 import { ProfileUpcomingTrip } from '../types';
@@ -102,7 +102,10 @@ export const ProfileUpcomingTrips: React.FC<ProfileUpcomingTripsProps> = ({
                   <Image
                     source={{ uri: trip.destination.coverUrl }}
                     className="w-full h-full"
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={`profile_trip_${trip.id}`}
+                    transition={150}
                   />
                 ) : (
                   <View className="w-full h-full bg-primary-dark" />

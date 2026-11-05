@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
+import { Image } from 'expo-image';
 import { MapPin, Calendar, Compass, Wallet } from 'lucide-react-native';
 import { theme } from '../../../config/theme';
 
@@ -61,7 +62,10 @@ export const MatchedTripCard: React.FC<MatchedTripCardProps> = ({ trip }) => {
           <Image
             source={{ uri: trip.destination.coverUrl }}
             className="w-full h-full"
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`trip_cover_${trip.id}`}
+            transition={150}
           />
         ) : (
           <View className="w-full h-full bg-primary-dark" />

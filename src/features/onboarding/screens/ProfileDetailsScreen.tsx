@@ -1,20 +1,19 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
-import { Country, State, City } from 'country-state-city';
 import { OnboardingStackParamList } from '../../../navigation/types';
 import { theme } from '../../../config/theme';
 import { Button } from '../../../components/ui/Button';
@@ -23,11 +22,11 @@ import {
   useSetOnboardingProfile,
   useReverseGeocode,
 } from '../hooks/onboarding.hooks';
+import { useGeoCountries, useGeoStates, useGeoCities } from '../../../services/places/geo.service';
 import { SearchableSelectModal, SelectOption } from '../../../components/ui/SearchableSelectModal';
 import { cn } from '../../../utils/cn';
 import {
   Camera,
-  Image as ImageIcon,
   Check,
   AlertCircle,
   MapPin,
@@ -38,6 +37,7 @@ import {
   User,
   Navigation as LocationIcon,
   ChevronDown,
+  RefreshCw,
 } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'ProfileDetails'>;
@@ -72,22 +72,35 @@ const POPULAR_LANGUAGES = [
   'Malayalam',
 ];
 
-const BIO_PROMPTS = [
-  'Chasing sunrises & hidden trails ⛰️',
-  'Always hunting for local street food 🍜',
-  'Slow traveler who loves coffee & history ☕',
+const DEFAULT_COVERS = [
+  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=80',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
+];
+
+const BIO_TEMPLATES = [
+  'Solo backpacker chasing mountain sunrises, hidden cafes, and spontaneous adventures. Looking for fun travel mates!',
+  'Foodie & culture enthusiast exploring local street food, art, and vibrant city nightlife. Let us plan a trip together!',
+  'Photographer & road-trip lover always searching for offbeat trails, sunsets, and great music on the road.',
 ];
 
 export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   // Current Micro-Step (0: Photos, 1: Bio, 2: Basics, 3: Location, 4: Skills & Languages)
   const [currentSubStep, setCurrentSubStep] = useState(0);
 
-  // Photos
+  // Photos (Cover pre-filled with an Unsplash travel landscape)
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [coverUri, setCoverUri] = useState<string | null>(null);
+  const [coverIndex, setCoverIndex] = useState(() => Math.floor(Math.random() * DEFAULT_COVERS.length));
+  const [coverUri, setCoverUri] = useState<string>(() => DEFAULT_COVERS[Math.floor(Math.random() * DEFAULT_COVERS.length)]);
+  const [isCustomCover, setIsCustomCover] = useState(false);
 
-  // Bio
-  const [bio, setBio] = useState('');
+  // Bio (Pre-filled to remove blank page syndrome)
+  const [bio, setBio] = useState('Solo backpacker chasing mountain sunrises, hidden cafes, and spontaneous adventures. Looking for fun travel mates!');
 
   // Personal Basics
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'NON_BINARY'>('MALE');
@@ -95,10 +108,10 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [dobMonth, setDobMonth] = useState('');
   const [dobYear, setDobYear] = useState('');
 
-  // Location
-  const [selectedCountryCode, setSelectedCountryCode] = useState('');
+  // Location (Pre-filled with India by default)
+  const [selectedCountryCode, setSelectedCountryCode] = useState('IN');
   const [selectedStateCode, setSelectedStateCode] = useState('');
-  const [nationality, setNationality] = useState('');
+  const [nationality, setNationality] = useState('🇮🇳 India');
   const [stateName, setStateName] = useState('');
   const [cityName, setCityName] = useState('');
 
@@ -107,31 +120,10 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [stateModalVisible, setStateModalVisible] = useState(false);
   const [cityModalVisible, setCityModalVisible] = useState(false);
 
-  // Country, State, City Options
-  const countryOptions = useMemo<SelectOption[]>(() => {
-    return Country.getAllCountries().map((c) => ({
-      label: `${c.flag ? `${c.flag} ` : ''}${c.name}`,
-      value: c.isoCode,
-      sublabel: c.name,
-    }));
-  }, []);
-
-  const stateOptions = useMemo<SelectOption[]>(() => {
-    if (!selectedCountryCode) return [];
-    return State.getStatesOfCountry(selectedCountryCode).map((s) => ({
-      label: s.name,
-      value: s.isoCode,
-      sublabel: s.isoCode,
-    }));
-  }, [selectedCountryCode]);
-
-  const cityOptions = useMemo<SelectOption[]>(() => {
-    if (!selectedCountryCode || !selectedStateCode) return [];
-    return City.getCitiesOfState(selectedCountryCode, selectedStateCode).map((c) => ({
-      label: c.name,
-      value: c.name,
-    }));
-  }, [selectedCountryCode, selectedStateCode]);
+  // Country, State, City Options (Fetched via Backend Geo-Catalog + TanStack Query)
+  const { data: countryOptions = [] } = useGeoCountries();
+  const { data: stateOptions = [] } = useGeoStates(selectedCountryCode);
+  const { data: cityOptions = [] } = useGeoCities(selectedCountryCode, selectedStateCode);
 
   // Skills & Languages
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['Navigation', 'Photography']);
@@ -149,23 +141,14 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const reverseGeocodeMutation = useReverseGeocode({
     onSuccess: (locData) => {
       const code = locData.countryCode || '';
-      const found = Country.getCountryByCode(code);
-      const resolvedCountry = found
-        ? `${found.flag ? `${found.flag} ` : ''}${found.name}`
-        : locData.country || code;
+      const matchedCountry = countryOptions.find((c) => c.value.toUpperCase() === code.toUpperCase());
+      const resolvedCountry = matchedCountry?.label || locData.country || code;
 
       setSelectedCountryCode(code);
       setNationality(resolvedCountry);
 
-      const states = code ? State.getStatesOfCountry(code) : [];
-      const matchedState = states.find(
-        (s) =>
-          s.isoCode.toUpperCase() === locData.stateCode?.toUpperCase() ||
-          s.name.toLowerCase() === locData.state?.toLowerCase()
-      );
-
-      const resStateCode = matchedState?.isoCode || locData.stateCode || '';
-      const resStateName = matchedState?.name || locData.state || '';
+      const resStateCode = locData.stateCode || '';
+      const resStateName = locData.state || '';
 
       setSelectedStateCode(resStateCode);
       setStateName(resStateName);
@@ -231,7 +214,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  // Pick Cover Photo
+  // Pick Custom Cover Photo
   const handlePickCover = async () => {
     try {
       haptics.selection();
@@ -244,6 +227,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
 
       if (!res.canceled && res.assets && res.assets.length > 0) {
         setCoverUri(res.assets[0].uri);
+        setIsCustomCover(true);
         haptics.light();
         if (errorMessage) setErrorMessage(null);
       }
@@ -252,16 +236,25 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  // Shuffle Unsplash Cover
+  const handleShuffleCover = () => {
+    haptics.selection();
+    const nextIdx = (coverIndex + 1) % DEFAULT_COVERS.length;
+    setCoverIndex(nextIdx);
+    setCoverUri(DEFAULT_COVERS[nextIdx]);
+    setIsCustomCover(false);
+  };
+
   // Step Forward
   const handleNextSubStep = () => {
     haptics.selection();
     setErrorMessage(null);
 
-    // Validation for Sub-step 0 (Photos)
+    // Validation for Sub-step 0 (Photos) — Only require Avatar
     if (currentSubStep === 0) {
-      if (!avatarUri || !coverUri) {
+      if (!avatarUri) {
         haptics.error();
-        setErrorMessage('Please upload both a profile photo and cover banner to continue.');
+        setErrorMessage('Please add a profile photo to introduce yourself.');
         return;
       }
     }
@@ -338,12 +331,12 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
     // Resolve ISO 2-letter country code for Prisma countryCode relation
     let resolvedCountryCode = selectedCountryCode.trim().toUpperCase();
     if (!resolvedCountryCode || resolvedCountryCode.length > 3) {
-      const matched = Country.getAllCountries().find(
+      const matched = countryOptions.find(
         (c) =>
-          nationality.toLowerCase().includes(c.name.toLowerCase()) ||
-          c.isoCode === resolvedCountryCode
+          nationality.toLowerCase().includes((c.sublabel || c.label).toLowerCase()) ||
+          c.value.toUpperCase() === resolvedCountryCode
       );
-      resolvedCountryCode = matched?.isoCode || 'IN';
+      resolvedCountryCode = matched?.value || 'IN';
     }
 
     const formData = new FormData();
@@ -365,14 +358,18 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
       type: `image/${avatarExt === 'png' ? 'png' : 'jpeg'}`,
     } as any);
 
-    // Append Cover File
-    const coverName = coverUri!.split('/').pop() || 'cover.jpg';
-    const coverExt = coverName.split('.').pop()?.toLowerCase() || 'jpg';
-    formData.append('coverImage', {
-      uri: coverUri!,
-      name: coverName,
-      type: `image/${coverExt === 'png' ? 'png' : 'jpeg'}`,
-    } as any);
+    // Append Cover File (if custom gallery pick) or Default Unsplash URL
+    if (isCustomCover && coverUri) {
+      const coverName = coverUri.split('/').pop() || 'cover.jpg';
+      const coverExt = coverName.split('.').pop()?.toLowerCase() || 'jpg';
+      formData.append('coverImage', {
+        uri: coverUri,
+        name: coverName,
+        type: `image/${coverExt === 'png' ? 'png' : 'jpeg'}`,
+      } as any);
+    } else if (coverUri) {
+      formData.append('defaultCoverUrl', coverUri);
+    }
 
     setProfileMutation.mutate(formData);
   };
@@ -487,32 +484,37 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 {/* Profile Showcase Card */}
                 <View className="bg-surface rounded-[22px] border border-border-subtle overflow-visible pb-5 shadow-subtle">
                   {/* Cover Banner */}
-                  <TouchableOpacity
-                    className="w-full h-[150px] rounded-t-[20px] bg-surface-subtle overflow-hidden relative items-center justify-center"
-                    onPress={handlePickCover}
-                    activeOpacity={0.85}
-                  >
-                    {coverUri ? (
-                      <Image source={{ uri: coverUri }} className="w-full h-full" resizeMode="cover" />
-                    ) : (
-                      <View className="items-center justify-center">
-                        <View className="w-11 h-11 rounded-full bg-surface items-center justify-center border border-border-subtle shadow-subtle">
-                          <ImageIcon size={22} color={theme.colors.primary} />
-                        </View>
-                        <Text className="text-[13px] font-semibold text-primary mt-1.5">
-                          Upload Cover Banner
-                        </Text>
-                        <Text className="text-[11px] text-text-muted mt-0.5">Landscape 16:9 photo</Text>
-                      </View>
-                    )}
+                  <View className="w-full h-[150px] rounded-t-[20px] bg-surface-subtle overflow-hidden relative items-center justify-center">
+                    <Image
+                      source={{ uri: coverUri }}
+                      className="w-full h-full"
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                      transition={150}
+                    />
 
-                    <View className="absolute top-3 right-3 bg-black/65 py-1 px-2.5 rounded-full flex-row items-center">
-                      <Camera size={13} color={theme.colors.white} style={{ marginRight: 4 }} />
+                    {/* Shuffle Preset Cover Button */}
+                    <TouchableOpacity
+                      onPress={handleShuffleCover}
+                      className="absolute top-3 left-3 bg-black/65 py-1 px-2.5 rounded-full flex-row items-center gap-1.5"
+                      activeOpacity={0.8}
+                    >
+                      <RefreshCw size={12} color={theme.colors.white} />
+                      <Text className="text-white text-[11px] font-semibold">Shuffle Cover</Text>
+                    </TouchableOpacity>
+
+                    {/* Pick Custom Cover Button */}
+                    <TouchableOpacity
+                      onPress={handlePickCover}
+                      className="absolute top-3 right-3 bg-black/65 py-1 px-2.5 rounded-full flex-row items-center gap-1.5"
+                      activeOpacity={0.8}
+                    >
+                      <Camera size={12} color={theme.colors.white} />
                       <Text className="text-white text-[11px] font-semibold">
-                        {coverUri ? 'Change' : 'Add Cover'}
+                        {isCustomCover ? 'Change Custom' : 'Upload Own'}
                       </Text>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
 
                   {/* Overlapping Avatar */}
                   <View className="self-center -mt-[50px] z-10">
@@ -523,7 +525,13 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     >
                       <View className="w-[100px] h-[100px] rounded-full bg-surface-subtle border-4 border-white overflow-hidden items-center justify-center shadow-card">
                         {avatarUri ? (
-                          <Image source={{ uri: avatarUri }} className="w-full h-full" resizeMode="cover" />
+                          <Image
+                            source={{ uri: avatarUri }}
+                            className="w-full h-full"
+                            contentFit="cover"
+                            cachePolicy="memory-disk"
+                            transition={150}
+                          />
                         ) : (
                           <View className="items-center justify-center">
                             <User size={38} color={theme.colors.textMuted} />
@@ -539,34 +547,20 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   {/* Caption & Status Below */}
                   <View className="items-center mt-3 px-5">
                     <Text className="text-base font-semibold text-text-primary">
-                      {avatarUri && coverUri ? 'Looking great!' : 'Your Traveler Visuals'}
+                      {avatarUri ? 'Looking fantastic!' : 'Add Your Profile Photo'}
                     </Text>
                     <Text className="text-xs text-text-secondary text-center mt-1 leading-[17px]">
-                      {!coverUri && !avatarUri
-                        ? 'Tap the banner and circle above to pick your photos'
-                        : !coverUri
-                        ? 'Now add a cover banner to complete your look'
-                        : !avatarUri
-                        ? 'Now tap the circle to add your face photo'
-                        : 'Both photos ready. Tap Continue below.'}
+                      {avatarUri
+                        ? 'Profile photo set! Tap Continue below or change your cover above.'
+                        : 'Tap the circle above to add your face photo. Cover banner is ready.'}
                     </Text>
 
                     {/* Quick status pills */}
                     <View className="flex-row gap-2.5 mt-3.5">
-                      <View className={cn(
-                        'flex-row items-center gap-1.5 bg-surface-subtle py-1.5 px-3 rounded-xl',
-                        coverUri && 'bg-primary'
-                      )}>
-                        {coverUri ? (
-                          <Check size={12} color={theme.colors.white} strokeWidth={3} />
-                        ) : (
-                          <ImageIcon size={12} color={theme.colors.textMuted} />
-                        )}
-                        <Text className={cn(
-                          'text-[11px] font-semibold text-text-muted',
-                          coverUri && 'text-white'
-                        )}>
-                          Cover {coverUri ? 'Added' : 'Pending'}
+                      <View className="flex-row items-center gap-1.5 bg-primary py-1.5 px-3 rounded-xl">
+                        <Check size={12} color={theme.colors.white} strokeWidth={3} />
+                        <Text className="text-[11px] font-semibold text-white">
+                          Cover {isCustomCover ? 'Custom' : 'Preset'}
                         </Text>
                       </View>
                       <View className={cn(
@@ -582,7 +576,7 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                           'text-[11px] font-semibold text-text-muted',
                           avatarUri && 'text-white'
                         )}>
-                          Avatar {avatarUri ? 'Added' : 'Pending'}
+                          Avatar {avatarUri ? 'Added' : 'Required'}
                         </Text>
                       </View>
                     </View>
@@ -599,27 +593,36 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     About You
                   </Text>
                   <Text className="text-sm text-text-secondary mt-1.5 leading-5">
-                    Write a short bio so potential travel mates know what kind of trips you enjoy.
+                    Write a short bio or pick a template below. You can always edit this later.
                   </Text>
                 </View>
 
                 {/* Bio Text Area */}
                 <View className="bg-surface rounded-[18px] border border-border p-4 shadow-subtle">
                   <TextInput
-                    className="text-[15px] text-text-primary min-h-[120px] leading-[22px]"
+                    className="text-[15px] text-text-primary min-h-[110px] leading-[22px]"
                     placeholder="Tell other travelers about your favorite destinations, what you love doing, or dream bucket list trips..."
                     placeholderTextColor={theme.colors.textMuted}
                     multiline
-                    numberOfLines={5}
+                    numberOfLines={4}
                     maxLength={500}
                     value={bio}
                     onChangeText={(val) => {
                       setBio(val);
                       if (errorMessage) setErrorMessage(null);
                     }}
-                    autoFocus
                   />
-                  <View className="items-end mt-2">
+                  <View className="flex-row items-center justify-between mt-2 pt-2 border-t border-border-subtle">
+                    <TouchableOpacity
+                      onPress={() => {
+                        haptics.selection();
+                        setBio('');
+                      }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      activeOpacity={0.7}
+                    >
+                      <Text className="text-[11px] font-semibold text-primary">Clear</Text>
+                    </TouchableOpacity>
                     <Text className={cn(
                       'text-[11px] font-semibold',
                       bio.length < 20 ? 'text-error' : 'text-text-muted'
@@ -629,24 +632,28 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   </View>
                 </View>
 
-                {/* Quick Inspiration Prompts */}
+                {/* 1-Tap Ready Templates */}
                 <Text className="text-sm font-semibold text-text-primary mb-2.5 mt-5">
-                  Inspiration Prompts
+                  1-Tap Bio Templates
                 </Text>
-                <View className="gap-2">
-                  {BIO_PROMPTS.map((prompt) => (
+                <View className="gap-2.5">
+                  {BIO_TEMPLATES.map((template, idx) => (
                     <TouchableOpacity
-                      key={prompt}
-                      className="flex-row items-center bg-surface py-3 px-3.5 rounded-2xl border border-border shadow-subtle"
+                      key={idx}
+                      className={cn(
+                        'flex-row items-start bg-surface py-3 px-3.5 rounded-2xl border shadow-subtle',
+                        bio === template ? 'border-primary bg-surface-subtle' : 'border-border'
+                      )}
                       onPress={() => {
                         haptics.light();
-                        setBio((prev) => (prev ? `${prev}\n${prompt}` : prompt));
+                        setBio(template);
+                        if (errorMessage) setErrorMessage(null);
                       }}
                       activeOpacity={0.7}
                     >
-                      <Sparkles size={14} color={theme.colors.primary} style={{ marginRight: 6 }} />
-                      <Text className="text-[13px] text-text-primary font-medium flex-1">
-                        {prompt}
+                      <Sparkles size={14} color={theme.colors.primary} style={{ marginRight: 8, marginTop: 2 }} />
+                      <Text className="text-xs text-text-primary font-medium flex-1 leading-[18px]">
+                        "{template}"
                       </Text>
                     </TouchableOpacity>
                   ))}

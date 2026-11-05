@@ -1,13 +1,54 @@
-import { QueryClient } from '@tanstack/react-query';
+import { AppState, AppStateStatus, Platform } from 'react-native';
+import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { AxiosError } from 'axios';
+
+// 1. AppState Focus Manager:
+// Automatically informs TanStack Query when the mobile app transitions between foreground/background.
+function onAppStateChange(status: AppStateStatus) {
+  if (Platform.OS !== 'web') {
+    focusManager.setFocused(status === 'active');
+  }
+}
+
+AppState.addEventListener('change', onAppStateChange);
+
+// 2. Network Awareness (NetInfo):
+// Automatically pauses queries when offline and resumes/refetches when connection is restored.
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(Boolean(state.isConnected && state.isInternetReachable !== false));
+  });
+});
+
+// 3. Persisted Offline Cache (AsyncStorage):
+// Persists query cache to disk for instant 0 ms cold boot rendering.
+export const asyncStoragePersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: 'VOYMATE_QUERY_CACHE',
+  throttleTime: 1000,
+});
+
+export async function clearPersistedQueryCache(): Promise<void> {
+  try {
+    await asyncStoragePersister.removeClient();
+  } catch (err) {
+    if (__DEV__) {
+      console.warn('Failed to clear persisted query cache:', err);
+    }
+  }
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
       staleTime: 1000 * 60 * 3, // 3 minutes
-      gcTime: 1000 * 60 * 15, // 15 minutes
-      refetchOnWindowFocus: false,
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours (for persistence)
+      refetchOnWindowFocus: true, // Auto-refetch stale queries when app returns to foreground
+      refetchOnReconnect: true, // Auto-refetch stale queries when device regains network
     },
   },
 });
@@ -36,6 +77,10 @@ export const QUERY_KEYS = {
   directChat: (targetUserId: string) => ['direct_chat', targetUserId] as const,
   messages: (conversationId: string) => ['messages', conversationId] as const,
   placesAutocomplete: (search: string) => ['places_autocomplete', search] as const,
+  liveLocation: ['live_location'] as const,
+  geoCountries: ['geo_countries'] as const,
+  geoStates: (countryCode: string) => ['geo_states', countryCode] as const,
+  geoCities: (countryCode: string, stateCode: string) => ['geo_cities', countryCode, stateCode] as const,
 } as const;
 
 export function getApiErrorMessage(

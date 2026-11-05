@@ -18,24 +18,20 @@ import {
   Check,
   AlertCircle,
   Sparkles,
-  Users,
   Backpack,
   Coins,
   Crown,
   Smile,
   Zap,
   Coffee,
-  Globe,
-  Heart,
 } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'TravelStyle'>;
 
-const TOTAL_SUBSTEPS = 4;
+const TOTAL_SUBSTEPS = 3;
 
 type TravelType = 'BACKPACKER' | 'BUDGET' | 'LUXURY';
 type Personality = 'INTROVERT' | 'AMBIVERT' | 'EXTROVERT';
-type MatchPreference = 'EVERYONE' | 'WOMEN' | 'MEN';
 
 interface TravelTypeOption {
   id: TravelType;
@@ -116,34 +112,6 @@ const INTEREST_TAGS = [
   { label: 'Scuba Diving', value: 'SCUBA' },
 ];
 
-interface MatchPreferenceOption {
-  id: MatchPreference;
-  title: string;
-  subtitle: string;
-  icon: (color: string) => React.ReactNode;
-}
-
-const MATCH_PREFERENCES: MatchPreferenceOption[] = [
-  {
-    id: 'EVERYONE',
-    title: 'Any Traveler',
-    subtitle: 'Open to connecting with everyone regardless of gender.',
-    icon: (color) => <Globe size={24} color={color} strokeWidth={2} />,
-  },
-  {
-    id: 'WOMEN',
-    title: 'Female Solo Travelers',
-    subtitle: 'Prefer matching exclusively with female travel buddies.',
-    icon: (color) => <Heart size={24} color={color} strokeWidth={2} />,
-  },
-  {
-    id: 'MEN',
-    title: 'Male Solo Travelers',
-    subtitle: 'Prefer matching exclusively with male travel buddies.',
-    icon: (color) => <Users size={24} color={color} strokeWidth={2} />,
-  },
-];
-
 export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
   const [currentSubStep, setCurrentSubStep] = useState(0);
   const [travelType, setTravelType] = useState<TravelType>('BACKPACKER');
@@ -153,13 +121,12 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
     'PHOTOGRAPHY',
     'HIKING',
   ]);
-  const [matchPreference, setMatchPreference] = useState<MatchPreference>('EVERYONE');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const haptics = useHaptics();
   const setTravelStyleMutation = useSetOnboardingTravelStyle({
     onSuccess: () => {
-      navigation.navigate('InitialTripPlan');
+      // Onboarding complete! The root navigator will automatically render MainTabNavigator
     },
     onError: (msg) => setErrorMessage(msg),
   });
@@ -212,7 +179,7 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
       travelType,
       interests: selectedInterests,
       travelPersonality: personality,
-      matchWith: matchPreference,
+      matchWith: 'EVERYONE',
     });
   };
 
@@ -446,72 +413,6 @@ export const TravelStyleScreen: React.FC<Props> = ({ navigation }) => {
                 <Text className="text-xs font-semibold text-textMuted">
                   {selectedInterests.length} of 10 selected
                 </Text>
-              </View>
-            </View>
-          )}
-
-          {/* SUB-STEP 3: MATCH PREFERENCE */}
-          {currentSubStep === 3 && (
-            <View className="pt-2.5">
-              <View className="mb-6">
-                <Text className="text-[26px] font-medium text-textPrimary tracking-tight">Who to explore with?</Text>
-                <Text className="text-sm text-textSecondary mt-1.5 leading-5">
-                  Choose who you are most comfortable discovering destinations with.
-                </Text>
-              </View>
-
-              <View className="gap-3.5">
-                {MATCH_PREFERENCES.map((pref) => {
-                  const isSelected = matchPreference === pref.id;
-                  return (
-                    <TouchableOpacity
-                      key={pref.id}
-                      className={cn(
-                        'flex-row bg-surface rounded-[18px] border-[1.5px] p-4 items-start shadow-subtle',
-                        isSelected ? 'border-primary' : 'border-border'
-                      )}
-                      style={theme.shadows.subtle}
-                      onPress={() => {
-                        haptics.selection();
-                        setMatchPreference(pref.id);
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <View
-                        className={cn(
-                          'w-[46px] h-[46px] rounded-xl items-center justify-center mr-3.5',
-                          isSelected ? 'bg-surface border border-primary' : 'bg-surface-subtle'
-                        )}
-                      >
-                        {pref.icon(
-                          isSelected ? theme.colors.primary : theme.colors.textSecondary
-                        )}
-                      </View>
-
-                      <View className="flex-1">
-                        <View className="flex-row items-center justify-between mb-1">
-                          <Text
-                            className={cn(
-                              'text-base font-semibold',
-                              isSelected ? 'text-primary' : 'text-textPrimary'
-                            )}
-                          >
-                            {pref.title}
-                          </Text>
-                          <View
-                            className={cn(
-                              'w-[22px] h-[22px] rounded-full border-[1.5px] items-center justify-center',
-                              isSelected ? 'bg-primary border-primary' : 'border-border'
-                            )}
-                          >
-                            {isSelected && <Check size={12} color={theme.colors.white} strokeWidth={3} />}
-                          </View>
-                        </View>
-                        <Text className="text-[13px] text-textSecondary leading-[18px]">{pref.subtitle}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
               </View>
             </View>
           )}

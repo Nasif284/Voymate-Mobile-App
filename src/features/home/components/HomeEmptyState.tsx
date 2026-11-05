@@ -227,7 +227,7 @@ export const HomeEmptyState: React.FC<HomeEmptyStateProps> = ({
 
         {/* Empathetic & Persuasive Copy */}
         <Text className="text-[13.5px] text-text-secondary text-center leading-5 mb-5 px-1.5">
-          Add your destination and travel dates. We will match you with solo travelers going to the same place.
+          Add your destination and travel dates. We will match you with travelers going to the same place.
         </Text>
 
         {/* 3 Core Value Props to Reduce Hesitation */}

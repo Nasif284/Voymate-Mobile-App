@@ -3,11 +3,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { theme } from '../../../config/theme';
 import { UserWithDetails } from '../types';
 import { cn } from '../../../utils/cn';
+import { formatTravelerLocation } from '../../../utils/locationFormat';
+import { useViewerCountry } from '../../profile/hooks/profile.hooks';
 import {
   Calendar,
   Luggage,
@@ -56,6 +58,12 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
       ? `${activeTrip.destinationCity}, ${activeTrip.destinationCountry}`
       : activeTrip?.name);
 
+  const viewerCountry = useViewerCountry();
+  const displayLocation = formatTravelerLocation(
+    { city: user.city, state: user.state, country: user.country },
+    viewerCountry
+  );
+
   return (
     <TouchableOpacity
       className="bg-surface rounded-3xl border border-border mb-5 overflow-hidden shadow-subtle"
@@ -66,7 +74,14 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
       {/* Cover Image Banner */}
       <View className="h-[120px] w-full relative bg-primary-dark">
         {user.coverUrl ? (
-          <Image source={{ uri: user.coverUrl }} className="w-full h-full" resizeMode="cover" />
+          <Image
+            source={{ uri: user.coverUrl }}
+            className="w-full h-full"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`cover_${user.id}`}
+            transition={150}
+          />
         ) : (
           <View className="w-full h-full bg-primary-dark" />
         )}
@@ -95,6 +110,10 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
           <Image
             source={{ uri: user.avatarUrl }}
             className="w-[60px] h-[60px] rounded-full border-[3px] border-surface bg-surface-subtle"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`avatar_${user.id}`}
+            transition={150}
           />
         ) : (
           <View className="w-[60px] h-[60px] rounded-full bg-primary items-center justify-center border-[3px] border-surface">
@@ -116,7 +135,7 @@ export const BuddyTravelerCard: React.FC<BuddyTravelerCardProps> = React.memo(({
           <View className="flex-row items-center gap-1 mt-0.5">
             <MapPin size={12} color={theme.colors.textMuted} />
             <Text className="text-xs text-text-muted" numberOfLines={1}>
-              {user.city ? `${user.city}, ` : ''}{user.state || user.country || 'Solo Explorer'}
+              {displayLocation}
             </Text>
           </View>
         </View>

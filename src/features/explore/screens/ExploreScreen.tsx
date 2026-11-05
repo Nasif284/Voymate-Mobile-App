@@ -21,7 +21,7 @@ import { FilterModal } from '../components/FilterModal';
 import { MatchCard } from '../../matches/components/MatchCard';
 import { MatchesSkeleton } from '../../matches/components/MatchesSkeleton';
 import { ConnectModal } from '../../home/components/ConnectModal';
-import { Compass, RotateCcw, Sparkles, Search } from 'lucide-react-native';
+import { Compass, RotateCcw, Sparkles, Search, Calendar } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -49,21 +49,41 @@ export const ExploreScreen: React.FC = () => {
   const [selectedMatchForConnect, setSelectedMatchForConnect] = useState<TripMatchItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const hasActiveSearch = Boolean(
-    appliedQuery.trim() ||
+  const hasStrictFilters = Boolean(
     filters.travelStyle ||
-    filters.budgetStyle
+      filters.budgetStyle ||
+      filters.dateFrom ||
+      filters.dateTo,
   );
+
+  const hasActiveSearch = Boolean(appliedQuery.trim() || hasStrictFilters);
+
+  const badgeMode = useMemo<
+    'STRICT_MATCH' | 'LOCATION_DISCOVERY' | 'CATEGORY_BROWSING'
+  >(() => {
+    const hasDestination = Boolean(appliedQuery.trim());
+    if (hasDestination && hasStrictFilters) return 'STRICT_MATCH';
+    if (hasDestination && !hasStrictFilters) return 'LOCATION_DISCOVERY';
+    return 'CATEGORY_BROWSING';
+  }, [appliedQuery, hasStrictFilters]);
 
   const searchParams = useMemo(
     () => ({
       destinationName: appliedQuery.trim() || undefined,
+      dateFrom: filters.dateFrom || undefined,
+      dateTo: filters.dateTo || undefined,
       travelStyle: filters.travelStyle || undefined,
       budgetStyle: filters.budgetStyle || undefined,
       page: 1,
       limit: 15,
     }),
-    [appliedQuery, filters.travelStyle, filters.budgetStyle]
+    [
+      appliedQuery,
+      filters.dateFrom,
+      filters.dateTo,
+      filters.travelStyle,
+      filters.budgetStyle,
+    ],
   );
 
   // TanStack Query Hooks
@@ -90,7 +110,7 @@ export const ExploreScreen: React.FC = () => {
   // Handle input text change
   const handleSearchTextChange = (text: string) => {
     setSearchQuery(text);
-    if (!text.trim() && !filters.travelStyle && !filters.budgetStyle) {
+    if (!text.trim() && !hasStrictFilters) {
       setAppliedQuery('');
     }
   };
@@ -124,7 +144,12 @@ export const ExploreScreen: React.FC = () => {
   // Remove single filter chip
   const handleRemoveFilter = (key: keyof ExploreFilters) => {
     const next = { ...filters };
-    delete next[key];
+    if (key === 'dateFrom' || key === 'dateTo') {
+      delete next.dateFrom;
+      delete next.dateTo;
+    } else {
+      delete next[key];
+    }
     setFilters(next);
   };
 
@@ -191,6 +216,7 @@ export const ExploreScreen: React.FC = () => {
             item.tripMatch?.connectionStatus ||
             'NONE'
           }
+          badgeMode={badgeMode}
           onPress={handleMatchCardPress}
           onConnectPress={handleConnectPress}
           onAcceptPress={handleAcceptPress}
@@ -200,6 +226,7 @@ export const ExploreScreen: React.FC = () => {
     ),
     [
       relationships,
+      badgeMode,
       handleMatchCardPress,
       handleConnectPress,
       handleAcceptPress,
@@ -207,17 +234,35 @@ export const ExploreScreen: React.FC = () => {
     ]
   );
 
-  const renderHeader = () => (
+  const renderSubHeader = () => (
     <>
-      <ExploreHeader
-        filters={filters}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchTextChange}
-        onSubmitSearch={handleSearchSubmit}
-        onOpenFilter={() => setIsFilterModalOpen(true)}
-        onRemoveFilter={handleRemoveFilter}
-        onClearAllFilters={handleResetFilters}
-      />
+      {badgeMode === 'LOCATION_DISCOVERY' && !isLoading && matches.length > 0 && (
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setIsFilterModalOpen(true);
+          }}
+          activeOpacity={0.8}
+          className="mx-5 mb-3 p-3 rounded-2xl bg-primary/10 border border-primary/20 flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center gap-2.5 flex-1 pr-2">
+            <View className="w-8 h-8 rounded-full bg-primary/15 items-center justify-center">
+              <Calendar size={15} color={theme.colors.primary} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-text-primary">
+                Traveling to {appliedQuery}?
+              </Text>
+              <Text className="text-[11px] text-text-muted mt-0.5">
+                Add travel dates to see exact companion overlap %
+              </Text>
+            </View>
+          </View>
+          <View className="bg-primary px-2.5 py-1.5 rounded-xl">
+            <Text className="text-[11px] font-semibold text-white">Add Dates</Text>
+          </View>
+        </TouchableOpacity>
+      )}
       {!isLoading && hasActiveSearch && matches.length > 0 && (
         <View className="mb-2.5 px-5">
           <Text className="text-xs font-semibold text-text-muted uppercase tracking-wider">
@@ -297,17 +342,30 @@ export const ExploreScreen: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+      {/* 1. Permanent Sticky Header: Never unmounts on keystrokes */}
+      <ExploreHeader
+        filters={filters}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchTextChange}
+        onSubmitSearch={handleSearchSubmit}
+        onOpenFilter={() => setIsFilterModalOpen(true)}
+        onRemoveFilter={handleRemoveFilter}
+        onClearAllFilters={handleResetFilters}
+      />
+
+      {/* 2. Scrollable Results List */}
       <FlatList
         data={!isLoading && hasActiveSearch ? matches : []}
         keyExtractor={(item) => `${item.user.id}-${item.tripMatch?.id || ''}`}
         renderItem={renderMatchItem}
-        ListHeaderComponent={renderHeader}
+        ListHeaderComponent={renderSubHeader}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
-          paddingTop: insets.top + 8,
+          paddingTop: 8,
           paddingBottom: bottomNavPadding,
         }}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         initialNumToRender={6}
         maxToRenderPerBatch={8}

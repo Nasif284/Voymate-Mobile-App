@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { theme } from '../../../config/theme';
 import { TripMatchItem } from '../types';
 import { MessageSquare, Users } from 'lucide-react-native';
@@ -27,6 +28,9 @@ export const BuddiesOnTheRoadAlert: React.FC<BuddiesOnTheRoadAlertProps> = ({
             <Image
               source={{ uri: firstBuddy.user.avatarUrl }}
               className="w-9 h-9 rounded-full border border-surface"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={150}
             />
           ) : (
             <View className="w-9 h-9 rounded-full bg-primary items-center justify-center border border-surface">

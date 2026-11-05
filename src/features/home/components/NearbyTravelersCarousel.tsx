@@ -4,11 +4,13 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { theme } from '../../../config/theme';
 import { UserWithDetails } from '../types';
 import { formatDistanceKm } from '../../../utils/formatters';
+import { formatTravelerLocation } from '../../../utils/locationFormat';
+import { useViewerCountry } from '../../profile/hooks/profile.hooks';
 import { MapPin, UserPlus, Check, MessageSquare } from 'lucide-react-native';
 
 interface NearbyTravelersCarouselProps {
@@ -28,6 +30,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
   onUserPress,
   connectionsMap,
 }) => {
+  const viewerCountry = useViewerCountry();
   if (users.length === 0) return null;
 
   return (
@@ -42,7 +45,7 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
             <Text className="text-base font-semibold text-text-primary tracking-tight">
               Travelers Near You
             </Text>
-            <Text className="text-xs text-text-muted">Solo travelers within 50 km</Text>
+            <Text className="text-xs text-text-muted">Travelers within 50 km</Text>
           </View>
         </View>
         <View className="bg-surface-subtle px-2.5 py-1 rounded-full border border-border">
@@ -75,7 +78,14 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
               {/* Cover Banner */}
               <View className="h-[75px] w-full relative bg-primary-dark">
                 {user.coverUrl ? (
-                  <Image source={{ uri: user.coverUrl }} className="w-full h-full" resizeMode="cover" />
+                  <Image
+                    source={{ uri: user.coverUrl }}
+                    className="w-full h-full"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={`cover_${user.id}`}
+                    transition={150}
+                  />
                 ) : (
                   <View className="w-full h-full bg-primary-dark" />
                 )}
@@ -92,6 +102,10 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                   <Image
                     source={{ uri: user.avatarUrl }}
                     className="w-11 h-11 rounded-full border-2 border-surface bg-surface-subtle"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={`avatar_${user.id}`}
+                    transition={150}
                   />
                 ) : (
                   <View className="w-11 h-11 rounded-full bg-primary items-center justify-center border-2 border-surface">
@@ -109,7 +123,11 @@ export const NearbyTravelersCarousel: React.FC<NearbyTravelersCarouselProps> = (
                 </Text>
 
                 <Text className="text-[11px] text-text-muted mt-0.5" numberOfLines={1}>
-                  {user.city ? `${user.city}, ` : ''}{user.state || user.country || 'Traveling'}
+                  {formatTravelerLocation(
+                    { city: user.city, state: user.state, country: user.country },
+                    viewerCountry,
+                    'Traveling'
+                  )}
                 </Text>
 
                 {/* Interest Tags */}

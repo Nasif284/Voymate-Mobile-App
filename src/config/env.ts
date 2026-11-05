@@ -17,9 +17,13 @@ const rawSocketUrl =
   cleanApiUrl.replace(/\/api\/v1\/?$/, '');
 const SOCKET_URL = rawSocketUrl.endsWith('/') ? rawSocketUrl.slice(0, -1) : rawSocketUrl;
 
+const GOOGLE_WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  '189540352036-v3sgrcr0eolkpi56sun6muagngr7acq1.apps.googleusercontent.com';
+
 export const ENV = {
   API_URL,
   SOCKET_URL,
-  GOOGLE_PLACES_API_KEY: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || '',
+  GOOGLE_WEB_CLIENT_ID,
   IS_DEV: __DEV__,
 } as const;

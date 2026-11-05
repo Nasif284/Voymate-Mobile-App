@@ -5,17 +5,20 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
 import { useConnectionStore, ConnectionStatusType } from '../../../store/connectionStore';
+import { useSafetyStore } from '../../../store/safetyStore';
 import {
   useGetUsersForCardsInfinite,
   useGetNearbyUsers,
   useToggleTravelingStatus,
 } from '../hooks/home.hooks';
+import { useLiveLocation } from '../hooks/useLiveLocation';
 import { useGetMe } from '../../profile/hooks/profile.hooks';
 import { useGetActiveTrip } from '../../trips/hooks/trip.hooks';
 import {
@@ -31,7 +34,7 @@ import { ConnectModal } from '../components/ConnectModal';
 import { HomeSkeleton } from '../components/HomeSkeleton';
 import { HomeEmptyState } from '../components/HomeEmptyState';
 import { CreateTripModal } from '../../trips/components/CreateTripModal';
-import { Users, Sparkles } from 'lucide-react-native';
+import { Users, Sparkles, MapPinOff, Compass } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/types';
@@ -57,6 +60,14 @@ export const HomeScreen: React.FC = () => {
   const isTraveling = Boolean(currentUserProfile?.isTraveling ?? authUser?.isTraveling);
 
   const {
+    liveLocation,
+    isLocating,
+    permissionDenied,
+    openLocationSettings,
+    refreshLiveLocation,
+  } = useLiveLocation(isTraveling);
+
+  const {
     data: activeTrip,
     refetch: refetchActiveTrip,
   } = useGetActiveTrip();
@@ -74,13 +85,14 @@ export const HomeScreen: React.FC = () => {
   const {
     data: nearbyUsers = [],
     refetch: refetchNearby,
-  } = useGetNearbyUsers(50, isTraveling);
+  } = useGetNearbyUsers(50, isTraveling && !permissionDenied);
 
   const toggleTravelingMutation = useToggleTravelingStatus();
   const sendConnectionMutation = useSendConnectionRequest();
   const acceptConnectionMutation = useAcceptConnectionRequest();
 
   const relationships = useConnectionStore((s) => s.relationships);
+  const blockedUserIds = useSafetyStore((s) => s.blockedUserIds);
 
   const connectionsMap = useMemo(() => {
     const map: Record<string, ConnectionStatusType> = {};
@@ -97,24 +109,29 @@ export const HomeScreen: React.FC = () => {
     const list: UserWithDetails[] = [];
     for (const page of cardsPages.pages) {
       for (const u of page.users) {
-        if (!seen.has(u.id)) {
+        if (!seen.has(u.id) && !blockedUserIds.includes(u.id)) {
           seen.add(u.id);
           list.push(u);
         }
       }
     }
     return list;
-  }, [cardsPages]);
+  }, [cardsPages, blockedUserIds]);
+
+  const filteredNearbyUsers = useMemo(() => {
+    return nearbyUsers.filter((u) => !blockedUserIds.includes(u.id));
+  }, [nearbyUsers, blockedUserIds]);
 
   // Pull-to-refresh
   const onRefresh = useCallback(() => {
     refetchProfile();
     refetchActiveTrip();
     refetchCards();
-    if (isTraveling) {
+    if (isTraveling && !permissionDenied) {
+      void refreshLiveLocation();
       refetchNearby();
     }
-  }, [refetchProfile, refetchActiveTrip, refetchCards, refetchNearby, isTraveling]);
+  }, [refetchProfile, refetchActiveTrip, refetchCards, refetchNearby, refreshLiveLocation, isTraveling, permissionDenied]);
 
   // Infinite Scroll Trigger
   const handleLoadMore = useCallback(() => {
@@ -185,11 +202,7 @@ export const HomeScreen: React.FC = () => {
     [navigation]
   );
 
-  const hasNearbyTravelers = isTraveling && nearbyUsers.length > 0;
-  const userLocationString =
-    currentUserProfile?.city && currentUserProfile?.state
-      ? `${currentUserProfile.city}, ${currentUserProfile.state}`
-      : currentUserProfile?.state || currentUserProfile?.country || null;
+  const hasNearbyTravelers = isTraveling && filteredNearbyUsers.length > 0;
 
   const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;
 
@@ -198,7 +211,10 @@ export const HomeScreen: React.FC = () => {
       <HomeHeader
         userName={currentUserProfile?.fullName || authUser?.fullName || 'Traveler'}
         avatarUrl={currentUserProfile?.avatarUrl || authUser?.avatarUrl}
-        location={userLocationString}
+        location={liveLocation}
+        isLocating={isLocating}
+        locationPermissionDenied={permissionDenied}
+        onEnableLocationPress={openLocationSettings}
         isTraveling={isTraveling}
         onToggleTraveling={handleToggleTraveling}
         isUpdatingStatus={toggleTravelingMutation.isPending}
@@ -210,9 +226,35 @@ export const HomeScreen: React.FC = () => {
         <PlanTripBanner onPlanTripPress={() => setIsCreateTripModalOpen(true)} />
       )}
 
+      {isTraveling && permissionDenied && (
+        <View className="mx-5 mb-5 bg-surface rounded-3xl border border-border p-4 shadow-subtle">
+          <View className="flex-row items-start gap-3">
+            <View className="w-10 h-10 rounded-2xl bg-surface-subtle items-center justify-center shrink-0 border border-border">
+              <MapPinOff size={18} color={theme.colors.primary} />
+            </View>
+            <View className="flex-1 pr-1">
+              <Text className="text-sm font-semibold text-text-primary tracking-tight">
+                Location access is turned off
+              </Text>
+              <Text className="text-xs text-text-muted mt-1 leading-[18px]">
+                Allow location access to see travelers within 50 km of your current route.
+              </Text>
+              <TouchableOpacity
+                className="mt-3 self-start px-3.5 py-1.5 rounded-full bg-surface border border-primary flex-row items-center gap-1.5"
+                onPress={openLocationSettings}
+                activeOpacity={0.8}
+              >
+                <Compass size={13} color={theme.colors.primary} />
+                <Text className="text-xs font-semibold text-primary">Enable Location</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
       {hasNearbyTravelers && (
         <NearbyTravelersCarousel
-          users={nearbyUsers}
+          users={filteredNearbyUsers}
           onUserPress={(user) => handleUserCardPress(user, true)}
           onConnectPress={handleConnectPress}
           onAcceptPress={handleAcceptPress}
@@ -232,7 +274,7 @@ export const HomeScreen: React.FC = () => {
                 Travelers Looking for Mates
               </Text>
               <Text className="text-xs text-text-muted mt-0.5">
-                Connect with solo travelers planning upcoming trips
+                Connect with travelers planning upcoming trips
               </Text>
             </View>
           </View>
@@ -281,44 +323,46 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View className="flex-1 bg-background">
-      <FlatList
-        data={buddyUsers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View className="px-5">
-            <BuddyTravelerCard
-              user={item}
-              connectionStatus={connectionsMap[item.id] || item.connectionStatus || 'NONE'}
-              onPress={handleUserCardPress}
-              onConnectPress={handleConnectPress}
-              onAcceptPress={handleAcceptPress}
-              onMessagePress={handleMessagePress}
+      <View className="flex-1 w-full max-w-[560px] self-center">
+        <FlatList
+          data={buddyUsers}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View className="px-5">
+              <BuddyTravelerCard
+                user={item}
+                connectionStatus={connectionsMap[item.id] || item.connectionStatus || 'NONE'}
+                onPress={handleUserCardPress}
+                onConnectPress={handleConnectPress}
+                onAcceptPress={handleAcceptPress}
+                onMessagePress={handleMessagePress}
+              />
+            </View>
+          )}
+          ListHeaderComponent={renderHeader()}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={renderEmpty}
+          contentContainerStyle={{
+            paddingTop: insets.top + 8,
+            paddingBottom: bottomNavPadding,
+          }}
+          showsVerticalScrollIndicator={false}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          initialNumToRender={4}
+          maxToRenderPerBatch={4}
+          windowSize={7}
+          removeClippedSubviews={Platform.OS === 'android'}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching && !isFetchingNextPage}
+              onRefresh={onRefresh}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary]}
             />
-          </View>
-        )}
-        ListHeaderComponent={renderHeader()}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={{
-          paddingTop: insets.top + 8,
-          paddingBottom: bottomNavPadding,
-        }}
-        showsVerticalScrollIndicator={false}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        initialNumToRender={4}
-        maxToRenderPerBatch={4}
-        windowSize={7}
-        removeClippedSubviews={Platform.OS === 'android'}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching && !isFetchingNextPage}
-            onRefresh={onRefresh}
-            tintColor={theme.colors.primary}
-            colors={[theme.colors.primary]}
-          />
-        }
-      />
+          }
+        />
+      </View>
 
       {/* Connect Modal Bottom Sheet */}
       <ConnectModal

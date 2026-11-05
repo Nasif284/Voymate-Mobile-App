@@ -45,4 +45,28 @@ export const homeService = {
     const res = await apiClient.patch(ENDPOINTS.PROFILE.UPDATE, payload);
     return res.data?.data || res.data;
   },
+
+  updateLiveLocation: async (latitude: number, longitude: number) => {
+    const res = await apiClient.post(ENDPOINTS.LOCATION.UPDATE, {
+      latitude,
+      longitude,
+    });
+    return res.data?.data || res.data;
+  },
+
+  reverseGeocodeFallback: async (
+    latitude: number,
+    longitude: number
+  ): Promise<{
+    city?: string | null;
+    district?: string | null;
+    state?: string | null;
+    country?: string | null;
+  }> => {
+    const res = await apiClient.post(ENDPOINTS.LOCATION.REVERSE_GEOCODE, {
+      latitude,
+      longitude,
+    });
+    return res.data?.data || res.data;
+  },
 };

@@ -4,12 +4,12 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
   TextInput,
   ActivityIndicator,
   RefreshControl,
   ScrollView,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +25,7 @@ import { useGetConnections } from '../../connections/hooks/connection.hooks';
 import { socketService } from '../services/socket.service';
 import { Conversation, ChatMessage } from '../types';
 import { useAuthStore } from '../../../store/authStore';
+import { useSafetyStore } from '../../../store/safetyStore';
 import {
   Search,
   MessageSquare,
@@ -112,21 +113,31 @@ export const MessagesScreen: React.FC = () => {
     loadData();
   }, [loadData]);
 
+  const blockedUserIds = useSafetyStore((s) => s.blockedUserIds);
+
+  const unblockedConversations = useMemo(() => {
+    return conversations.filter((c) => !blockedUserIds.includes(c.user?.id));
+  }, [conversations, blockedUserIds]);
+
+  const unblockedConnections = useMemo(() => {
+    return connections.filter((conn) => !blockedUserIds.includes(conn.userId));
+  }, [connections, blockedUserIds]);
+
   // Filter conversations
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
+    if (!searchQuery.trim()) return unblockedConversations;
     const q = searchQuery.toLowerCase();
-    return conversations.filter(
+    return unblockedConversations.filter(
       (c) =>
         c.user?.name?.toLowerCase().includes(q) ||
         c.lastMessage?.content?.toLowerCase().includes(q)
     );
-  }, [conversations, searchQuery]);
+  }, [unblockedConversations, searchQuery]);
 
   // Total unread count
   const totalUnread = useMemo(() => {
-    return conversations.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
-  }, [conversations]);
+    return unblockedConversations.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0);
+  }, [unblockedConversations]);
 
   // Navigate to ChatRoom
   const handleOpenChat = (
@@ -150,7 +161,7 @@ export const MessagesScreen: React.FC = () => {
 
   // Render Horizontal Connected Mates Row
   const renderConnectionsBar = () => {
-    if (connections.length === 0) return null;
+    if (unblockedConnections.length === 0) return null;
 
     return (
       <View className="mb-4">
@@ -162,7 +173,7 @@ export const MessagesScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 14 }}
         >
-          {connections.map((item) => (
+          {unblockedConnections.map((item) => (
             <TouchableOpacity
               key={item.userId}
               className="items-center w-[58px]"
@@ -178,7 +189,14 @@ export const MessagesScreen: React.FC = () => {
             >
               <View className="w-[52px] h-[52px] rounded-full border-2 border-primary p-0.5 bg-surface">
                 {item.avatarUrl ? (
-                  <Image source={{ uri: item.avatarUrl }} className="w-full h-full rounded-full" />
+                  <Image
+                    source={{ uri: item.avatarUrl }}
+                    className="w-full h-full rounded-full"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    recyclingKey={`connection_${item.userId}`}
+                    transition={150}
+                  />
                 ) : (
                   <View className="w-full h-full rounded-full bg-surface-subtle items-center justify-center">
                     <Text className="text-lg font-semibold text-primary">
@@ -219,7 +237,14 @@ export const MessagesScreen: React.FC = () => {
       >
         <View className="w-12 h-12 rounded-full relative">
           {item.user?.profileImage ? (
-            <Image source={{ uri: item.user.profileImage }} className="w-full h-full rounded-full" />
+            <Image
+              source={{ uri: item.user.profileImage }}
+              className="w-full h-full rounded-full"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={`conv_avatar_${item.conversationId}`}
+              transition={150}
+            />
           ) : (
             <View className="w-full h-full rounded-full bg-primary items-center justify-center">
               <Text className="text-lg font-semibold text-white">

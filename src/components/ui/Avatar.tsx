@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, Text, ViewStyle } from 'react-native';
+import { View, Text, ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 import { cn } from '../../utils/cn';
 
 interface AvatarProps {
@@ -41,7 +42,9 @@ export const Avatar: React.FC<AvatarProps> = ({
         <Image
           source={{ uri }}
           style={{ width: size, height: size, borderRadius: size / 2 }}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="memory-disk"
+          transition={150}
         />
       ) : (
         <View

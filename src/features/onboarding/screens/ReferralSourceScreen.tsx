@@ -101,7 +101,20 @@ export const ReferralSourceScreen: React.FC<Props> = ({ navigation }) => {
             <VoymateLogo size={24} withBackground />
             <Text className="text-lg font-bold text-primary tracking-tight">Voymate</Text>
           </View>
-          <Text className="text-[13px] font-semibold text-textMuted">Step 1 of 3</Text>
+          <View className="flex-row items-center gap-3">
+            <Text className="text-[13px] font-semibold text-textMuted">Step 1 of 3</Text>
+            <TouchableOpacity
+              onPress={() => {
+                haptics.light();
+                setSourceMutation.mutate({ source: selectedSource || 'OTHER' });
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <Text className="text-xs font-semibold text-primary">Skip</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Progress Bar Line */}

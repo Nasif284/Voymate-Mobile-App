@@ -3,10 +3,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { theme } from '../../../config/theme';
 import { TripMatchItem } from '../types';
+import { formatTravelerLocation } from '../../../utils/locationFormat';
+import { useViewerCountry } from '../../profile/hooks/profile.hooks';
 import {
   Calendar,
   Luggage,
@@ -15,7 +17,13 @@ import {
   Check,
   MessageSquare,
   Sparkles,
+  Compass,
 } from 'lucide-react-native';
+
+export type MatchCardBadgeMode =
+  | 'STRICT_MATCH'
+  | 'LOCATION_DISCOVERY'
+  | 'CATEGORY_BROWSING';
 
 interface MatchCardProps {
   match: TripMatchItem;
@@ -24,6 +32,7 @@ interface MatchCardProps {
   onConnectPress: (match: TripMatchItem) => void;
   onAcceptPress?: (match: TripMatchItem) => void;
   onMessagePress?: (match: TripMatchItem) => void;
+  badgeMode?: MatchCardBadgeMode;
 }
 
 const formatDate = (dateStr?: string | Date) => {
@@ -43,8 +52,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onConnectPress,
   onAcceptPress,
   onMessagePress,
+  badgeMode = 'STRICT_MATCH',
 }) => {
   const { user, tripMatch } = match;
+  const viewerCountry = useViewerCountry();
 
   const dateFrom = tripMatch.dateFrom ? formatDate(tripMatch.dateFrom) : '';
   const dateTo = tripMatch.dateTo ? formatDate(tripMatch.dateTo) : '';
@@ -63,7 +74,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       {/* Cover Image Banner */}
       <View className="h-[120px] w-full relative bg-primary-dark">
         {user.coverUrl ? (
-          <Image source={{ uri: user.coverUrl }} className="w-full h-full" resizeMode="cover" />
+          <Image
+            source={{ uri: user.coverUrl }}
+            className="w-full h-full"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`cover_${user.id}`}
+            transition={150}
+          />
         ) : (
           <View className="w-full h-full bg-primary-dark" />
         )}
@@ -76,11 +94,29 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
         ) : null}
 
-        {/* Compatibility Match Badge */}
-        {matchScore != null && (
+        {/* Adaptive Compatibility / Category Badge */}
+        {badgeMode === 'STRICT_MATCH' && matchScore != null && (
           <View className="absolute top-3 right-3 flex-row items-center bg-primary px-2.5 py-1 rounded-full gap-1 shadow-card">
             <Sparkles size={11} color={theme.colors.white} />
             <Text className="text-white text-[11px] font-semibold">{matchScore}% Match</Text>
+          </View>
+        )}
+
+        {badgeMode === 'LOCATION_DISCOVERY' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-white/20">
+            <Sparkles size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold">
+              {matchScore != null && matchScore >= 75 ? 'High Vibe' : 'Compatible Vibe'}
+            </Text>
+          </View>
+        )}
+
+        {badgeMode === 'CATEGORY_BROWSING' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-white/20">
+            <Compass size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold capitalize">
+              {user.travelType || 'Traveler'}
+            </Text>
           </View>
         )}
       </View>
@@ -91,6 +127,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <Image
             source={{ uri: user.avatarUrl }}
             className="w-[60px] h-[60px] rounded-full border-[3px] border-surface bg-surface-subtle"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            recyclingKey={`avatar_${user.id}`}
+            transition={150}
           />
         ) : (
           <View className="w-[60px] h-[60px] rounded-full bg-primary items-center justify-center border-[3px] border-surface">
@@ -112,7 +152,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <View className="flex-row items-center gap-1 mt-0.5">
             <MapPin size={12} color={theme.colors.textMuted} />
             <Text className="text-xs text-text-muted" numberOfLines={1}>
-              {user.city ? `${user.city}, ` : ''}{user.state || user.country || 'Solo Explorer'}
+              {formatTravelerLocation(
+                { city: user.city, state: user.state, country: user.country },
+                viewerCountry
+              )}
             </Text>
           </View>
         </View>

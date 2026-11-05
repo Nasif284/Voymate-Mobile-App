@@ -46,6 +46,40 @@ export function useLogin(options?: { onError?: (message: string) => void }) {
   });
 }
 
+export function useGoogleAuth(options?: { onError?: (message: string) => void }) {
+  const setAuthSession = useAuthStore((state) => state.setAuthSession);
+  const haptics = useHaptics();
+
+  return useMutation({
+    mutationFn: (token: string) => authService.googleAuth(token),
+    onSuccess: async (data) => {
+      if (data?.user && data?.accessToken) {
+        haptics.success();
+        await setAuthSession(
+          data.user,
+          {
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          },
+          {
+            step: data.onboardingStep || 1,
+            isCompleted: data.onboardingCompleted ?? false,
+          },
+          data.isVerified ?? true
+        );
+      }
+    },
+    onError: (error) => {
+      haptics.error();
+      const message = getApiErrorMessage(
+        error,
+        'Google authentication failed. Please try again.'
+      );
+      options?.onError?.(message);
+    },
+  });
+}
+
 export function useRegister(options?: {
   onSuccess?: () => void;
   onError?: (message: string) => void;

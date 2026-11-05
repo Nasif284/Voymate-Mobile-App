@@ -27,6 +27,14 @@ export function useGetMe(enabled = true) {
   });
 }
 
+/**
+ * Returns the current viewer's home country from cached profile
+ */
+export function useViewerCountry(): string | null {
+  const { data: profile } = useGetMe();
+  return profile?.country ?? null;
+}
+
 export function useGetUserProfile(userId: string, enabled = true) {
   const currentUserId = useAuthStore((s) => s.user?.id);
 
@@ -200,6 +208,67 @@ export function useProfileResetPassword() {
       Alert.alert(
         'Reset Failed',
         getApiErrorMessage(error, 'Could not reset password. Please try again.')
+      );
+    },
+  });
+}
+
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: () => profileService.deleteAccount(),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (error) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        'Action Failed',
+        getApiErrorMessage(error, 'Could not delete your account. Please try again later or contact support.')
+      );
+    },
+  });
+}
+
+export function useBlockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (targetUserId: string) => profileService.blockUser(targetUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.connections });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.usersForCards });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.conversations });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (error) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        'Block Failed',
+        getApiErrorMessage(error, 'Could not block traveler. Please try again.')
+      );
+    },
+  });
+}
+
+export function useReportUser() {
+  return useMutation({
+    mutationFn: ({
+      targetUserId,
+      reason,
+      details,
+    }: {
+      targetUserId: string;
+      reason: string;
+      details?: string;
+    }) => profileService.reportUser(targetUserId, reason, details),
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    },
+    onError: (error) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        'Report Failed',
+        getApiErrorMessage(error, 'Could not submit report. Please try again.')
       );
     },
   });

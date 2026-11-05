@@ -4,12 +4,12 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   Switch,
   Alert,
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../config/theme';
 import { useAuthStore } from '../../../store/authStore';
@@ -28,6 +28,7 @@ import { ProfileAttributesCard } from '../components/ProfileAttributesCard';
 import { ProfileBioCard } from '../components/ProfileBioCard';
 import { ProfileUpcomingTrips } from '../components/ProfileUpcomingTrips';
 import { EditProfileModal } from '../components/EditProfileModal';
+import { AccountSettingsModal } from '../components/AccountSettingsModal';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import {
@@ -37,6 +38,7 @@ import {
   LogOut,
   Edit3,
   Radio,
+  Settings,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -50,6 +52,7 @@ export const ProfileScreen: React.FC = () => {
   const { user: authUser, logout } = useAuthStore();
 
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // TanStack Query Hooks
   const { data: profile = null } = useGetMe();
@@ -65,45 +68,41 @@ export const ProfileScreen: React.FC = () => {
   const incomingRequestsCount = incomingRequests.length;
   const isUpdatingTraveling = updateProfileMutation.isPending;
 
-  // Handle Pick and Upload Avatar
+  // Handle Pick and Upload Avatar (uses OS System Photo Picker — no runtime permission prompt required)
   const handlePickAvatar = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permission Denied', 'Please allow gallery access to upload a photo.');
-      return;
-    }
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]?.uri) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      updateAvatarMutation.mutate(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]?.uri) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        updateAvatarMutation.mutate(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert('Upload Failed', 'Unable to open the photo picker. Please try again.');
     }
   };
 
-  // Handle Pick and Upload Cover
+  // Handle Pick and Upload Cover (uses OS System Photo Picker — no runtime permission prompt required)
   const handlePickCover = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permission Denied', 'Please allow gallery access to upload a cover photo.');
-      return;
-    }
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+      });
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]?.uri) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      updateCoverMutation.mutate(result.assets[0].uri);
+      if (!result.canceled && result.assets[0]?.uri) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        updateCoverMutation.mutate(result.assets[0].uri);
+      }
+    } catch {
+      Alert.alert('Upload Failed', 'Unable to open the photo picker. Please try again.');
     }
   };
 
@@ -160,12 +159,13 @@ export const ProfileScreen: React.FC = () => {
     <View className="flex-1 bg-background">
       <StatusBar style="light" />
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: bottomNavPadding }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Cover Photo Header */}
+      <View className="flex-1 w-full max-w-[560px] self-center">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: bottomNavPadding }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cover Photo Header */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handlePickCover}
@@ -175,7 +175,10 @@ export const ProfileScreen: React.FC = () => {
             <Image
               source={{ uri: profile.coverUrl }}
               className="w-full h-full"
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={`my_cover_${profile.id}`}
+              transition={150}
             />
           ) : (
             <View className="w-full h-full bg-primary-dark">
@@ -183,6 +186,19 @@ export const ProfileScreen: React.FC = () => {
             </View>
           )}
           <View className="absolute inset-0 bg-black/40" />
+
+          {/* Top Right: Settings & Safety */}
+          <TouchableOpacity
+            className="absolute top-12 right-4 w-9 h-9 rounded-full bg-black/40 items-center justify-center border border-white/20 z-10"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowSettingsModal(true);
+            }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            activeOpacity={0.8}
+          >
+            <Settings size={18} color={theme.colors.white} />
+          </TouchableOpacity>
 
           {/* Bottom Right: Change Cover */}
           <TouchableOpacity
@@ -205,7 +221,14 @@ export const ProfileScreen: React.FC = () => {
               className="w-[90px] h-[90px] rounded-full border-4 border-surface bg-surface-subtle items-center justify-center relative"
             >
               {profile?.avatarUrl ? (
-                <Image source={{ uri: profile.avatarUrl }} className="w-full h-full rounded-full" />
+                <Image
+                  source={{ uri: profile.avatarUrl }}
+                  className="w-full h-full rounded-full"
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  recyclingKey={`my_avatar_${profile.id}`}
+                  transition={150}
+                />
               ) : (
                 <View className="w-full h-full rounded-full bg-primary items-center justify-center">
                   <Text className="text-[34px] font-bold text-white">
@@ -397,6 +420,7 @@ export const ProfileScreen: React.FC = () => {
           <Text className="text-[11px] font-medium text-text-placeholder mt-2.5 tracking-[0.2px]">Voymate • v1.0.0</Text>
         </View>
       </ScrollView>
+      </View>
 
       {/* Edit Profile Modal */}
       {profile && (
@@ -407,6 +431,15 @@ export const ProfileScreen: React.FC = () => {
           onSave={async (payload) => {
             await updateProfileMutation.mutateAsync(payload);
           }}
+        />
+      )}
+
+      {/* Account Settings & Safety Modal */}
+      {profile && (
+        <AccountSettingsModal
+          visible={showSettingsModal}
+          profile={profile}
+          onClose={() => setShowSettingsModal(false)}
         />
       )}
     </View>

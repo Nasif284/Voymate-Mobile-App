@@ -3,10 +3,11 @@ import { User, AuthTokens } from '../types/auth.types';
 import { storageService } from '../services/storage/storage.service';
 import { apiClient, setOnUnauthorizedCallback } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
-import { queryClient } from '../api/queryClient';
+import { queryClient, clearPersistedQueryCache } from '../api/queryClient';
 import { socketService } from '../features/chat/services/socket.service';
 import { pushNotificationService } from '../features/notifications/services/pushNotification.service';
 import { useConnectionStore } from './connectionStore';
+import { useSafetyStore } from './safetyStore';
 
 interface AuthState {
   user: User | null;
@@ -36,7 +37,9 @@ interface AuthState {
 const resetClientSessionState = (set: (partial: Partial<AuthState>) => void) => {
   socketService.disconnect();
   useConnectionStore.getState().reset();
+  useSafetyStore.getState().reset();
   queryClient.clear();
+  void clearPersistedQueryCache();
   set({
     user: null,
     isAuthenticated: false,
