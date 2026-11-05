@@ -65,8 +65,10 @@ export const QUERY_KEYS = {
   pastTrips: ['past_trips'] as const,
   tripMatches: (tripId?: string) =>
     tripId ? (['trip_matches', tripId] as const) : (['trip_matches'] as const),
-  tripMatchProfile: (matchId?: string) =>
-    matchId ? (['trip_match_profile', matchId] as const) : (['trip_match_profile'] as const),
+  tripMatchProfile: (matchId?: string, sourceTripId?: string, mode?: string) =>
+    matchId
+      ? (['trip_match_profile', matchId, mode || 'TRIP', sourceTripId || ''] as const)
+      : (['trip_match_profile'] as const),
   searchTripMatches: (params?: Record<string, unknown>) =>
     params ? (['search_trip_matches', params] as const) : (['search_trip_matches'] as const),
   connections: ['connections'] as const,

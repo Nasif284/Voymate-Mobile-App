@@ -61,16 +61,31 @@ export function useGetUserProfile(userId: string, enabled = true) {
   });
 }
 
-export function useGetMatchProfile(matchId?: string, enabled = true) {
+export interface UseGetMatchProfileOptions {
+  enabled?: boolean;
+  sourceTripId?: string;
+  mode?: 'TRIP' | 'SEARCH';
+}
+
+export function useGetMatchProfile(
+  matchId?: string,
+  options?: UseGetMatchProfileOptions
+) {
   const currentUserId = useAuthStore((s) => s.user?.id);
+  const enabled = options?.enabled ?? Boolean(matchId);
+  const sourceTripId = options?.sourceTripId;
+  const mode = options?.mode;
 
   return useQuery({
-    queryKey: QUERY_KEYS.tripMatchProfile(matchId),
+    queryKey: QUERY_KEYS.tripMatchProfile(matchId, sourceTripId, mode),
     queryFn: async () => {
       if (!matchId) {
         throw new Error('Missing matchId');
       }
-      const matchRes = await profileService.getMatchProfile(matchId);
+      const matchRes = await profileService.getMatchProfile(matchId, {
+        sourceTripId,
+        mode,
+      });
       const store = useConnectionStore.getState();
 
       const serverStatus =
@@ -94,6 +109,8 @@ export function useGetMatchProfile(matchId?: string, enabled = true) {
       return matchRes;
     },
     enabled: Boolean(matchId) && enabled,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

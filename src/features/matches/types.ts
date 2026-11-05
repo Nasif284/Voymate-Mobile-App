@@ -19,6 +19,9 @@ export interface MatchData {
   id: string;
   matchedTripId?: string;
   totalPoints?: number | null;
+  explanation?: {
+    reasons?: string[];
+  };
   dateFrom?: string;
   dateTo?: string;
   destination: string;

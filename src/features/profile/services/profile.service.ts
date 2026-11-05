@@ -14,8 +14,13 @@ export const profileService = {
     return res.data?.data || res.data;
   },
 
-  getMatchProfile: async (matchId: string): Promise<MatchProfileData> => {
-    const res = await apiClient.get(ENDPOINTS.TRIPS.MATCH_PROFILE(matchId));
+  getMatchProfile: async (
+    matchId: string,
+    params?: { sourceTripId?: string; mode?: 'TRIP' | 'SEARCH' }
+  ): Promise<MatchProfileData> => {
+    const res = await apiClient.get(ENDPOINTS.TRIPS.MATCH_PROFILE(matchId), {
+      params,
+    });
     return res.data?.data || res.data;
   },
 

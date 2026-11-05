@@ -38,6 +38,17 @@ export type RootStackParamList = {
     distanceKm?: number;
     initialName?: string;
     initialAvatar?: string;
+    badgeMode?:
+      | 'STRICT_MATCH'
+      | 'LOCATION_DISCOVERY'
+      | 'DATES_DISCOVERY'
+      | 'STYLE_DISCOVERY'
+      | 'BUDGET_DISCOVERY'
+      | 'INTENT_MATCH'
+      | 'OPEN_BROWSING';
+    filterLabel?: string;
+    initialMatchScore?: number | null;
+    initialReasons?: string[];
   };
   Connections: {
     initialTab?: 'connections' | 'requests';

@@ -154,12 +154,16 @@ export const MatchesScreen: React.FC = () => {
       navigation.navigate('UserProfile', {
         userId: item.user.id,
         matchId: item.tripMatch.id,
+        tripId: activeTrip?.id,
         variant: 'MATCH',
         initialName: item.user.fullName,
         initialAvatar: item.user.avatarUrl || undefined,
+        badgeMode: 'STRICT_MATCH',
+        initialMatchScore: item.tripMatch.totalPoints ?? undefined,
+        initialReasons: item.tripMatch.explanation?.reasons ?? undefined,
       });
     },
-    [navigation]
+    [navigation, activeTrip?.id]
   );
 
   const bottomNavPadding = 64 + Math.max(insets.bottom, 12) + 16;

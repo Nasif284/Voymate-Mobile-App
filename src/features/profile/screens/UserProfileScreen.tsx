@@ -41,6 +41,10 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     tripId,
     variant = 'PUBLIC',
     distanceKm,
+    badgeMode = 'STRICT_MATCH',
+    filterLabel,
+    initialMatchScore,
+    initialReasons,
   } = route.params;
 
   const relationships = useConnectionStore((s) => s.relationships);
@@ -52,7 +56,11 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
     data: matchProfileData,
     isLoading: isLoadingMatchProfile,
     isError: isMatchProfileError,
-  } = useGetMatchProfile(matchId, Boolean(matchId));
+  } = useGetMatchProfile(matchId, {
+    enabled: Boolean(matchId),
+    sourceTripId: tripId,
+    mode: variant === 'MATCH' ? 'TRIP' : 'SEARCH',
+  });
 
   const {
     data: regularUserProfile,
@@ -76,6 +84,19 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         }
       : null;
   const matchedTrip = matchId ? matchProfileData?.matchedTrip : null;
+
+  // Determine effective match score & explanation reasons.
+  // Honor initialMatchScore passed from the card so there is never a stale discrepancy
+  // between the card tapped in Explore and this screen.
+  const effectiveMatchScore =
+    initialMatchScore !== undefined
+      ? initialMatchScore
+      : matchData?.totalPoints;
+
+  const effectiveReasons =
+    initialReasons && initialReasons.length > 0
+      ? initialReasons
+      : matchData?.explanation?.reasons;
 
   const isLoading = matchId ? isLoadingMatchProfile : isLoadingUserProfile;
   const isError = matchId ? isMatchProfileError : isUserProfileError;
@@ -170,7 +191,9 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
         <ProfileHero
           user={user}
           variant={effectiveVariant}
-          matchScore={matchData?.totalPoints}
+          matchScore={effectiveMatchScore}
+          badgeMode={badgeMode}
+          filterLabel={filterLabel}
           distanceKm={distanceKm}
           connectionStatus={connectionStatus}
           onBackPress={() => navigation.goBack()}
@@ -194,10 +217,20 @@ export const UserProfileScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         )}
 
-        {matchData && (
+        {(effectiveMatchScore != null ||
+          badgeMode === 'INTENT_MATCH' ||
+          badgeMode === 'LOCATION_DISCOVERY' ||
+          badgeMode === 'DATES_DISCOVERY' ||
+          badgeMode === 'STYLE_DISCOVERY' ||
+          badgeMode === 'BUDGET_DISCOVERY' ||
+          badgeMode === 'OPEN_BROWSING' ||
+          matchData) && (
           <MatchCompatibilityCard
-            score={matchData.totalPoints}
-            reasons={matchData.explanation?.reasons}
+            score={effectiveMatchScore ?? 0}
+            reasons={effectiveReasons}
+            badgeMode={badgeMode}
+            travelType={user.travelType}
+            filterLabel={filterLabel}
           />
         )}
 

@@ -17,6 +17,7 @@ import {
   Check,
   Clock,
   MoreVertical,
+  Compass,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../../config/theme';
@@ -28,6 +29,15 @@ interface ProfileHeroProps {
   user: UserProfileData;
   variant?: ProfileVariant;
   matchScore?: number | null;
+  badgeMode?:
+    | 'STRICT_MATCH'
+    | 'LOCATION_DISCOVERY'
+    | 'DATES_DISCOVERY'
+    | 'STYLE_DISCOVERY'
+    | 'BUDGET_DISCOVERY'
+    | 'INTENT_MATCH'
+    | 'OPEN_BROWSING';
+  filterLabel?: string;
   distanceKm?: number;
   connectionStatus?: 'CONNECTED' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'NONE';
   isOwnProfile?: boolean;
@@ -54,6 +64,8 @@ const formatMemberDate = (dateVal?: string | Date) => {
 export const ProfileHero: React.FC<ProfileHeroProps> = ({
   user,
   matchScore,
+  badgeMode = 'STRICT_MATCH',
+  filterLabel,
   distanceKm,
   connectionStatus = 'NONE',
   isOwnProfile = false,
@@ -186,12 +198,77 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
           </TouchableOpacity>
 
           {/* Quick Match / Status Pill */}
-          {matchScore !== undefined && matchScore !== null ? (
-            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1">
+          {badgeMode === 'STRICT_MATCH' && matchScore !== undefined && matchScore !== null && (
+            matchScore >= 70 ? (
+              <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+                <Sparkles size={13} color={theme.colors.primary} />
+                <Text className="text-primary text-xs font-semibold tracking-[0.3px]">{matchScore}% Match</Text>
+              </View>
+            ) : (
+              <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+                <Sparkles size={13} color={theme.colors.primary} />
+                <Text className="text-primary text-xs font-semibold tracking-[0.3px]">Compatible Vibe</Text>
+              </View>
+            )
+          )}
+
+          {badgeMode === 'LOCATION_DISCOVERY' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
               <Sparkles size={13} color={theme.colors.primary} />
-              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">{matchScore}% Match</Text>
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">
+                {matchScore != null && matchScore >= 75 ? 'High Vibe' : 'Compatible Vibe'}
+              </Text>
             </View>
-          ) : null}
+          )}
+
+          {badgeMode === 'INTENT_MATCH' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+              <Sparkles size={13} color={theme.colors.primary} />
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">
+                {filterLabel || 'Vibe Fit'}
+              </Text>
+            </View>
+          )}
+
+          {badgeMode === 'DATES_DISCOVERY' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+              <Calendar size={13} color={theme.colors.primary} />
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">
+                {filterLabel || 'Dates Match'}
+              </Text>
+            </View>
+          )}
+
+          {badgeMode === 'STYLE_DISCOVERY' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+              <Sparkles size={13} color={theme.colors.primary} />
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">
+                {filterLabel || 'Style Match'}
+              </Text>
+            </View>
+          )}
+
+          {badgeMode === 'BUDGET_DISCOVERY' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-primary mb-1 shadow-subtle">
+              <Sparkles size={13} color={theme.colors.primary} />
+              <Text className="text-primary text-xs font-semibold tracking-[0.3px]">
+                {filterLabel || 'Budget Fit'}
+              </Text>
+            </View>
+          )}
+
+          {badgeMode === 'OPEN_BROWSING' && (
+            <View className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full border border-border mb-1 shadow-subtle">
+              <Compass size={13} color={theme.colors.primary} />
+              <Text className="text-text-primary text-xs font-semibold tracking-[0.3px] capitalize">
+                {user.travelType &&
+                user.travelType.toUpperCase() !== 'TRAVELER' &&
+                user.travelType.toUpperCase() !== 'EXPLORER'
+                  ? user.travelType
+                  : 'Open Trip'}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* User Details */}

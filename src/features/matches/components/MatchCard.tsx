@@ -23,7 +23,11 @@ import {
 export type MatchCardBadgeMode =
   | 'STRICT_MATCH'
   | 'LOCATION_DISCOVERY'
-  | 'CATEGORY_BROWSING';
+  | 'DATES_DISCOVERY'
+  | 'STYLE_DISCOVERY'
+  | 'BUDGET_DISCOVERY'
+  | 'INTENT_MATCH'
+  | 'OPEN_BROWSING';
 
 interface MatchCardProps {
   match: TripMatchItem;
@@ -33,6 +37,7 @@ interface MatchCardProps {
   onAcceptPress?: (match: TripMatchItem) => void;
   onMessagePress?: (match: TripMatchItem) => void;
   badgeMode?: MatchCardBadgeMode;
+  filterLabel?: string;
 }
 
 const formatDate = (dateStr?: string | Date) => {
@@ -53,6 +58,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onAcceptPress,
   onMessagePress,
   badgeMode = 'STRICT_MATCH',
+  filterLabel,
 }) => {
   const { user, tripMatch } = match;
   const viewerCountry = useViewerCountry();
@@ -96,10 +102,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
         {/* Adaptive Compatibility / Category Badge */}
         {badgeMode === 'STRICT_MATCH' && matchScore != null && (
-          <View className="absolute top-3 right-3 flex-row items-center bg-primary px-2.5 py-1 rounded-full gap-1 shadow-card">
-            <Sparkles size={11} color={theme.colors.white} />
-            <Text className="text-white text-[11px] font-semibold">{matchScore}% Match</Text>
-          </View>
+          matchScore >= 70 ? (
+            <View className="absolute top-3 right-3 flex-row items-center bg-primary px-2.5 py-1 rounded-full gap-1 shadow-card">
+              <Sparkles size={11} color={theme.colors.white} />
+              <Text className="text-white text-[11px] font-semibold">{matchScore}% Match</Text>
+            </View>
+          ) : (
+            <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-white/20">
+              <Sparkles size={11} color={theme.colors.primary} />
+              <Text className="text-white text-[11px] font-semibold">Compatible Vibe</Text>
+            </View>
+          )
         )}
 
         {badgeMode === 'LOCATION_DISCOVERY' && (
@@ -111,11 +124,51 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </View>
         )}
 
-        {badgeMode === 'CATEGORY_BROWSING' && (
+        {badgeMode === 'INTENT_MATCH' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-primary-border">
+            <Sparkles size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold">
+              {filterLabel || 'Vibe Fit'}
+            </Text>
+          </View>
+        )}
+
+        {badgeMode === 'DATES_DISCOVERY' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-primary-border">
+            <Calendar size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold">
+              {filterLabel || 'Dates Match'}
+            </Text>
+          </View>
+        )}
+
+        {badgeMode === 'STYLE_DISCOVERY' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-primary-border">
+            <Sparkles size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold">
+              {filterLabel || 'Style Match'}
+            </Text>
+          </View>
+        )}
+
+        {badgeMode === 'BUDGET_DISCOVERY' && (
+          <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-primary-border">
+            <Sparkles size={11} color={theme.colors.primary} />
+            <Text className="text-white text-[11px] font-semibold">
+              {filterLabel || 'Budget Fit'}
+            </Text>
+          </View>
+        )}
+
+        {badgeMode === 'OPEN_BROWSING' && (
           <View className="absolute top-3 right-3 flex-row items-center bg-black/65 px-2.5 py-1 rounded-full gap-1 border border-white/20">
             <Compass size={11} color={theme.colors.primary} />
             <Text className="text-white text-[11px] font-semibold capitalize">
-              {user.travelType || 'Traveler'}
+              {user.travelType &&
+              user.travelType.toUpperCase() !== 'TRAVELER' &&
+              user.travelType.toUpperCase() !== 'EXPLORER'
+                ? user.travelType
+                : 'Open Trip'}
             </Text>
           </View>
         )}
