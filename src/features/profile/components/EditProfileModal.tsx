@@ -48,6 +48,15 @@ const POPULAR_SKILLS = [
   'Hiking Guide',
 ];
 
+const formatTitleCase = (text: string): string => {
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   visible,
   profile,
@@ -64,6 +73,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [languagesInput, setLanguagesInput] = useState(
     (profile.languages || []).join(', ')
   );
+
+  const allSkills = Array.from(new Set([...POPULAR_SKILLS, ...(profile.skills || []), ...skills]));
 
   const updateProfileMutation = useUpdateProfile();
   const isSaving = updateProfileMutation.isPending;
@@ -85,7 +96,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleSave = () => {
     const languages = languagesInput
       .split(',')
-      .map((l) => l.trim())
+      .map((l) => formatTitleCase(l))
       .filter(Boolean);
 
     const payload: UpdatePersonalProfilePayload = {
@@ -263,7 +274,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <View className="gap-2">
               <Text className="text-[10px] font-semibold text-text-secondary tracking-[0.6px]">SKILLS</Text>
               <View className="flex-row flex-wrap gap-2">
-                {POPULAR_SKILLS.map((skill) => {
+                {allSkills.map((skill) => {
                   const isSelected = skills.includes(skill);
                   return (
                     <TouchableOpacity
@@ -296,6 +307,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 className="bg-surface-subtle border border-border rounded-[14px] px-4 py-3 text-sm text-text-primary font-semibold"
                 value={languagesInput}
                 onChangeText={setLanguagesInput}
+                autoCapitalize="words"
                 placeholder="English, Spanish, French..."
                 placeholderTextColor={theme.colors.textPlaceholder}
               />

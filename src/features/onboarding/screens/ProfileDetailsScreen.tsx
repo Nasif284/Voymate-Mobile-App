@@ -38,11 +38,21 @@ import {
   Navigation as LocationIcon,
   ChevronDown,
   RefreshCw,
+  X,
 } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'ProfileDetails'>;
 
 const TOTAL_SUBSTEPS = 5;
+
+const formatTitleCase = (text: string): string => {
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 const GENDER_OPTIONS = [
   { label: 'Male', value: 'MALE' },
@@ -63,13 +73,13 @@ const POPULAR_SKILLS = [
 
 const POPULAR_LANGUAGES = [
   'English',
+  'Hindi',
+  'Malayalam',
   'Spanish',
   'French',
   'German',
-  'Hindi',
   'Arabic',
   'Japanese',
-  'Malayalam',
 ];
 
 const DEFAULT_COVERS = [
@@ -127,9 +137,15 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
 
   // Skills & Languages
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['Navigation', 'Photography']);
+  const [customSkills, setCustomSkills] = useState<string[]>([]);
   const [customSkill, setCustomSkill] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English']);
+  const [customLanguages, setCustomLanguages] = useState<string[]>([]);
   const [customLanguage, setCustomLanguage] = useState('');
+
+  // Combined lists ensuring custom and preselected items are always rendered in the chip cloud
+  const allSkills = Array.from(new Set([...POPULAR_SKILLS, ...customSkills, ...selectedSkills]));
+  const allLanguages = Array.from(new Set([...POPULAR_LANGUAGES, ...customLanguages, ...selectedLanguages]));
 
   // Submission & Validation
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -385,12 +401,35 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleAddCustomSkill = () => {
-    const clean = customSkill.trim();
-    if (clean && !selectedSkills.includes(clean)) {
+    const formatted = formatTitleCase(customSkill);
+    if (!formatted) return;
+
+    // Check if it matches an existing popular skill (case-insensitive)
+    const existingPopular = POPULAR_SKILLS.find(
+      (s) => s.toLowerCase() === formatted.toLowerCase()
+    );
+
+    if (existingPopular) {
+      if (!selectedSkills.includes(existingPopular)) {
+        haptics.selection();
+        setSelectedSkills((prev) => [...prev, existingPopular]);
+      }
+    } else {
       haptics.light();
-      setSelectedSkills([...selectedSkills, clean]);
-      setCustomSkill('');
+      if (!customSkills.some((s) => s.toLowerCase() === formatted.toLowerCase())) {
+        setCustomSkills((prev) => [...prev, formatted]);
+      }
+      if (!selectedSkills.some((s) => s.toLowerCase() === formatted.toLowerCase())) {
+        setSelectedSkills((prev) => [...prev, formatted]);
+      }
     }
+    setCustomSkill('');
+  };
+
+  const handleRemoveCustomSkill = (skillToRemove: string) => {
+    haptics.light();
+    setCustomSkills((prev) => prev.filter((s) => s.toLowerCase() !== skillToRemove.toLowerCase()));
+    setSelectedSkills((prev) => prev.filter((s) => s.toLowerCase() !== skillToRemove.toLowerCase()));
   };
 
   // Language toggling
@@ -404,12 +443,35 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleAddCustomLanguage = () => {
-    const clean = customLanguage.trim();
-    if (clean && !selectedLanguages.includes(clean)) {
+    const formatted = formatTitleCase(customLanguage);
+    if (!formatted) return;
+
+    // Check if it matches an existing popular language (case-insensitive)
+    const existingPopular = POPULAR_LANGUAGES.find(
+      (l) => l.toLowerCase() === formatted.toLowerCase()
+    );
+
+    if (existingPopular) {
+      if (!selectedLanguages.includes(existingPopular)) {
+        haptics.selection();
+        setSelectedLanguages((prev) => [...prev, existingPopular]);
+      }
+    } else {
       haptics.light();
-      setSelectedLanguages([...selectedLanguages, clean]);
-      setCustomLanguage('');
+      if (!customLanguages.some((l) => l.toLowerCase() === formatted.toLowerCase())) {
+        setCustomLanguages((prev) => [...prev, formatted]);
+      }
+      if (!selectedLanguages.some((l) => l.toLowerCase() === formatted.toLowerCase())) {
+        setSelectedLanguages((prev) => [...prev, formatted]);
+      }
     }
+    setCustomLanguage('');
+  };
+
+  const handleRemoveCustomLanguage = (langToRemove: string) => {
+    haptics.light();
+    setCustomLanguages((prev) => prev.filter((l) => l.toLowerCase() !== langToRemove.toLowerCase()));
+    setSelectedLanguages((prev) => prev.filter((l) => l.toLowerCase() !== langToRemove.toLowerCase()));
   };
 
   return (
@@ -907,26 +969,44 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   Travel Skills (Tap to select)
                 </Text>
                 <View className="flex-row flex-wrap gap-2 mb-3">
-                  {POPULAR_SKILLS.map((skill) => {
+                  {allSkills.map((skill) => {
                     const isSelected = selectedSkills.includes(skill);
+                    const isCustom = !POPULAR_SKILLS.includes(skill);
                     return (
-                      <TouchableOpacity
+                      <View
                         key={skill}
                         className={cn(
-                          'flex-row items-center py-2.5 px-4 rounded-full bg-surface border border-border shadow-subtle',
+                          'flex-row items-center rounded-full bg-surface border border-border shadow-subtle overflow-hidden',
                           isSelected && 'bg-primary border-primary'
                         )}
-                        onPress={() => toggleSkill(skill)}
-                        activeOpacity={0.7}
                       >
-                        {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
-                        <Text className={cn(
-                          'text-[13px] font-medium text-text-primary',
-                          isSelected && 'text-white font-semibold'
-                        )}>
-                          {skill}
-                        </Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          className="flex-row items-center py-2.5 pl-4"
+                          style={{ paddingRight: isCustom ? 4 : 16 }}
+                          onPress={() => toggleSkill(skill)}
+                          activeOpacity={0.7}
+                        >
+                          {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
+                          <Text
+                            className={cn(
+                              'text-[13px] font-medium text-text-primary',
+                              isSelected && 'text-white font-semibold'
+                            )}
+                          >
+                            {skill}
+                          </Text>
+                        </TouchableOpacity>
+                        {isCustom && (
+                          <TouchableOpacity
+                            hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
+                            onPress={() => handleRemoveCustomSkill(skill)}
+                            className="pr-3.5 pl-1 py-2.5 items-center justify-center"
+                            activeOpacity={0.7}
+                          >
+                            <X size={13} color={isSelected ? theme.colors.white : theme.colors.textMuted} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     );
                   })}
                 </View>
@@ -939,6 +1019,8 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     placeholderTextColor={theme.colors.textMuted}
                     value={customSkill}
                     onChangeText={setCustomSkill}
+                    autoCapitalize="words"
+                    returnKeyType="done"
                     onSubmitEditing={handleAddCustomSkill}
                   />
                   <TouchableOpacity
@@ -955,26 +1037,44 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   Languages
                 </Text>
                 <View className="flex-row flex-wrap gap-2 mb-3">
-                  {POPULAR_LANGUAGES.map((lang) => {
+                  {allLanguages.map((lang) => {
                     const isSelected = selectedLanguages.includes(lang);
+                    const isCustom = !POPULAR_LANGUAGES.includes(lang);
                     return (
-                      <TouchableOpacity
+                      <View
                         key={lang}
                         className={cn(
-                          'flex-row items-center py-2.5 px-4 rounded-full bg-surface border border-border shadow-subtle',
+                          'flex-row items-center rounded-full bg-surface border border-border shadow-subtle overflow-hidden',
                           isSelected && 'bg-primary border-primary'
                         )}
-                        onPress={() => toggleLanguage(lang)}
-                        activeOpacity={0.7}
                       >
-                        {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
-                        <Text className={cn(
-                          'text-[13px] font-medium text-text-primary',
-                          isSelected && 'text-white font-semibold'
-                        )}>
-                          {lang}
-                        </Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          className="flex-row items-center py-2.5 pl-4"
+                          style={{ paddingRight: isCustom ? 4 : 16 }}
+                          onPress={() => toggleLanguage(lang)}
+                          activeOpacity={0.7}
+                        >
+                          {isSelected && <Check size={14} color={theme.colors.white} style={{ marginRight: 4 }} />}
+                          <Text
+                            className={cn(
+                              'text-[13px] font-medium text-text-primary',
+                              isSelected && 'text-white font-semibold'
+                            )}
+                          >
+                            {lang}
+                          </Text>
+                        </TouchableOpacity>
+                        {isCustom && (
+                          <TouchableOpacity
+                            hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
+                            onPress={() => handleRemoveCustomLanguage(lang)}
+                            className="pr-3.5 pl-1 py-2.5 items-center justify-center"
+                            activeOpacity={0.7}
+                          >
+                            <X size={13} color={isSelected ? theme.colors.white : theme.colors.textMuted} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     );
                   })}
                 </View>
@@ -987,6 +1087,8 @@ export const ProfileDetailsScreen: React.FC<Props> = ({ navigation }) => {
                     placeholderTextColor={theme.colors.textMuted}
                     value={customLanguage}
                     onChangeText={setCustomLanguage}
+                    autoCapitalize="words"
+                    returnKeyType="done"
                     onSubmitEditing={handleAddCustomLanguage}
                   />
                   <TouchableOpacity
